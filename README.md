@@ -11,10 +11,10 @@
 
 
 ## Getting started
-Our AmityChatUIKit include user interfaces to enable fast integration of standard Amity Chat features into new or existing applications. Our React Native UIKit supports integration with  **Expo**  providing you with a experience to seamlessly integrate chat features into your existing React Native Expo application.
+Our AmityChatUIKit include user interfaces to enable fast integration of standard Amity Chat features into new or existing applications. Our React Native UIKit supports integration with  **CLI**  providing you with a experience to seamlessly integrate chat features into your existing React Native CLI application.
 ### Try Sample app
 This repository also includes a built-in sample app which you can use to test your code while customizing it, or even explore our UIKit features with just a few installations!
-#### Run sample app with expo
+#### Run sample app with native iOS/Android
 Use yarn
 
 1. Install packages
@@ -22,17 +22,21 @@ Use yarn
 yarn
 ```
 
-2. Configure your apiKey,apiRegion,userId,displayName in /example/src/App.tsx file(https://github.com/AmityCo/Amity-Chat-UIKit-React-Native-OpenSource/blob/main/example/src/App.tsx) first before run the sample app
+2. Configure your apiKey,apiRegion,userId,displayName in /example/src/App.tsx file(https://github.com/AmityCo/Amity-Chat-UIKit-React-Native-CLI-OpenSource/blob/main/example/src/App.tsx) first before run the sample app
 <img width="1499" alt="Screenshot 2566-07-24 at 20 22 44" src="https://github.com/AmityCo/Amity-Chat-UIKit-React-Native-OpenSource/assets/112688936/c25b4d47-97e7-4471-815c-3e5b538a223b">
 
 3. Choose to run between iOS or Android
 
+In iOS sample app, please do the pod install inside example folder first before running the sample app
 ```sh
+cd example
+npx pod-install
+cd ..
 npm run example ios or yarn example ios
+
 ```
 
-or
-
+In Android sample app, please sync the gradle file first before running
 ```
 npm run example android or yarn example android
 ```
@@ -40,21 +44,29 @@ npm run example android or yarn example android
 ### Installation
 Here are the steps to install ui-kit together with another React Native project.
 ```sh
-1. git clone git@github.com:AmityCo/Amity-Chat-UIKit-React-Native-OpenSource.git
-2. cd Amity-Chat-UIKit-React-Native-OpenSource
+1. git clone https://github.com/AmityCo/Amity-Chat-UIKit-React-Native-CLI-OpenSource.git
+2. cd Amity-Chat-UIKit-React-Native-CLI-OpenSource
 3. yarn or npm install
 4. npm pack
 ```
 
-This step will build the app and return amityco-react-native-chat-ui-kit-x.x.x.tgz file in inside the folder
+This step will build the app and return amityco-react-native-cli-chat-ui-kit-x.x.x.tgz file in inside the folder
 
 Then, inside another project, Copy tgz file to your application folder where you need to use ui-kit:
 
 ```sh
-1. yarn add ./amityco-react-native-chat-ui-kit-x.x.x.tgz
-2. yarn add react-native-safe-area-context \react-native-screens \@react-navigation/native \@react-navigation/native-stack \@react-navigation/stack \@react-native-async-storage/async-storage \react-native-svg@14.1.0 \@react-native-community/netinfo
+1. yarn add ./amityco-react-native-cli-chat-ui-kit-x.x.x.tgz
+2. yarn add react-native-safe-area-context \react-native-screens \@react-navigation/native \@react-navigation/native-stack \@react-navigation/stack \@react-native-async-storage/async-storage \react-native-svg@14.1.0 \@react-native-community/netinfo \react-native-image-picker
+```
+### iOS Configuration
+```sh
+npx pod-install
+
 ```
 
+### Android Configuration
+
+Build project gradle with your Android Studio
 
 ### Usage
 
@@ -95,7 +107,7 @@ import * as React from 'react';
 import {
   AmityUiKitProvider,
   AmityUiKitChat,
-} from '@amityco/react-native-chat-ui-kit';
+} from '@amityco/react-native-cli-chat-ui-kit';
 
 export default function App() {
  const myTheme = {
@@ -143,7 +155,7 @@ import * as React from 'react';
 import {
   AmityUiKitProvider,
   AmityUiKitChat,
-} from '@amityco/react-native-chat-ui-kit';
+} from '@amityco/react-native-cli-chat-ui-kit';
 
 export default function App() {
   return (
