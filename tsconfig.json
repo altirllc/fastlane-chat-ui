@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "@amityco/react-native-chat-ui-kit": ["./src/index"]
+      "@amityco/react-native-cli-chat-ui-kit": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

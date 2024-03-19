@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/no-unstable-nested-components */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,12 +10,16 @@ import {
   Platform,
   TextInput,
 } from 'react-native';
-
+import ImagePicker, {
+  launchImageLibrary,
+  type Asset,
+  launchCamera,
+} from 'react-native-image-picker';
 import { useStyles } from './styles';
 import DoneButton from '../../components/DoneButton';
 import { updateAmityChannel } from '../../providers/channel-provider';
 import { LoadingOverlay } from '../../components/LoadingOverlay';
-import * as ImagePicker from 'expo-image-picker';
+
 import LoadingImage from '../../components/LoadingImage';
 import type { RootStackParamList } from '../../routes/RouteParamList';
 import { type RouteProp, useRoute } from '@react-navigation/native';
@@ -52,25 +56,7 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
 
   const theme = useTheme() as MyMD3Theme;
 
-  useEffect(() => {
-    navigation.setOptions({
 
-      header: () => (
-        <SafeAreaView style={styles.topBarContainer} edges={['top']}>
-          <View style={styles.topBar}>
-            <BackButton/>
-            <View style={styles.headerTextContainer}>
-              <Text style={styles.headerText}>Member Detail</Text>
-            </View>
-            <DoneButton navigation={navigation} onDonePressed={onDonePressed} />
-          </View>
-        </SafeAreaView>
-      ),
-      headerTitle: '',
-    });
-
-
-  }, [])
   const onDonePressed = async () => {
 
     try {
@@ -92,46 +78,33 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
   };
 
   const pickCamera = async () => {
-    // No permissions request is necessary for launching the image library
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    setImageMultipleUri([])
-    if (permission.granted) {
-      let result: ImagePicker.ImagePickerResult =
-        await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.All,
-          aspect: [4, 3],
-          quality: 1,
-        });
-
-      if (
-        result.assets &&
-        result.assets.length > 0 &&
-        result.assets[0] !== null &&
-        result.assets[0]
-      ) {
-        const selectedImages = result.assets;
-        const imageUriArr: string[] = selectedImages.map((item: { uri: string; }) => item.uri);
-        const imagesArr = [...imageMultipleUri];
-        const totalImages = imagesArr.concat(imageUriArr);
-        setImageMultipleUri(totalImages);
-        // do something with uri
-      }
+    const result: ImagePicker.ImagePickerResponse = await launchCamera({
+      mediaType: 'photo',
+      quality: 1,
+    });
+    if (
+      result.assets &&
+      result.assets.length > 0 &&
+      result.assets[0] !== null &&
+      result.assets[0]
+    ) {
+      const imagesArr: string[] = [...imageMultipleUri];
+      imagesArr.push(result.assets[0].uri as string);
+      setImageMultipleUri(imagesArr);
     }
-
   };
 
   const pickImage = async () => {
-    setImageMultipleUri([])
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
+    const result: ImagePicker.ImagePickerResponse = await launchImageLibrary({
+      mediaType: 'photo',
       quality: 1,
+      selectionLimit: 10,
     });
-
-
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      const selectedImages = result.assets;
-      const imageUriArr: string[] = selectedImages.map((item: { uri: string; }) => item.uri);
+    if (!result.didCancel && result.assets && result.assets.length > 0) {
+      const selectedImages: Asset[] = result.assets;
+      const imageUriArr: string[] = selectedImages.map(
+        (item: Asset) => item.uri
+      ) as string[];
       const imagesArr = [...imageMultipleUri];
       const totalImages = imagesArr.concat(imageUriArr);
       setImageMultipleUri(totalImages);
@@ -176,62 +149,75 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
 
   }
   return (
-    <View style={styles.container}>
+    <View style={{flex:1}}>
+      <SafeAreaView style={styles.topBarContainer} edges={['top']}>
+        <View style={styles.topBar}>
+          <BackButton />
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerText}>Member Detail</Text>
+          </View>
+          <DoneButton navigation={navigation} onDonePressed={onDonePressed} />
+        </View>
+      </SafeAreaView>
 
-      <LoadingOverlay
-        isLoading={showLoadingIndicator}
-        loadingText="Loading..."
-      />
-      <View style={styles.avatarContainer}>
-        <TouchableOpacity onPress={handleAvatarPress}>
-          {imageMultipleUri.length > 0 ?
+      <View style={styles.container}>
 
-            <View>
-              <LoadingImage
-                containerStyle={styles.uploadedImage}
-                isShowSending={false}
-                source={imageMultipleUri[0] as string}
-                onLoadFinish={handleOnFinishImage}
-              />
-            </View>
-
-
-            : (groupChat?.avatarFileId ? <Image
-              style={styles.avatar}
-              source={
-                { uri: `https://api.${apiRegion}.amity.co/api/v3/files/${groupChat?.avatarFileId}/download` }
-
-              }
-            /> : <AvatarIcon />)}
-
-
-        </TouchableOpacity>
-        <View style={imageMultipleUri[0] ? styles.uploadedCameraIconContainer : styles.cameraIconContainer}>
+        <LoadingOverlay
+          isLoading={showLoadingIndicator}
+          loadingText="Loading..."
+        />
+        <View style={styles.avatarContainer}>
           <TouchableOpacity onPress={handleAvatarPress}>
-            <View style={styles.cameraIcon}>
-              <CameraIcon color={theme.colors.base} width={16} height={16} />
-            </View>
+            {imageMultipleUri.length > 0 ?
+
+              <View>
+                <LoadingImage
+                  containerStyle={styles.uploadedImage}
+                  isShowSending={false}
+                  source={imageMultipleUri[0] as string}
+                  onLoadFinish={handleOnFinishImage}
+                />
+              </View>
+
+
+              : (groupChat?.avatarFileId ? <Image
+                style={styles.avatar}
+                source={
+                  { uri: `https://api.${apiRegion}.amity.co/api/v3/files/${groupChat?.avatarFileId}/download` }
+
+                }
+              /> : <AvatarIcon />)}
+
+
           </TouchableOpacity>
+          <View style={imageMultipleUri[0] ? styles.uploadedCameraIconContainer : styles.cameraIconContainer}>
+            <TouchableOpacity onPress={handleAvatarPress}>
+              <View style={styles.cameraIcon}>
+                <CameraIcon color={theme.colors.base} width={16} height={16} />
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      <View style={styles.displayNameContainer}>
-        <Text style={styles.displayNameText}>Group name</Text>
-        <View style={styles.characterCountContainer}>
-          <Text
-            style={styles.characterCountText}
-          >{`${characterCount}/${MAX_CHARACTER_COUNT}`}</Text>
+        <View style={styles.displayNameContainer}>
+          <Text style={styles.displayNameText}>Group name</Text>
+          <View style={styles.characterCountContainer}>
+            <Text
+              style={styles.characterCountText}
+            >{`${characterCount}/${MAX_CHARACTER_COUNT}`}</Text>
+          </View>
         </View>
+
+        <TextInput
+          style={styles.input}
+          value={displayName}
+          onChangeText={handleTextChange}
+          maxLength={MAX_CHARACTER_COUNT}
+          placeholder="Enter your display name"
+          placeholderTextColor="#a0a0a0"
+        />
+
       </View>
-
-      <TextInput
-        style={styles.input}
-        value={displayName}
-        onChangeText={handleTextChange}
-        maxLength={MAX_CHARACTER_COUNT}
-        placeholder="Enter your display name"
-        placeholderTextColor="#a0a0a0"
-      />
-
     </View>
+
   );
 };

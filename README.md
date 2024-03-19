@@ -40,7 +40,7 @@ npm run example android or yarn example android
 ### Installation
 Here are the steps to install ui-kit together with another React Native project.
 ```sh
-1. git clone https://github.com/AmityCo/Amity-Chat-UIKit-React-Native-OpenSource.git
+1. git clone git@github.com:AmityCo/Amity-Chat-UIKit-React-Native-OpenSource.git
 2. cd Amity-Chat-UIKit-React-Native-OpenSource
 3. yarn or npm install
 4. npm pack
@@ -52,7 +52,7 @@ Then, inside another project, Copy tgz file to your application folder where you
 
 ```sh
 1. yarn add ./amityco-react-native-chat-ui-kit-x.x.x.tgz
-2. yarn add react-native-safe-area-context \react-native-screens \@react-navigation/native \@react-navigation/native-stack \@react-navigation/stack
+2. yarn add react-native-safe-area-context \react-native-screens \@react-navigation/native \@react-navigation/native-stack \@react-navigation/stack \@react-native-async-storage/async-storage \react-native-svg@14.1.0 \@react-native-community/netinfo
 ```
 
 

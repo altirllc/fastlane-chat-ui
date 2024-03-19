@@ -31,7 +31,12 @@ import {
   subscribeTopic,
 } from '@amityco/ts-sdk-react-native';
 import useAuth from '../../hooks/useAuth';
-import * as ImagePicker from 'expo-image-picker';
+
+import ImagePicker, {
+  launchImageLibrary,
+  type Asset,
+  launchCamera,
+} from 'react-native-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LoadingImage from '../../components/LoadingImage';
 import {
@@ -114,69 +119,6 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
   const [editMessageText, setEditMessageText] = useState<string>('');
   const disposers: Amity.Unsubscriber[] = [];
 
-  useEffect(() => {
-
-    navigation.setOptions({
-      header: () => (
-        <SafeAreaView style={styles.topBarContainer} edges={['top']}>
-          <View style={styles.topBar}>
-            <View style={styles.chatTitleWrap}>
-              <TouchableOpacity onPress={handleBack}>
-                <BackButton onPress={handleBack} />
-              </TouchableOpacity>
-
-              {chatReceiver ? (
-                chatReceiver?.avatarFileId ?
-                  <Image
-                    style={styles.avatar}
-                    source={
-                      {
-                        uri: `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver?.avatarFileId}/download`,
-                      }
-
-                    }
-                  /> : <View style={styles.avatar}>
-                    <AvatarIcon />
-                  </View>
-              ) : groupChat?.avatarFileId ? (
-                <Image
-                  style={styles.avatar}
-                  source={{
-                    uri: `https://api.${apiRegion}.amity.co/api/v3/files/${groupChat?.avatarFileId}/download`,
-                  }}
-                />
-              ) : (
-                <View style={styles.icon}>
-                  <GroupChatIcon />
-                </View>
-              )}
-              <View>
-                <CustomText style={styles.chatName} numberOfLines={1}>
-                  {chatReceiver
-                    ? chatReceiver?.displayName
-                    : groupChat?.displayName}
-                </CustomText>
-                {groupChat && (
-                  <CustomText style={styles.chatMember}>
-                    {groupChat?.memberCount} members
-                  </CustomText>
-                )}
-              </View>
-            </View>
-            <TouchableOpacity
-              onPress={() => {
-                navigation.navigate('ChatDetail', { channelId: channelId, channelType: chatReceiver ? 'conversation' : 'community', chatReceiver: chatReceiver ?? undefined, groupChat: groupChat ?? undefined });
-              }}
-            >
-              <MenuIcon color={theme.colors.base} />
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      ),
-      headerTitle: '',
-    });
-
-  }, [])
 
   const subscribeSubChannel = (subChannel: Amity.SubChannel) =>
     disposers.push(subscribeTopic(getSubChannelTopic(subChannel)));
@@ -497,32 +439,20 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
 
 
   const pickCamera = async () => {
-    // No permissions request is necessary for launching the image library
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (permission.granted) {
-      let result: ImagePicker.ImagePickerResult =
-        await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.All,
-          aspect: [4, 3],
-          quality: 1,
-          base64: false
-        });
-
-      if (
-        result.assets &&
-        result.assets.length > 0 &&
-        result.assets[0] !== null &&
-        result.assets[0]
-      ) {
-        const selectedImages = result.assets;
-        const imageUriArr: string[] = selectedImages.map((item: { uri: string; }) => item.uri);
-        const imagesArr = [...imageMultipleUri];
-        const totalImages = imagesArr.concat(imageUriArr);
-        setImageMultipleUri(totalImages);
-        // do something with uri
-      }
+    const result: ImagePicker.ImagePickerResponse = await launchCamera({
+      mediaType: 'photo',
+      quality: 1,
+    });
+    if (
+      result.assets &&
+      result.assets.length > 0 &&
+      result.assets[0] !== null &&
+      result.assets[0]
+    ) {
+      const imagesArr: string[] = [...imageMultipleUri];
+      imagesArr.push(result.assets[0].uri as string);
+      setImageMultipleUri(imagesArr);
     }
-
   };
 
 
@@ -579,17 +509,16 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
   }, [imageMultipleUri]);
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
+    const result: ImagePicker.ImagePickerResponse = await launchImageLibrary({
+      mediaType: 'photo',
       quality: 1,
-      allowsMultipleSelection: true,
-      base64: false
+      selectionLimit: 10,
     });
-
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      const selectedImages = result.assets;
-      const imageUriArr: string[] = selectedImages.map((item: { uri: string; }) => item.uri);
+    if (!result.didCancel && result.assets && result.assets.length > 0) {
+      const selectedImages: Asset[] = result.assets;
+      const imageUriArr: string[] = selectedImages.map(
+        (item: Asset) => item.uri
+      ) as string[];
       const imagesArr = [...imageMultipleUri];
       const totalImages = imagesArr.concat(imageUriArr);
       setImageMultipleUri(totalImages);
@@ -634,6 +563,60 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
 
 
     <View style={styles.container}>
+      <SafeAreaView style={styles.topBarContainer} edges={['top']}>
+        <View style={styles.topBar}>
+          <View style={styles.chatTitleWrap}>
+            <TouchableOpacity onPress={handleBack}>
+              <BackButton onPress={handleBack} />
+            </TouchableOpacity>
+
+            {chatReceiver ? (
+              chatReceiver?.avatarFileId ?
+                <Image
+                  style={styles.avatar}
+                  source={
+                    {
+                      uri: `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver?.avatarFileId}/download`,
+                    }
+
+                  }
+                /> : <View style={styles.avatar}>
+                  <AvatarIcon />
+                </View>
+            ) : groupChat?.avatarFileId ? (
+              <Image
+                style={styles.avatar}
+                source={{
+                  uri: `https://api.${apiRegion}.amity.co/api/v3/files/${groupChat?.avatarFileId}/download`,
+                }}
+              />
+            ) : (
+              <View style={styles.icon}>
+                <GroupChatIcon />
+              </View>
+            )}
+            <View>
+              <CustomText style={styles.chatName} numberOfLines={1}>
+                {chatReceiver
+                  ? chatReceiver?.displayName
+                  : groupChat?.displayName}
+              </CustomText>
+              {groupChat && (
+                <CustomText style={styles.chatMember}>
+                  {groupChat?.memberCount} members
+                </CustomText>
+              )}
+            </View>
+          </View>
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate('ChatDetail', { channelId: channelId, channelType: chatReceiver ? 'conversation' : 'community', chatReceiver: chatReceiver ?? undefined, groupChat: groupChat ?? undefined });
+            }}
+          >
+            <MenuIcon color={theme.colors.base} />
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
       <View style={styles.chatContainer}>
         <FlatList
           data={sortedMessages}
@@ -650,7 +633,6 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.select({ ios: 110, android: 100 })}
         style={styles.AllInputWrap}
       >
         <View style={styles.InputWrap}>

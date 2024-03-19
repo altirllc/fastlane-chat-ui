@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { leaveAmityChannel } from '../../providers/channel-provider';
 import { useStyles } from './styles';
 import { createReport } from '@amityco/ts-sdk-react-native';
@@ -21,7 +21,6 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
     const styles = useStyles();
     const { channelId, channelType, chatReceiver, groupChat } = route.params;
     const [showReportAlert, setShowReportAlert] = useState<boolean>(false);
-    const [showLeaveAlert, setShowLeaveAlert] = useState<boolean>(false);
     const handleGroupProfilePress = () => {
         navigation.navigate('EditChatDetail', { navigation, channelId: channelId, groupChat: groupChat });
     };
@@ -30,17 +29,52 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
         navigation.navigate('MemberDetail', { navigation, channelID: channelId });
     };
 
-    const handleLeaveChatPress = async () => {
-        setShowLeaveAlert(true)
-    };
 
+    const handleLeaveChatPress = async () => {
+        Alert.alert(
+            'Leave chat',
+            `If leave this group, you’ll no longer be able to see any messages and files.`,
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Leave',
+                    style: 'destructive',
+                    onPress: () => onLeaveChat(),
+                },
+            ]
+        );
+
+    };
+    async function flagUser() {
+        if (chatReceiver) {
+            const didCreateUserReport = await createReport('user', chatReceiver.userId);
+            if (didCreateUserReport) {
+                Alert.alert('Report sent', '', [   {
+                    text: 'Ok',
+   
+                },]);
+            }
+
+        }
+
+    }
     const onLeaveChat = async () => {
 
-        const isLeave = await leaveAmityChannel(channelId)
-        setShowLeaveAlert(false);
-        if (isLeave) {
-            navigation.navigate('RecentChat')
+        try {
+            const isLeave = await leaveAmityChannel(channelId)
+            if (isLeave) {
+                navigation.navigate('RecentChat')
+            }
+        } catch (error) {
+            console.log('error: ', error);
+
         }
+
+
+
 
     }
     const handleGoBack = () => {
@@ -81,16 +115,7 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
                 return null;
         }
     };
-    async function flagUser() {
-        if (chatReceiver) {
-            const didCreateUserReport = await createReport('user', chatReceiver.userId);
-            if (didCreateUserReport) {
-                setShowReportAlert(true)
-            }
 
-        }
-
-    }
     const data = [
         { id: 1 },
         { id: 2 },
@@ -136,25 +161,7 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
                 onConfirmPressed={() => setShowReportAlert(false)}
                 onDismiss={() => setShowReportAlert(false)}
             />
-            <AwesomeAlert
-                show={showLeaveAlert}
-                showProgress={false}
-                title="Leave Chat"
-                message='If leave this group, you’ll no longer be able to see any messages and files.'
-                closeOnTouchOutside={true}
-                closeOnHardwareBackPress={false}
-                showCancelButton={true}
-                showConfirmButton={true}
-                confirmText="Leave"
-                cancelText="Cancel"
-                confirmButtonColor="#FA4D30"
-                cancelButtonColor="#1054DE"
-                onCancelPressed={() => {
-                    setShowLeaveAlert(false);
-                }}
-                onConfirmPressed={() => onLeaveChat()}
-                onDismiss={() => setShowLeaveAlert(false)}
-            />
+
         </View>
     );
 };

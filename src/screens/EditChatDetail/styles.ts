@@ -8,6 +8,7 @@ export const useStyles = () => {
     const styles = StyleSheet.create({
         topBarContainer: {
             backgroundColor: theme.colors.background,
+
         },
         container: {
             flex: 1,
@@ -83,6 +84,7 @@ export const useStyles = () => {
         topBar: {
             display: 'flex',
             flexDirection: 'row',
+            justifyContent: 'space-between',
             backgroundColor: theme.colors.background,
             paddingHorizontal: 16,
             paddingVertical: 20

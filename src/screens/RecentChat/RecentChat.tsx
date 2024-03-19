@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 
 import { ChannelRepository, getChannelTopic, subscribeTopic } from '@amityco/ts-sdk-react-native';
-import ChatList,  { type IChatListProps, type IGroupChatObject } from '../../components/ChatList/index';
+import ChatList, { type IChatListProps, type IGroupChatObject } from '../../components/ChatList/index';
 import useAuth from '../../hooks/useAuth';
 import { useEffect, useState } from 'react';
 import moment from 'moment';
@@ -81,6 +81,7 @@ export default function RecentChat() {
 
 
   const onQueryChannel = () => {
+
     const unsubscribe = ChannelRepository.getChannels(
       { sortBy: 'lastActivity', limit: 15, membership: 'member' },
       (value) => {
@@ -96,6 +97,7 @@ export default function RecentChat() {
   useEffect(() => {
     onQueryChannel();
     return () => {
+      console.log(disposers)
       disposers.forEach(fn => fn());
     };
   }, [isConnected]);
