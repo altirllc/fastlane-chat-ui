@@ -76,7 +76,7 @@ import * as React from 'react';
 import {
   AmityUiKitChat,
   AmityUiKitProvider,
-} from '@amityco/react-native-chat-ui-kit';
+} from '@amityco/react-native-cli-chat-ui-kit';
 
 export default function App() {
   return (
