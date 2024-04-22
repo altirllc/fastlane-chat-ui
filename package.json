@@ -90,7 +90,8 @@
     "react": "*",
     "react-native": "*",
     "react-native-safe-area-context": "*",
-    "react-native-screens": "*"
+    "react-native-screens": "*",
+    "react-native-svg": "*"
   },
   "workspaces": [
     "example"
@@ -180,7 +181,6 @@
     "react-native-pager-view": "6.1.4",
     "react-native-paper": "^5.12.3",
     "react-native-popup-menu": "^0.16.1",
-    "react-native-progress": "^5.0.1",
-    "react-native-svg": "^14.1.0"
+    "react-native-progress": "^5.0.1"
   }
 }
