@@ -16,7 +16,6 @@ import MemberDetail from '../screens/MemberDetail/MemberDetail';
 import ChatRoom from '../screens/ChatRoom/ChatRoom';
 import useAuth from '../hooks/useAuth';
 
-
 export default function ChatNavigator() {
   const Stack = createNativeStackNavigator<RootStackParamList>();
   const { isConnected } = useAuth();
@@ -32,7 +31,6 @@ export default function ChatNavigator() {
           // headerShown: false,
         }}
       >
-
         <Stack.Screen
           name="RecentChat"
           component={RecentChat}
@@ -42,7 +40,7 @@ export default function ChatNavigator() {
 
         <Stack.Screen
           name="ChatRoom"
-           options={{ headerShown: false }}
+          options={{ headerShown: false }}
           component={ChatRoom}
         />
         <Stack.Screen
@@ -77,7 +75,6 @@ export default function ChatNavigator() {
             options={({ }) => ({
               title: '',
               headerShown: false
-
             })}
           />
         </Stack.Group>

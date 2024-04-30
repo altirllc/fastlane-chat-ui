@@ -52,9 +52,9 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
         if (chatReceiver) {
             const didCreateUserReport = await createReport('user', chatReceiver.userId);
             if (didCreateUserReport) {
-                Alert.alert('Report sent', '', [   {
+                Alert.alert('Report sent', '', [{
                     text: 'Ok',
-   
+
                 },]);
             }
 
@@ -143,7 +143,6 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id.toString()}
                 />
-
             }
             <AwesomeAlert
                 show={showReportAlert}
@@ -161,7 +160,6 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
                 onConfirmPressed={() => setShowReportAlert(false)}
                 onDismiss={() => setShowReportAlert(false)}
             />
-
         </View>
     );
 };

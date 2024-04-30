@@ -58,8 +58,8 @@ export default function SelectMembers() {
 
   const createSectionGroup = () => {
 
-    const sectionUserArr =userArr.map((item) => {
-    return { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
+    const sectionUserArr = userArr.map((item) => {
+      return { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
     })
     setSectionedUserList(sectionUserArr)
   }
@@ -112,16 +112,14 @@ export default function SelectMembers() {
     setSelectedUserList(removedUser)
   }
 
-
   return (
-
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.closeButton}>
           <SvgXml xml={closeIcon} width="14" height="14" />
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
-          <Text style={styles.headerText}>Select Member</Text>
+          <Text style={styles.headerText}>New Chat</Text>
         </View>
         <TouchableOpacity disabled={selectedUserList.length === 0} >
           <Text style={[selectedUserList.length > 0 ? styles.doneText : styles.disabledDone]}>Done</Text>
@@ -149,14 +147,12 @@ export default function SelectMembers() {
         <View />
       )}
       <FlatList
-        data={ sectionedUserList}
+        data={sectionedUserList}
         renderItem={renderItem}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         keyExtractor={(item) => item.userId}
-
       />
     </View>
-
   );
 }
