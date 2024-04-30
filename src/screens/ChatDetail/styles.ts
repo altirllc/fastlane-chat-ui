@@ -79,9 +79,10 @@ export const useStyles = () => {
 
         },
         header: {
-            paddingTop: Platform.OS === 'ios' ? 50 : 20, // Adjust for iOS notch
+            // paddingTop: Platform.OS === 'ios' ? 50 : 20, // Adjust for iOS notch
             zIndex: 1,
-            padding: 12,
+            paddingRight: 12,
+            paddingLeft: 12,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',

@@ -11,6 +11,7 @@ import ChatList, { type IChatListProps, type IGroupChatObject } from '../../comp
 import useAuth from '../../hooks/useAuth';
 import { useEffect, useState } from 'react';
 import moment from 'moment';
+import { PlusIcon } from '../../svg/PlusIcon';
 
 import { useStyles } from './styles';
 import CustomText from '../../components/CustomText';
@@ -20,9 +21,10 @@ import LoadingIndicator from '../../components/LoadingIndicator/index';
 import AddMembersModal from '../../components/AddMembersModal';
 import type { UserInterface } from '../../types/user.interface';
 import { createAmityChannel } from '../../providers/channel-provider';
-import { AddChatIcon } from '../../svg/AddChat';
-import { useTheme } from 'react-native-paper';
+import { Icon, useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
+import { useCustomTheme } from '../../hooks/useCustomTheme';
+import { getShadowProps } from '../../theme/helpers';
 
 export default function RecentChat() {
   const { client, isConnected } = useAuth();
@@ -33,6 +35,7 @@ export default function RecentChat() {
   const styles = useStyles()
 
   const flatListRef = useRef(null);
+  const { colors } = useCustomTheme();
 
   const [channelData, setChannelData] = useState<Amity.LiveCollection<Amity.Channel>>();
 
@@ -62,23 +65,19 @@ export default function RecentChat() {
 
       header: () => (
         <View style={styles.topBar}>
-          <CustomText style={styles.titleText}>Chat</CustomText>
-          <TouchableOpacity
+          <CustomText style={styles.titleText}>Chats</CustomText>
+          {/* <TouchableOpacity
             onPress={() => {
               setIsModalVisible(true)
             }}
           >
             <AddChatIcon color={theme.colors.base} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       ),
       headerTitle: '',
     });
-
-
   }, [])
-
-
 
   const onQueryChannel = () => {
 
@@ -238,8 +237,28 @@ export default function RecentChat() {
 
   return (
     <View style={styles.chatContainer}>
-      {renderTabView()}
+      {/* {renderTabView()} */}
       {renderRecentChat}
+      <TouchableOpacity
+        onPress={() => {
+          setIsModalVisible(true)
+        }}
+        style={[
+          styles.createFeedButton,
+          {
+            ...getShadowProps({ color: colors.secondary.main }),
+            backgroundColor: colors.primary.main,
+          },
+        ]}>
+        <Icon
+          source={PlusIcon}
+          size={"xs"}
+          color="transparent"
+          stroke="quaternary"
+          height={24}
+          width={24}
+        />
+      </TouchableOpacity>
       <AddMembersModal onFinish={handleOnFinish} onClose={handleCloseModal} visible={isModalVisible} />
     </View>
   );

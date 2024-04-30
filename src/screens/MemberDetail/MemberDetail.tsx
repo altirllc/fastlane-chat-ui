@@ -120,7 +120,6 @@ export default function MemberDetail({ route, navigation }: any) {
 
   }
   return (
-
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.closeButton}>
@@ -133,7 +132,7 @@ export default function MemberDetail({ route, navigation }: any) {
       <CustomTab tabName={['Members', 'Moderators']} onTabChange={handleTabChange} />
       <View style={styles.inputWrap}>
         <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
-          <SearchIcon color={theme.colors.base}/>
+          <SearchIcon color={theme.colors.base} />
         </TouchableOpacity>
         <TextInput
           style={styles.input}
@@ -141,7 +140,7 @@ export default function MemberDetail({ route, navigation }: any) {
           onChangeText={handleChange}
         />
         <TouchableOpacity onPress={clearButton}>
-          <CircleCloseIcon color={theme.colors.base}/>
+          <CircleCloseIcon color={theme.colors.base} />
         </TouchableOpacity>
       </View>
 

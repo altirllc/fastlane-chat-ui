@@ -1,5 +1,6 @@
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useTheme } from 'react-native-paper';
+import { ColorValue } from 'react-native/types';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 
 export const useStyles = () => {
@@ -22,13 +23,13 @@ export const useStyles = () => {
       backgroundColor: '#1054DE',
     },
     topBar: {
-      paddingTop: Platform.OS === 'ios' ? 50 : 20,
+      // paddingTop: Platform.OS === 'ios' ? 50 : 20,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       backgroundColor: theme.colors.background,
       paddingHorizontal: 20,
-      paddingVertical: 20,
+      paddingVertical: 10,
     },
     addChatIcon: {
       width: 24,
@@ -71,10 +72,45 @@ export const useStyles = () => {
       backgroundColor: theme.colors.background,
     },
     chatListContainer:{
-      paddingBottom: Platform.OS === 'ios' ? 65 : 35,
-    }
+      // paddingBottom: Platform.OS === 'ios' ? 65 : 35,
+    },
+    createFeedButton: {
+      position: "absolute",
+      bottom: 24,
+      right: 24,
+      width: 56,
+      height: 56,
+      zIndex: 100,
+      borderRadius: 28,
+      alignItems: "center",
+      justifyContent: "center",
+    },
   });
   return styles;
 }
 
+interface IGetShadowProps {
+  offset?: number;
+  radius?: number;
+  opacity?: number;
+  color?: ColorValue;
+  noElevation?: boolean;
+}
 
+export const getShadowProps = (props?: IGetShadowProps) => {
+  const shadowProps = {
+    shadowColor: props?.color ?? '#000',
+    shadowOffset: {
+      width: 0,
+      height: props?.offset ?? 2,
+    },
+    shadowOpacity: props?.opacity ?? 0.2,
+    shadowRadius: props?.radius ?? 2,
+    elevation: props?.radius ?? 2,
+  };
+
+  if (props?.noElevation) {
+    return shadowProps;
+  }
+  return { ...shadowProps, elevation: props?.radius ?? 2 };
+};

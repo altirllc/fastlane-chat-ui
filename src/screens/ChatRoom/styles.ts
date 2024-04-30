@@ -12,7 +12,6 @@ export const useStyles = () => {
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
-
     },
     textChatBubble: {
       alignSelf: 'flex-start',

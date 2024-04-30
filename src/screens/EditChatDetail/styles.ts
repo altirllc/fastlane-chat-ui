@@ -8,7 +8,6 @@ export const useStyles = () => {
     const styles = StyleSheet.create({
         topBarContainer: {
             backgroundColor: theme.colors.background,
-
         },
         container: {
             flex: 1,
@@ -87,7 +86,7 @@ export const useStyles = () => {
             justifyContent: 'space-between',
             backgroundColor: theme.colors.background,
             paddingHorizontal: 16,
-            paddingVertical: 20
+            // paddingVertical: 20
         },
         headerTextContainer: {
             flex: 1,

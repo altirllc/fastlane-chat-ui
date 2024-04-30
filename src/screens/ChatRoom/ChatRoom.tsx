@@ -37,7 +37,6 @@ import ImagePicker, {
   type Asset,
   launchCamera,
 } from 'react-native-image-picker';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import LoadingImage from '../../components/LoadingImage';
 import {
   Menu,
@@ -51,12 +50,12 @@ import EditMessageModal from '../../components/EditMessageModal';
 import { GroupChatIcon } from '../../svg/GroupChatIcon';
 import { AvatarIcon } from '../../svg/AvatarIcon';
 import { CameraBoldIcon } from '../../svg/CameraBoldIcon';
-import { MenuIcon } from '../../svg/MenuIcon';
 import { PlusIcon } from '../../svg/PlusIcon';
 import { SendChatIcon } from '../../svg/SendChatIcon';
 import { AlbumIcon } from '../../svg/AlbumIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
+import { AlertIcon } from '../../svg/AlertIcon'
 
 type ChatRoomScreenComponentType = React.FC<{
   route: RouteProp<RootStackParamList, 'ChatRoom'>;
@@ -560,63 +559,60 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
 
 
   return (
-
-
     <View style={styles.container}>
-      <SafeAreaView style={styles.topBarContainer} edges={['top']}>
-        <View style={styles.topBar}>
-          <View style={styles.chatTitleWrap}>
-            <TouchableOpacity onPress={handleBack}>
-              <BackButton onPress={handleBack} />
-            </TouchableOpacity>
-
-            {chatReceiver ? (
-              chatReceiver?.avatarFileId ?
-                <Image
-                  style={styles.avatar}
-                  source={
-                    {
-                      uri: `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver?.avatarFileId}/download`,
-                    }
-
-                  }
-                /> : <View style={styles.avatar}>
-                  <AvatarIcon />
-                </View>
-            ) : groupChat?.avatarFileId ? (
+      <View style={styles.topBar}>
+        <View style={styles.chatTitleWrap}>
+          <TouchableOpacity onPress={handleBack}>
+            <BackButton onPress={handleBack} />
+          </TouchableOpacity>
+          {chatReceiver ? (
+            chatReceiver?.avatarFileId ?
               <Image
                 style={styles.avatar}
-                source={{
-                  uri: `https://api.${apiRegion}.amity.co/api/v3/files/${groupChat?.avatarFileId}/download`,
-                }}
-              />
-            ) : (
-              <View style={styles.icon}>
-                <GroupChatIcon />
+                source={
+                  {
+                    uri: `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver?.avatarFileId}/download`,
+                  }
+
+                }
+              /> : <View style={styles.avatar}>
+                <AvatarIcon />
               </View>
-            )}
-            <View>
-              <CustomText style={styles.chatName} numberOfLines={1}>
-                {chatReceiver
-                  ? chatReceiver?.displayName
-                  : groupChat?.displayName}
-              </CustomText>
-              {groupChat && (
-                <CustomText style={styles.chatMember}>
-                  {groupChat?.memberCount} members
-                </CustomText>
-              )}
+          ) : groupChat?.avatarFileId ? (
+            <Image
+              style={styles.avatar}
+              source={{
+                uri: `https://api.${apiRegion}.amity.co/api/v3/files/${groupChat?.avatarFileId}/download`,
+              }}
+            />
+          ) : (
+            <View style={styles.icon}>
+              <GroupChatIcon />
             </View>
+          )}
+          <View>
+            <CustomText style={styles.chatName} numberOfLines={1}>
+              {chatReceiver
+                ? chatReceiver?.displayName
+                : groupChat?.displayName}
+            </CustomText>
+            {groupChat && (
+              <CustomText style={styles.chatMember}>
+                {groupChat?.memberCount} members
+              </CustomText>
+            )}
           </View>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.navigate('ChatDetail', { channelId: channelId, channelType: chatReceiver ? 'conversation' : 'community', chatReceiver: chatReceiver ?? undefined, groupChat: groupChat ?? undefined });
-            }}
-          >
-            <MenuIcon color={theme.colors.base} />
-          </TouchableOpacity>
         </View>
-      </SafeAreaView>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('ChatDetail', { channelId: channelId, channelType: chatReceiver ? 'conversation' : 'community', chatReceiver: chatReceiver ?? undefined, groupChat: groupChat ?? undefined });
+          }}
+        >
+          <AlertIcon color={theme.colors.base} />
+        </TouchableOpacity>
+      </View>
+      {/* <SafeAreaView style={styles.topBarContainer} edges={['top']}>
+      </SafeAreaView> */}
       <View style={styles.chatContainer}>
         <FlatList
           data={sortedMessages}

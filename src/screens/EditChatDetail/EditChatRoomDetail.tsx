@@ -149,16 +149,16 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
 
   }
   return (
-    <View style={{flex:1}}>
-      <SafeAreaView style={styles.topBarContainer} edges={['top']}>
-        <View style={styles.topBar}>
-          <BackButton />
-          <View style={styles.headerTextContainer}>
-            <Text style={styles.headerText}>Member Detail</Text>
-          </View>
-          <DoneButton navigation={navigation} onDonePressed={onDonePressed} />
+    <View style={{ flex: 1 }}>
+      <View style={styles.topBar}>
+        <BackButton />
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.headerText}>Group Detail</Text>
         </View>
-      </SafeAreaView>
+        <DoneButton navigation={navigation} onDonePressed={onDonePressed} />
+      </View>
+      {/* <SafeAreaView style={styles.topBarContainer} edges={['top']}>
+      </SafeAreaView> */}
 
       <View style={styles.container}>
 
