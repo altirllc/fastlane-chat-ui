@@ -1,4 +1,7 @@
 <div align="center">
+  <img width="367" alt="image" src="https://github.com/altirllc/fastlane-chat-ui/assets/129851647/d50cc865-9a2f-4a65-aeb2-77a0d8309f5b">
+</div>
+<div align="center">
 <img src="https://github.com/AmityCo/Amity-Social-UIKit-React-Native-OpenSource/assets/112688936/ddeeef20-2dfa-449e-bd3d-62238d7c9be0" width="160" >
 <img src="https://github.com/AmityCo/Amity-Social-UIKit-React-Native-OpenSource/assets/112688936/e6b2d2a2-5158-429e-b1af-ea679b14fc11" width="150">
 <h1>Amity Chat Ui-Kit for React native (open-source)</h1>
