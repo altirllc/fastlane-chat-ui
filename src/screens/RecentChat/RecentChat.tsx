@@ -62,20 +62,7 @@ export default function RecentChat() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   useEffect(() => {
     navigation.setOptions({
-
-      header: () => (
-        <View style={styles.topBar}>
-          <CustomText style={styles.titleText}>Chats</CustomText>
-          {/* <TouchableOpacity
-            onPress={() => {
-              setIsModalVisible(true)
-            }}
-          >
-            <AddChatIcon color={theme.colors.base} />
-          </TouchableOpacity> */}
-        </View>
-      ),
-      headerTitle: '',
+      headerShown: false,
     });
   }, [])
 
