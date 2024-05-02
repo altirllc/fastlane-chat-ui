@@ -24,7 +24,6 @@ import LoadingImage from '../../components/LoadingImage';
 import type { RootStackParamList } from '../../routes/RouteParamList';
 import { type RouteProp, useRoute } from '@react-navigation/native';
 import useAuth from '../../hooks/useAuth';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraIcon } from '../../svg/CameraIcon';
 import { AvatarIcon } from '../../svg/AvatarIcon';
 import { useTheme } from 'react-native-paper';

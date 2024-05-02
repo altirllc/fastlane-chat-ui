@@ -30,11 +30,14 @@ export async function createAmityChannel(
     };
 
 
-    const { data: channel,  } = await ChannelRepository.createChannel(param);
-    if(channel){
-      resolve(channel)
-    }else{
-      reject(' Create Channel unsuccessful')
+    const { data: channel } = await ChannelRepository.createChannel(param);
+    if (channel) {
+      resolve({
+        ...channel,
+        markAsRead: async () => true,
+      });
+    } else {
+      reject(' Create Channel unsuccessful');
     }
   });
 }
@@ -45,10 +48,10 @@ export async function leaveAmityChannel(
   return await new Promise(async (resolve, reject) => {
     try {
       const didLeaveChannel = await ChannelRepository.leaveChannel(channelID);
-      if(didLeaveChannel){
+      if (didLeaveChannel) {
         resolve(true)
       }
-      
+
     } catch (error) {
       Alert.alert('Unable to leave channel due to ' + error, '', []);
       reject(new Error('Unable to leave channel ' + error));
@@ -90,14 +93,17 @@ export async function updateAmityChannel(
       );
     }
     try {
-      const {data} = await ChannelRepository.updateChannel(channelID, option);
-      if(data){
-         resolve(data);
+      const { data } = await ChannelRepository.updateChannel(channelID, option);
+      if (data) {
+        resolve({
+          ...data,
+          markAsRead: async () => true,
+        });
       }
     } catch (error) {
       reject(new Error('Unable to create channel ' + error));
     }
-   
+
 
   });
 }
