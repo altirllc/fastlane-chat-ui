@@ -13,7 +13,7 @@ import { useStyles } from './styles';
 import type { UserInterface } from '../../types/user.interface';
 import UserItem from '../../components/UserItem';
 
-import CustomTab from '../../components/CustomTab';
+// import CustomTab from '../../components/CustomTab';
 import { SearchIcon } from '../../svg/SearchIcon';
 import { CircleCloseIcon } from '../../svg/CircleCloseIcon';
 import { BackIcon } from '../../svg/BackIcon';
@@ -33,7 +33,8 @@ export default function MemberDetail({ route, navigation }: any) {
 
   const [usersObject, setUsersObject] = useState<Amity.LiveCollection<Amity.Membership<"channel">>>();
   const [searchTerm, setSearchTerm] = useState('');
-  const [tabIndex, setTabIndex] = useState<number>(1)
+  const [tabIndex] = useState<number>(1)
+  // const [tabIndex, setTabIndex] = useState<number>(1)
   const { data: userArr = [], onNextPage } = usersObject ?? {};
 
   const theme = useTheme() as MyMD3Theme;
@@ -115,10 +116,10 @@ export default function MemberDetail({ route, navigation }: any) {
     navigation.goBack()
   }
 
-  const handleTabChange = (index: number) => {
-    setTabIndex(index)
+  // const handleTabChange = (index: number) => {
+  //   setTabIndex(index)
+  // }
 
-  }
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -129,7 +130,7 @@ export default function MemberDetail({ route, navigation }: any) {
           <Text style={styles.headerText}>Member Detail</Text>
         </View>
       </View>
-      <CustomTab tabName={['Members', 'Moderators']} onTabChange={handleTabChange} />
+      {/* <CustomTab tabName={['Members', 'Moderators']} onTabChange={handleTabChange} /> */}
       <View style={styles.inputWrap}>
         <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
           <SearchIcon color={theme.colors.base} />
@@ -150,7 +151,6 @@ export default function MemberDetail({ route, navigation }: any) {
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         keyExtractor={(item) => item.userId}
-
       />
     </View>
 

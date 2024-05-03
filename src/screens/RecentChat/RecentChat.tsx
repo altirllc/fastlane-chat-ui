@@ -14,21 +14,18 @@ import moment from 'moment';
 import { PlusIcon } from '../../svg/PlusIcon';
 
 import { useStyles } from './styles';
-import CustomText from '../../components/CustomText';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import LoadingIndicator from '../../components/LoadingIndicator/index';
 import AddMembersModal from '../../components/AddMembersModal';
 import type { UserInterface } from '../../types/user.interface';
 import { createAmityChannel } from '../../providers/channel-provider';
-import { Icon, useTheme } from 'react-native-paper';
-import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
+import { Icon } from 'react-native-paper';
 import { useCustomTheme } from '../../hooks/useCustomTheme';
 import { getShadowProps } from '../../theme/helpers';
 
 export default function RecentChat() {
   const { client, isConnected } = useAuth();
-  const theme = useTheme() as MyMD3Theme;
   const [channelObjects, setChannelObjects] = useState<IChatListProps[]>([]);
   const [loadChannel, setLoadChannel] = useState<boolean>(true);
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -212,15 +209,15 @@ export default function RecentChat() {
       />
     );
   };
-  const renderTabView = (): ReactElement => {
-    return (
-      <View style={styles.tabView}>
-        <View style={styles.indicator}>
-          <CustomText style={styles.tabViewTitle}>Recent</CustomText>
-        </View>
-      </View>
-    );
-  };
+  // const renderTabView = (): ReactElement => {
+  //   return (
+  //     <View style={styles.tabView}>
+  //       <View style={styles.indicator}>
+  //         <CustomText style={styles.tabViewTitle}>Recent</CustomText>
+  //       </View>
+  //     </View>
+  //   );
+  // };
 
   return (
     <View style={styles.chatContainer}>
@@ -241,9 +238,6 @@ export default function RecentChat() {
           source={PlusIcon}
           size={"xs"}
           color="transparent"
-          stroke="quaternary"
-          height={24}
-          width={24}
         />
       </TouchableOpacity>
       <AddMembersModal onFinish={handleOnFinish} onClose={handleCloseModal} visible={isModalVisible} />

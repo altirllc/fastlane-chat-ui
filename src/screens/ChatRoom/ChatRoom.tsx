@@ -37,6 +37,7 @@ import ImagePicker, {
   type Asset,
   launchCamera,
 } from 'react-native-image-picker';
+// import { SafeAreaView } from 'react-native-safe-area-context';
 import LoadingImage from '../../components/LoadingImage';
 import {
   Menu,
@@ -47,15 +48,18 @@ import {
 import { SvgXml } from 'react-native-svg';
 import { deletedIcon } from '../../svg/svg-xml-list';
 import EditMessageModal from '../../components/EditMessageModal';
-import { GroupChatIcon } from '../../svg/GroupChatIcon';
+// import { GroupChatIcon } from '../../svg/GroupChatIcon';
 import { AvatarIcon } from '../../svg/AvatarIcon';
 import { CameraBoldIcon } from '../../svg/CameraBoldIcon';
-import { PlusIcon } from '../../svg/PlusIcon';
+// import { MenuIcon } from '../../svg/MenuIcon';
+// import { PlusIcon } from '../../svg/PlusIcon';
 import { SendChatIcon } from '../../svg/SendChatIcon';
 import { AlbumIcon } from '../../svg/AlbumIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
-import { AlertIcon } from '../../svg/AlertIcon'
+import { AlertIcon } from '../../svg/AlertIcon';
+import { CommunityChatIcon } from '../../svg/CommunityChatIcon';
+import { SendImage } from '../../svg/SendImage';
 
 type ChatRoomScreenComponentType = React.FC<{
   route: RouteProp<RootStackParamList, 'ChatRoom'>;
@@ -587,7 +591,7 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
             />
           ) : (
             <View style={styles.icon}>
-              <GroupChatIcon />
+              <CommunityChatIcon />
             </View>
           )}
           <View>
@@ -603,13 +607,18 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
             )}
           </View>
         </View>
-        <TouchableOpacity
+        {chatReceiver ? null : <TouchableOpacity
           onPress={() => {
-            navigation.navigate('ChatDetail', { channelId: channelId, channelType: chatReceiver ? 'conversation' : 'community', chatReceiver: chatReceiver ?? undefined, groupChat: groupChat ?? undefined });
+            navigation.navigate('ChatDetail', {
+              channelId: channelId,
+              channelType: chatReceiver ? 'conversation' : 'community',
+              chatReceiver: chatReceiver ?? undefined,
+              groupChat: groupChat ?? undefined
+            });
           }}
         >
           <AlertIcon color={theme.colors.base} />
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
       {/* <SafeAreaView style={styles.topBarContainer} edges={['top']}>
       </SafeAreaView> */}
@@ -648,9 +657,8 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
             </TouchableOpacity>
           ) : (
             <View>
-
               <TouchableOpacity onPress={handlePress} style={styles.sendIcon}>
-                <PlusIcon color={theme.colors.base} />
+                <SendImage color={theme.colors.base} />
               </TouchableOpacity>
             </View>
           )}
