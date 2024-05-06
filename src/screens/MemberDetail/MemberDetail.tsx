@@ -33,7 +33,8 @@ export default function MemberDetail({ route, navigation }: any) {
 
   const [usersObject, setUsersObject] = useState<Amity.LiveCollection<Amity.Membership<"channel">>>();
   const [searchTerm, setSearchTerm] = useState('');
-  const [tabIndex, setTabIndex] = useState<number>(1)
+  const [tabIndex] = useState<number>(1)
+  // const [tabIndex, setTabIndex] = useState<number>(1)
   const { data: userArr = [], onNextPage } = usersObject ?? {};
 
   const theme = useTheme() as MyMD3Theme;
