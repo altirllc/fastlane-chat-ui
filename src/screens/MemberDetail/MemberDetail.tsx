@@ -33,8 +33,7 @@ export default function MemberDetail({ route, navigation }: any) {
 
   const [usersObject, setUsersObject] = useState<Amity.LiveCollection<Amity.Membership<"channel">>>();
   const [searchTerm, setSearchTerm] = useState('');
-  const [tabIndex] = useState<number>(1)
-  // const [tabIndex, setTabIndex] = useState<number>(1)
+  const [tabIndex, setTabIndex] = useState<number>(1)
   const { data: userArr = [], onNextPage } = usersObject ?? {};
 
   const theme = useTheme() as MyMD3Theme;
@@ -92,12 +91,10 @@ export default function MemberDetail({ route, navigation }: any) {
 
   const onUserPressed = (user: UserInterface) => {
     console.log('user:', user)
-
   };
 
 
   const renderItem = ({ item }: ListRenderItemInfo<UserInterface>) => {
-
     const userObj: UserInterface = { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
     return (
       <UserItem showThreeDot={true} user={userObj} onThreeDotTap={onUserPressed} />

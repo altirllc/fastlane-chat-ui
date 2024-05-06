@@ -49,7 +49,8 @@ export default function UserItem({
   };
 
   return (
-    <TouchableOpacity style={styles.listItem} onPress={handleToggle}>
+    // <TouchableOpacity style={styles.listItem} onPress={handleToggle}>
+    <View style={styles.listItem} >
       <View style={styles.leftContainer}>
         {
           user?.avatarFileId ? (
@@ -65,8 +66,8 @@ export default function UserItem({
         }
         <Text style={styles.itemText}>{displayName()}</Text>
       </View>
-      {!showThreeDot ? (
-        <RoundCheckbox isChecked={isCheckmark ?? false} />
+      {/* {!showThreeDot ? (
+        // <RoundCheckbox isChecked={isCheckmark ?? false} />
       ) : (
         <TouchableOpacity
           onPress={() => {
@@ -77,7 +78,8 @@ export default function UserItem({
         >
           <ThreeDotsIcon color={theme.colors.base} />
         </TouchableOpacity>
-      )}
-    </TouchableOpacity>
+      )} */}
+      {/* // </TouchableOpacity> */}
+    </View >
   );
 }
