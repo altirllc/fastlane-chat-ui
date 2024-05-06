@@ -187,6 +187,7 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
         }
 
         if ((item?.data as Record<string, any>)?.fileId) {
+          // single chat
           return {
             _id: item.messageId,
             text: '',
@@ -197,13 +198,14 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
             editedAt: item.updatedAt as string,
             user: {
               _id: item.creatorId ?? '',
-              name: item.creatorId ?? '',
+              name: chatReceiver?.displayName ?? '',
               avatar: avatarUrl,
             },
             messageType: item.dataType,
             isDeleted: item.isDeleted as boolean
           };
         } else {
+          // group
           return {
             _id: item.messageId,
             text:
@@ -212,7 +214,7 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
             editedAt: item.updatedAt as string,
             user: {
               _id: item.creatorId ?? '',
-              name: item.creatorId ?? '',
+              name: chatReceiver?.displayName ?? groupChat?.users?.find((user) => user.userId === item.creatorId)?.displayName ?? '',
               avatar: avatarUrl,
             },
             messageType: item.dataType,

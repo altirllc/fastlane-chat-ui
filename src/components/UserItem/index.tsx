@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { Image, Text, View } from 'react-native';
 import { useStyles } from './styles';
-import RoundCheckbox from '../RoundCheckbox/index';
+// import RoundCheckbox from '../RoundCheckbox/index';
 import type { UserInterface } from '../../types/user.interface';
 import useAuth from '../../hooks/useAuth';
 import { AvatarIcon } from '../../svg/AvatarIcon';
-import { ThreeDotsIcon } from '../../svg/ThreeDotsIcon';
-import { useTheme } from 'react-native-paper';
-import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
+// import { ThreeDotsIcon } from '../../svg/ThreeDotsIcon';
+// import { useTheme } from 'react-native-paper';
+// import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 
 export default function UserItem({
   user,
-  isCheckmark,
-  showThreeDot,
-  onPress,
-  onThreeDotTap,
+  // isCheckmark,
+  // showThreeDot,
+  // onPress,
+  // onThreeDotTap,
 }: {
   user: UserInterface;
   isCheckmark?: boolean | undefined;
@@ -23,17 +23,17 @@ export default function UserItem({
   onThreeDotTap?: (user: UserInterface) => void;
 }) {
 
-  const theme = useTheme() as MyMD3Theme;
+  // const theme = useTheme() as MyMD3Theme;
   const styles = useStyles();
   const { apiRegion } = useAuth()
-  const [isChecked, setIsChecked] = useState(false);
+  // const [isChecked, setIsChecked] = useState(false);
   const maxLength = 25;
-  const handleToggle = () => {
-    setIsChecked(!isChecked);
-    if (onPress) {
-      onPress(user);
-    }
-  };
+  // const handleToggle = () => {
+  //   setIsChecked(!isChecked);
+  //   if (onPress) {
+  //     onPress(user);
+  //   }
+  // };
 
   const displayName = () => {
     if (user.displayName) {
@@ -49,7 +49,8 @@ export default function UserItem({
   };
 
   return (
-    <TouchableOpacity style={styles.listItem} onPress={handleToggle}>
+    // <TouchableOpacity style={styles.listItem} onPress={handleToggle}>
+    <View style={styles.listItem} >
       <View style={styles.leftContainer}>
         {
           user?.avatarFileId ? (
@@ -65,8 +66,8 @@ export default function UserItem({
         }
         <Text style={styles.itemText}>{displayName()}</Text>
       </View>
-      {!showThreeDot ? (
-        <RoundCheckbox isChecked={isCheckmark ?? false} />
+      {/* {!showThreeDot ? (
+        // <RoundCheckbox isChecked={isCheckmark ?? false} />
       ) : (
         <TouchableOpacity
           onPress={() => {
@@ -77,7 +78,8 @@ export default function UserItem({
         >
           <ThreeDotsIcon color={theme.colors.base} />
         </TouchableOpacity>
-      )}
-    </TouchableOpacity>
+      )} */}
+      {/* // </TouchableOpacity> */}
+    </View >
   );
 }

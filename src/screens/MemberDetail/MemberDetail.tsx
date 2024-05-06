@@ -92,12 +92,10 @@ export default function MemberDetail({ route, navigation }: any) {
 
   const onUserPressed = (user: UserInterface) => {
     console.log('user:', user)
-
   };
 
 
   const renderItem = ({ item }: ListRenderItemInfo<UserInterface>) => {
-
     const userObj: UserInterface = { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
     return (
       <UserItem showThreeDot={true} user={userObj} onThreeDotTap={onUserPressed} />
