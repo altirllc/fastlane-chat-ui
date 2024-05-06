@@ -27,8 +27,7 @@ export default function ChatNavigator() {
           contentStyle: {
             backgroundColor: 'white',
           },
-
-          // headerShown: false,
+          headerShown: false,
         }}
       >
         <Stack.Screen
