@@ -31,7 +31,7 @@ export const useStyles = () => {
     },
     userBubble: {
       alignSelf: 'flex-end',
-      backgroundColor:  theme.colors.chatBubbles?.userBubble,
+      backgroundColor: theme.colors.chatBubbles?.userBubble,
       maxWidth: '100%',
       marginLeft: 60
     },
@@ -59,7 +59,7 @@ export const useStyles = () => {
     },
     chatFriendText: {
       fontSize: 16,
-      color:  theme.colors.chatMessageTexts?.friendMessageText,
+      color: theme.colors.chatMessageTexts?.friendMessageText,
     },
     deletedMessage: {
       color: '#898E9E',
@@ -167,6 +167,9 @@ export const useStyles = () => {
       flexDirection: 'row',
       alignItems: 'center',
       marginLeft: 4
+    },
+    backButton: {
+      padding: 10,
     },
     sendIcon: {
       marginRight: 6,
