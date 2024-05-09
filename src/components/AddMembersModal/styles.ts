@@ -58,12 +58,13 @@ export const useStyles = () => {
     inputWrap: {
       marginHorizontal: 16,
       backgroundColor: theme.colors.secondary,
-      borderRadius: 4,
+      borderRadius: 30,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: 10,
       marginVertical: 10,
+      paddingVertical: 10
     },
     input: { flex: 1, marginHorizontal: 6 },
     cancelBtn: {

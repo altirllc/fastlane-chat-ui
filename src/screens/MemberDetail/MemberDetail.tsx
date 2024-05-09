@@ -98,7 +98,7 @@ export default function MemberDetail({ route, navigation }: any) {
   const renderItem = ({ item }: ListRenderItemInfo<UserInterface>) => {
     const userObj: UserInterface = { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
     return (
-      <UserItem showThreeDot={true} user={userObj} onThreeDotTap={onUserPressed} />
+      <UserItem showThreeDot={false} user={userObj} onThreeDotTap={onUserPressed} />
     );
   };
 
@@ -136,6 +136,8 @@ export default function MemberDetail({ route, navigation }: any) {
         <TextInput
           style={styles.input}
           value={searchTerm}
+          placeholder='Search Members'
+          placeholderTextColor={'#6E768A'}
           onChangeText={handleChange}
         />
         <TouchableOpacity onPress={clearButton}>
