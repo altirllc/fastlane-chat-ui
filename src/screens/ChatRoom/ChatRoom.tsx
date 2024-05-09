@@ -675,6 +675,7 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.select({ ios: 200, android: 80 })}
         style={styles.AllInputWrap}
       >
         <View style={styles.InputWrap}>
