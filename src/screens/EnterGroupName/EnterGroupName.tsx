@@ -27,7 +27,7 @@ export const EnterGroupName = () => {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
     const [inputMessage, setInputMessage] = useState('');
-    const inputRef = useRef<TextInput>();
+    const inputRef = useRef<any>();
     const [loading, setLoading] = useState(false);
     const { client } = useAuth();
     const [isFocused, setIsFocused] = useState(false)
@@ -139,7 +139,7 @@ export const EnterGroupName = () => {
             <View style={styles.innerContainer}>
                 <View style={[styles.inputWrap, { borderWidth: 1, borderColor: isFocused ? theme.colors.base : theme.colors.baseShade3 }]}>
                     <TextInput
-                        ref={inputRef}
+                        ref={inputRef as any}
                         onFocus={() => { setIsFocused(true) }}
                         onBlur={() => { setIsFocused(false) }}
                         value={inputMessage}
