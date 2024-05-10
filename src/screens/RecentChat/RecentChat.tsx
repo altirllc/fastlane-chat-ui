@@ -4,10 +4,11 @@ import {
   View,
   FlatList,
   TouchableOpacity,
+  Text,
 } from 'react-native';
 
 import { ChannelRepository, getChannelTopic, subscribeTopic } from '@amityco/ts-sdk-react-native';
-import ChatList, { type IChatListProps, type IGroupChatObject } from '../../components/ChatList/index';
+import ChatList, { type IChatListProps } from '../../components/ChatList/index';
 import useAuth from '../../hooks/useAuth';
 import { useEffect, useState } from 'react';
 import moment from 'moment';
@@ -16,19 +17,15 @@ import { PlusIcon } from '../../svg/PlusIcon';
 import { useStyles } from './styles';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import LoadingIndicator from '../../components/LoadingIndicator/index';
-import AddMembersModal from '../../components/AddMembersModal';
-import type { UserInterface } from '../../types/user.interface';
-import { createAmityChannel } from '../../providers/channel-provider';
 import { Icon } from 'react-native-paper';
 import { useCustomTheme } from '../../hooks/useCustomTheme';
 import { getShadowProps } from '../../theme/helpers';
+import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/components/LoadingOverlay';
 
 export default function RecentChat() {
-  const { client, isConnected } = useAuth();
+  const { isConnected } = useAuth();
   const [channelObjects, setChannelObjects] = useState<IChatListProps[]>([]);
-  const [loadChannel, setLoadChannel] = useState<boolean>(true);
-  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [loadChannel, setLoadChannel] = useState<boolean>(false);
   const styles = useStyles()
 
   const flatListRef = useRef(null);
@@ -41,7 +38,6 @@ export default function RecentChat() {
     data: channels = [],
     onNextPage,
     hasNextPage,
-
   } = channelData ?? {};
   const disposers: Amity.Unsubscriber[] = [];
   const subscribedChannels: Amity.Channel['channelId'][] = [];
@@ -64,15 +60,13 @@ export default function RecentChat() {
   }, [])
 
   const onQueryChannel = () => {
-
+    setLoadChannel(true)
     const unsubscribe = ChannelRepository.getChannels(
       { sortBy: 'lastActivity', limit: 15, membership: 'member' },
       (value) => {
         setChannelData(value);
         subscribeChannels(channels);
-        if (value.data.length === 0) {
-          setLoadChannel(false);
-        }
+        if (value.data.length === 0) setLoadChannel(false);
       },
     );
     disposers.push(unsubscribe);
@@ -123,78 +117,19 @@ export default function RecentChat() {
     }
   };
 
-  const handleCloseModal = () => {
-    setIsModalVisible(false)
-  }
 
-  const handleOnFinish = async (users: UserInterface[]) => {
-    const channel = await createAmityChannel((client as Amity.Client).userId as string, users)
-    if (channel) {
-      try {
-        if (users.length === 1 && users[0]) {
-          const oneOnOneChatObject: UserInterface = {
-            userId: users[0].userId,
-            displayName: users[0].displayName as string,
-            avatarFileId: users[0].avatarFileId as string,
-          };
-
-          navigation.navigate('ChatRoom', {
-            channelId: channel.channelId,
-            chatReceiver: oneOnOneChatObject,
-          });
-
-        } else if (users.length > 1) {
-          const chatDisplayName = users.map(
-            (item) => item.displayName
-          );
-          const userObject = users.map((item: UserInterface) => {
-            return {
-              userId: item.userId,
-              displayName: item.displayName,
-              avatarFileId: item.avatarFileId,
-            };
-          });
-          const groupChatObject: IGroupChatObject = {
-            displayName: chatDisplayName.join(','),
-            users: userObject,
-            memberCount: channel.memberCount as number,
-            avatarFileId: channel.avatarFileId
-          };
-
-          navigation.navigate('ChatRoom', {
-            channelId: channel.channelId,
-            groupChat: groupChatObject,
-          });
-
-        }
-
-        console.log('create chat success ' + JSON.stringify(channel));
-      } catch (error) {
-        console.log('create chat error ' + JSON.stringify(error));
-        console.error(error);
-      }
-
-    }
-  }
   const renderRecentChat = useMemo(() => {
-    return loadChannel ? (
-      <View style={{ marginTop: 20 }}>
-        <LoadingIndicator />
-      </View>
-    ) : (
-      <View style={styles.chatListContainer}>
-        <FlatList
-          data={channelObjects}
-          renderItem={({ item }) => renderChatList(item)}
-          keyExtractor={(item) => item.chatId.toString()}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.4}
-          ref={flatListRef}
-        />
-
-      </View>
-    );
+    return loadChannel ? <LoadingOverlay /> : <FlatList
+      data={channelObjects}
+      renderItem={({ item }) => renderChatList(item)}
+      keyExtractor={(item) => item.chatId.toString()}
+      onEndReached={handleLoadMore}
+      onEndReachedThreshold={0.4}
+      ref={flatListRef}
+    />
   }, [loadChannel, channelObjects, handleLoadMore]);
+
+
   const renderChatList = (item: IChatListProps): ReactElement => {
     return (
       <ChatList
@@ -209,23 +144,15 @@ export default function RecentChat() {
       />
     );
   };
-  // const renderTabView = (): ReactElement => {
-  //   return (
-  //     <View style={styles.tabView}>
-  //       <View style={styles.indicator}>
-  //         <CustomText style={styles.tabViewTitle}>Recent</CustomText>
-  //       </View>
-  //     </View>
-  //   );
-  // };
+
 
   return (
     <View style={styles.chatContainer}>
-      {/* {renderTabView()} */}
+      <Text style={styles.chatHeader}>Chats</Text>
       {renderRecentChat}
       <TouchableOpacity
         onPress={() => {
-          setIsModalVisible(true)
+          navigation.navigate("AddMembersInChat")
         }}
         style={[
           styles.createFeedButton,
@@ -240,7 +167,6 @@ export default function RecentChat() {
           color="transparent"
         />
       </TouchableOpacity>
-      <AddMembersModal onFinish={handleOnFinish} onClose={handleCloseModal} visible={isModalVisible} />
     </View>
   );
 }

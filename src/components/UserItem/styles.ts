@@ -9,8 +9,7 @@ export const useStyles = () => {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            paddingVertical: 8,
-            paddingHorizontal: 16,
+            paddingVertical: 8
         },
         avatar: {
             width: 40,

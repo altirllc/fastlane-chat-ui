@@ -88,7 +88,7 @@ export const useStyles = () => {
       borderColor: theme.colors.background,
     },
     closeButton: {
-      padding: 3,
+      padding: 10,
     },
     headerTextContainer: {
       flex: 1,

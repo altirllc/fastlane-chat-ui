@@ -17,7 +17,6 @@ export const useStyles = () => {
       alignSelf: 'flex-start',
       backgroundColor: '#FFF',
       borderRadius: 10,
-      marginVertical: 5,
       padding: 10,
     },
     deletedMessageContainer: {

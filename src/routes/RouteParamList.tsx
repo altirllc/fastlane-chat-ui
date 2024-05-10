@@ -21,4 +21,8 @@ export type RootStackParamList = {
     channelId: string,
     groupChat?: IGroupChatObject;
   };
+  EnterGroupName: {
+    selectedUserList: UserInterface[];
+  };
+  AddMembersInChat: undefined;
 };

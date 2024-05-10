@@ -20,7 +20,7 @@ export const useStyles = () => {
       justifyContent: 'space-between',
     },
     closeButton: {
-      padding: 3,
+      padding: 10,
     },
     headerTextContainer: {
       flex: 1,
@@ -104,6 +104,7 @@ export const useStyles = () => {
     disabledDone: {
       opacity: 0.5,
     },
+    membersContainer: { paddingHorizontal: 22 }
   });
 
   return styles;

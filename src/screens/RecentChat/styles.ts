@@ -71,8 +71,9 @@ export const useStyles = () => {
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    chatListContainer:{
-      // paddingBottom: Platform.OS === 'ios' ? 65 : 35,
+    chatHeader: { marginLeft: 24, fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
+    chatListContainer: {
+      flex: 1,
     },
     createFeedButton: {
       position: "absolute",

@@ -21,7 +21,8 @@ import { SearchIcon } from '../../svg/SearchIcon';
 import { CircleCloseIcon } from '../../svg/CircleCloseIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
-import { TView } from '@amityco/react-native-cli-chat-ui-kit/src/components/AddMembersModal/constants';
+import { useNavigation } from '@react-navigation/native';
+//import { TView } from './constants';
 interface IModal {
   visible: boolean;
   userId?: string;
@@ -42,7 +43,7 @@ const AddMembersModal = ({ visible, onClose, onFinish, initUserList = [] }: IMod
   const [searchTerm, setSearchTerm] = useState('');
   const [isShowSectionHeader, setIsShowSectionHeader] = useState<boolean>(false)
   const { data: userArr = [], onNextPage } = usersObject ?? {};
-  const [currentView, setCurrentView] = useState<TView>(TView.addMembers)
+  const navigation = useNavigation<any>();
 
   const isGroupSelected = useMemo(() => {
     return selectedUserList.length > 1;
@@ -73,7 +74,6 @@ const AddMembersModal = ({ visible, onClose, onFinish, initUserList = [] }: IMod
   };
 
   const createSectionGroup = () => {
-    console.log("userArr", JSON.stringify(userArr))
     const sectionUserArr = userArr.map((item) => {
       return { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
 
@@ -135,7 +135,6 @@ const AddMembersModal = ({ visible, onClose, onFinish, initUserList = [] }: IMod
     return (
       <View>
         {isrenderheader && <SectionHeader title={currentLetter} />}
-
         <UserItem showCheckMark showThreeDot={false} user={userObj} isCheckmark={selectedUser} onPress={onUserPressed} />
       </View>
 
@@ -180,7 +179,7 @@ const AddMembersModal = ({ visible, onClose, onFinish, initUserList = [] }: IMod
 
   const onNext = () => {
     //show the view to enter group name
-
+    navigation.navigate("EnterGroupName")
   }
 
   return (
@@ -191,9 +190,9 @@ const AddMembersModal = ({ visible, onClose, onFinish, initUserList = [] }: IMod
             <CloseIcon color={theme.colors.base} />
           </TouchableOpacity>
           <View style={styles.headerTextContainer}>
-            <Text style={styles.headerText}>Select Member</Text>
+            <Text style={styles.headerText}>New Chat</Text>
           </View>
-          <TouchableOpacity disabled={selectedUserList.length === 0} onPress={isGroupSelected ? onNext : onDone}>
+          <TouchableOpacity style={styles.doneContainer} disabled={selectedUserList.length === 0} onPress={isGroupSelected ? onNext : onDone}>
             <Text style={[selectedUserList.length > 0 ? styles.doneText : styles.disabledDone]}>{isGroupSelected ? 'Next' : 'Done'}</Text>
           </TouchableOpacity>
         </View>

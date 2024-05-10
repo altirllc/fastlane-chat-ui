@@ -15,16 +15,18 @@ export const useStyles = () => {
     header: {
       paddingTop: Platform.OS === 'ios' ? 50 : 20, // Adjust for iOS notch
       zIndex: 1,
-      padding: 12,
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between'
+      justifyContent: 'space-between',
+      paddingHorizontal: 15
     },
     closeButton: {
-      padding: 3,
+      width: '10%',
+      paddingVertical: 15,
     },
+    doneContainer: { width: '15%', paddingVertical: 12, alignItems: 'flex-end' },
     headerTextContainer: {
-      flex: 1,
+      width: '75%',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -35,8 +37,6 @@ export const useStyles = () => {
       textAlign: 'center',
       color: theme.colors.base
     },
-
-
     avatar: {
       width: 40,
       height: 40,

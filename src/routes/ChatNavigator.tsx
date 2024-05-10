@@ -15,6 +15,8 @@ import { EditChatRoomDetail } from '../screens/EditChatDetail/EditChatRoomDetail
 import MemberDetail from '../screens/MemberDetail/MemberDetail';
 import ChatRoom from '../screens/ChatRoom/ChatRoom';
 import useAuth from '../hooks/useAuth';
+import { EnterGroupName } from '../screens/EnterGroupName/EnterGroupName';
+import AddMembersInChat from '../screens/AddMembersInChat/AddMembersInChat'
 
 export default function ChatNavigator() {
   const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -30,18 +32,32 @@ export default function ChatNavigator() {
           headerShown: false,
         }}
       >
-        <Stack.Screen
-          name="RecentChat"
-          component={RecentChat}
-          options={({ }) => ({
-            title: '',
-          })} />
 
         <Stack.Screen
-          name="ChatRoom"
-          options={{ headerShown: false }}
-          component={ChatRoom}
-        />
+          options={({ }) => ({ title: '' })}
+          name="RecentChat"
+        >
+          {() => <RecentChat />}
+        </Stack.Screen>
+
+        <Stack.Screen
+          options={({ }) => ({ title: '' })}
+          name="AddMembersInChat"
+        >
+          {() => <AddMembersInChat />}
+        </Stack.Screen>
+
+        <Stack.Screen
+          options={({ }) => ({ title: '' })}
+          name="EnterGroupName"
+        >
+          {() => <EnterGroupName />}
+        </Stack.Screen>
+
+        <Stack.Screen options={{ headerShown: false }} name="ChatRoom">
+          {() => <ChatRoom />}
+        </Stack.Screen>
+
         <Stack.Screen
           name="ChatDetail"
           component={ChatRoomSetting}
