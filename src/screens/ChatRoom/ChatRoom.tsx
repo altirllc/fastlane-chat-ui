@@ -249,7 +249,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   function handleBack(): void {
     disposers.forEach((fn) => fn());
     stopRead();
-    if (from === "AddGroupNameFlow") {
+    if (from === 'AddMembersFlow') {
       //if coming from add group name screen, reload the chats
       navigation.dispatch(
         CommonActions.reset({

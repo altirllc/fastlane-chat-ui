@@ -66,7 +66,7 @@ export default function RecentChat() {
       (value) => {
         setChannelData(value);
         subscribeChannels(channels);
-        if (value.data.length === 0) setLoadChannel(false);
+        if (value?.data?.length > 0) setLoadChannel(false);
       },
     );
     disposers.push(unsubscribe);
