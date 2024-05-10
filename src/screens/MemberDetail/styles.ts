@@ -20,7 +20,7 @@ export const useStyles = () => {
       justifyContent: 'space-between',
     },
     closeButton: {
-      padding: 3,
+      padding: 10,
     },
     headerTextContainer: {
       flex: 1,
@@ -82,12 +82,14 @@ export const useStyles = () => {
     inputWrap: {
       marginHorizontal: 16,
       backgroundColor: theme.colors.secondary,
-      borderRadius: 4,
+      borderRadius: 30,
       flexDirection: 'row',
       justifyContent: 'space-between',
       marginVertical: 10,
       alignItems: 'center',
       paddingHorizontal: 10,
+      paddingVertical: 10,
+      borderWidth: 1
     },
     input: { flex: 1, marginHorizontal: 6 },
     cancelBtn: {
@@ -103,6 +105,7 @@ export const useStyles = () => {
     disabledDone: {
       opacity: 0.5,
     },
+    membersContainer: { paddingHorizontal: 22 }
   });
 
   return styles;

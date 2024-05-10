@@ -150,7 +150,7 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.topBar}>
-        <BackButton />
+        <BackButton styles={styles.backButton} />
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerText}>Group Detail</Text>
         </View>
@@ -160,11 +160,6 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
       </SafeAreaView> */}
 
       <View style={styles.container}>
-
-        <LoadingOverlay
-          isLoading={showLoadingIndicator}
-          loadingText="Loading..."
-        />
         <View style={styles.avatarContainer}>
           <TouchableOpacity onPress={handleAvatarPress}>
             {imageMultipleUri.length > 0 ?
@@ -216,6 +211,9 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
         />
 
       </View>
+      {
+        showLoadingIndicator ? <LoadingOverlay /> : null
+      }
     </View>
 
   );

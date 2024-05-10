@@ -31,7 +31,7 @@ export const useStyles = () => {
             height: 53,
             borderRadius: 32
         },
- 
+
         uploadedCameraIconContainer: {
             position: 'absolute',
             bottom: 3,
@@ -99,6 +99,9 @@ export const useStyles = () => {
             fontSize: 17,
             textAlign: 'center',
             color: theme.colors.base
+        },
+        backButton: {
+            padding: 10
         },
     });
     return styles;

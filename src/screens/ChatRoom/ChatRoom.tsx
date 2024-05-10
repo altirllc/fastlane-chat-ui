@@ -17,9 +17,8 @@ import {
 import ImageView from 'react-native-image-viewing';
 import CustomText from '../../components/CustomText';
 import { useStyles } from './styles';
-import { type RouteProp, useNavigation } from '@react-navigation/native';
+import { type RouteProp, useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import type { RootStackParamList } from '../../routes/RouteParamList';
-import type { StackNavigationProp } from '@react-navigation/stack';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import BackButton from '../../components/BackButton';
 import moment from 'moment';
@@ -61,10 +60,7 @@ import { AlertIcon } from '../../svg/AlertIcon';
 import { CommunityChatIcon } from '../../svg/CommunityChatIcon';
 import { SendImage } from '../../svg/SendImage';
 
-type ChatRoomScreenComponentType = React.FC<{
-  route: RouteProp<RootStackParamList, 'ChatRoom'>;
-  navigation: StackNavigationProp<RootStackParamList, 'ChatRoom'>;
-}>;
+type ChatRoomScreenComponentType = React.FC<{}>;
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();
 
@@ -90,11 +86,16 @@ export interface IDisplayImage {
   isUploaded: boolean;
   thumbNail?: string;
 }
-const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
+const ChatRoom: ChatRoomScreenComponentType = () => {
   const styles = useStyles();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
-  const { chatReceiver, groupChat, channelId } = route.params;
+  const route = useRoute<RouteProp<RootStackParamList, 'ChatRoom'>>();
+  const { chatReceiver, groupChat, channelId, from } = route.params;
+
+  const isGroupChat = useMemo(() => {
+    return groupChat !== undefined;
+  }, [groupChat])
 
   const { client, apiRegion } = useAuth();
   const [messages, setMessages] = useState<IMessage[]>([]);
@@ -171,10 +172,9 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
           targetIndex &&
           (groupChat?.users as any)[targetIndex as number]?.avatarFileId
         ) {
-          avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${
-            (groupChat?.users as any)[targetIndex as number]
-              ?.avatarFileId as any
-          }/download`;
+          avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${(groupChat?.users as any)[targetIndex as number]
+            ?.avatarFileId as any
+            }/download`;
         } else if (chatReceiver && chatReceiver.avatarFileId) {
           avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver.avatarFileId}/download`;
         }
@@ -185,8 +185,7 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
             _id: item.messageId,
             text: '',
             image:
-              `https://api.${apiRegion}.amity.co/api/v3/files/${
-                (item?.data as Record<string, any>).fileId
+              `https://api.${apiRegion}.amity.co/api/v3/files/${(item?.data as Record<string, any>).fileId
               }/download` ?? undefined,
             createdAt: item.createdAt as string,
             editedAt: item.updatedAt as string,
@@ -249,6 +248,18 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
   function handleBack(): void {
     disposers.forEach((fn) => fn());
     stopRead();
+    if (from === 'AddMembersFlow') {
+      //if coming from add group name screen, reload the chats
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "RecentChat" }],
+        }),
+      );
+    } else {
+      //or else just go back
+      navigation.goBack()
+    }
   }
 
   const loadNextMessages = () => {
@@ -308,6 +319,8 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
   const renderChatMessages = (message: IMessage, index: number) => {
     const isUserChat: boolean =
       message?.user?._id === (client as Amity.Client).userId;
+    //isUserChat - is chat of the the user who is logged in?
+
     let isRenderDivider = false;
     const messageDate = moment(message.createdAt);
 
@@ -337,13 +350,13 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
             ))}
 
           <View>
-            {!isUserChat && (
+            {!isUserChat && isGroupChat ? (
               <Text
                 style={isUserChat ? styles.chatUserText : styles.chatFriendText}
               >
                 {message.user.name}
               </Text>
-            )}
+            ) : null}
             {message.isDeleted ? (
               <View
                 style={[
@@ -375,6 +388,7 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
                       style={[
                         styles.textChatBubble,
                         isUserChat ? styles.userBubble : styles.friendBubble,
+                        isGroupChat ? { marginVertical: 5 } : { marginBottom: 5 }
                       ]}
                     >
                       <Text
@@ -411,9 +425,9 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
                       ...styles.optionsContainer,
                       marginLeft: isUserChat
                         ? 240 +
-                          (message.text && message.text.length < 5
-                            ? message.text.length * 10
-                            : 10)
+                        (message.text && message.text.length < 5
+                          ? message.text.length * 10
+                          : 10)
                         : 0,
                     },
                   }}
@@ -658,8 +672,6 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
           </TouchableOpacity>
         )}
       </View>
-      {/* <SafeAreaView style={styles.topBarContainer} edges={['top']}>
-      </SafeAreaView> */}
       <View style={styles.chatContainer}>
         <FlatList
           data={sortedMessages}
@@ -668,6 +680,7 @@ const ChatRoom: ChatRoomScreenComponentType = ({ route }) => {
           onEndReached={loadNextMessages}
           onEndReachedThreshold={0.5}
           inverted
+          showsVerticalScrollIndicator={false}
           ref={flatListRef}
           ListHeaderComponent={renderLoadingImages}
         />

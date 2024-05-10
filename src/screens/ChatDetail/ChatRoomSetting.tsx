@@ -7,9 +7,9 @@ import AwesomeAlert from 'react-native-awesome-alerts';
 import EditIcon from '../../svg/EditIcon';
 import { ArrowRightIcon } from '../../svg/ArrowRightIcon';
 import { GroupMembersIcon } from '../../svg/GroupMembersIcon';
-import { BackIcon } from '../../svg/BackIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
+import BackButton from '@amityco/react-native-cli-chat-ui-kit/src/components/BackButton';
 
 interface ChatDetailProps {
     navigation: any;
@@ -77,9 +77,6 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
 
 
     }
-    const handleGoBack = () => {
-        navigation.goBack()
-    }
 
     const renderItem = ({ item }: any) => {
         switch (item.id) {
@@ -125,9 +122,7 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={handleGoBack} style={styles.closeButton}>
-                    <BackIcon color={theme.colors.base} />
-                </TouchableOpacity>
+                <BackButton styles={styles.closeButton} />
                 <View style={styles.headerTextContainer}>
                     <Text style={styles.headerText}>Chat Detail</Text>
                 </View>

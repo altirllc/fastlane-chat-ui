@@ -16,16 +16,17 @@ import UserItem from '../../components/UserItem';
 // import CustomTab from '../../components/CustomTab';
 import { SearchIcon } from '../../svg/SearchIcon';
 import { CircleCloseIcon } from '../../svg/CircleCloseIcon';
-import { BackIcon } from '../../svg/BackIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
+import BackButton from '@amityco/react-native-cli-chat-ui-kit/src/components/BackButton';
+import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/components/LoadingOverlay';
 
 export type SelectUserList = {
   title: string;
   data: UserInterface[];
 };
 
-export default function MemberDetail({ route, navigation }: any) {
+export default function MemberDetail({ route }: any) {
 
   const styles = useStyles();
   const { channelID } = route.params;
@@ -34,22 +35,22 @@ export default function MemberDetail({ route, navigation }: any) {
   const [usersObject, setUsersObject] = useState<Amity.LiveCollection<Amity.Membership<"channel">>>();
   const [searchTerm, setSearchTerm] = useState('');
   const [tabIndex] = useState<number>(1)
-  // const [tabIndex, setTabIndex] = useState<number>(1)
   const { data: userArr = [], onNextPage } = usersObject ?? {};
+  const [isFocused, setIsFocused] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const theme = useTheme() as MyMD3Theme;
 
   const queryAccounts = (text: string = '', roles?: string[]) => {
-
+    setLoading(true);
     ChannelRepository.Membership.getMembers(
       { channelId: channelID, limit: 15, search: text, roles: roles ?? [] },
       (data) => {
-        setUsersObject(data)
-
+        console.log("data", data)
+        setUsersObject(data);
+        setLoading(data?.loading);
       }
     );
-
-
   };
   const handleChange = (text: string) => {
     setSearchTerm(text);
@@ -88,17 +89,10 @@ export default function MemberDetail({ route, navigation }: any) {
 
   }, [searchTerm, tabIndex])
 
-
-
-  const onUserPressed = (user: UserInterface) => {
-    console.log('user:', user)
-  };
-
-
   const renderItem = ({ item }: ListRenderItemInfo<UserInterface>) => {
     const userObj: UserInterface = { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
     return (
-      <UserItem showThreeDot={true} user={userObj} onThreeDotTap={onUserPressed} />
+      <UserItem showThreeDot={false} user={userObj} />
     );
   };
 
@@ -109,33 +103,25 @@ export default function MemberDetail({ route, navigation }: any) {
     }
   }
 
-
-  const handleGoBack = () => {
-    navigation.goBack()
-  }
-
-  // const handleTabChange = (index: number) => {
-  //   setTabIndex(index)
-  // }
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack} style={styles.closeButton}>
-          <BackIcon color={theme.colors.base} />
-        </TouchableOpacity>
+        <BackButton styles={styles.closeButton} />
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerText}>Member Detail</Text>
         </View>
       </View>
-      {/* <CustomTab tabName={['Members', 'Moderators']} onTabChange={handleTabChange} /> */}
-      <View style={styles.inputWrap}>
+      <View style={[styles.inputWrap, { borderColor: isFocused ? theme.colors.base : theme.colors.baseShade3 }]}>
         <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
-          <SearchIcon color={theme.colors.base} />
+          <SearchIcon color={isFocused ? theme.colors.base : theme.colors.baseShade2} />
         </TouchableOpacity>
         <TextInput
           style={styles.input}
           value={searchTerm}
+          onFocus={() => { setIsFocused(true) }}
+          onBlur={() => { setIsFocused(false) }}
+          placeholder='Search Members'
+          placeholderTextColor={'#6E768A'}
           onChangeText={handleChange}
         />
         <TouchableOpacity onPress={clearButton}>
@@ -148,8 +134,10 @@ export default function MemberDetail({ route, navigation }: any) {
         renderItem={renderItem}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
+        style={styles.membersContainer}
         keyExtractor={(item) => item.userId}
       />
+      {loading ? <LoadingOverlay /> : null}
     </View>
 
   );
