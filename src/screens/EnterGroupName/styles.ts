@@ -57,7 +57,7 @@ export const useEnterGroupNameStyles = () => {
             alignItems: 'center',
             paddingHorizontal: 16,
             marginVertical: 10,
-            paddingVertical: 15
+            paddingVertical: 15,
         },
     });
     return styles;

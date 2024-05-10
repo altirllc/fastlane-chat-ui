@@ -88,7 +88,8 @@ export const useStyles = () => {
       marginVertical: 10,
       alignItems: 'center',
       paddingHorizontal: 10,
-      paddingVertical: 10
+      paddingVertical: 10,
+      borderWidth: 1
     },
     input: { flex: 1, marginHorizontal: 6 },
     cancelBtn: {

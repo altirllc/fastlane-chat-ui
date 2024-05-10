@@ -17,8 +17,13 @@ import ChatRoom from '../screens/ChatRoom/ChatRoom';
 import useAuth from '../hooks/useAuth';
 import { EnterGroupName } from '../screens/EnterGroupName/EnterGroupName';
 import AddMembersInChat from '../screens/AddMembersInChat/AddMembersInChat'
+import { TCommunity } from '../types/common';
 
-export default function ChatNavigator() {
+type TChatNavigator = {
+  chapters: TCommunity[]
+}
+
+export default function ChatNavigator({ chapters }: TChatNavigator) {
   const Stack = createNativeStackNavigator<RootStackParamList>();
   const { isConnected } = useAuth();
   return (
@@ -44,7 +49,7 @@ export default function ChatNavigator() {
           options={({ }) => ({ title: '' })}
           name="AddMembersInChat"
         >
-          {() => <AddMembersInChat />}
+          {() => <AddMembersInChat chapters={chapters} />}
         </Stack.Screen>
 
         <Stack.Screen

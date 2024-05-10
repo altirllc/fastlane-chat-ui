@@ -1,5 +1,5 @@
 import { CloseIcon } from '@amityco/react-native-cli-chat-ui-kit/src/svg/CloseIcon';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     TouchableOpacity,
     View,
@@ -20,6 +20,7 @@ import useAuth from '../../hooks/useAuth';
 import { type IGroupChatObject } from '../../components/ChatList/index';
 import { updateAmityChannel } from '../../providers/channel-provider';
 import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/components/LoadingOverlay';
+import { BackIcon } from '@amityco/react-native-cli-chat-ui-kit/src/svg/BackIcon';
 
 export const EnterGroupName = () => {
     const theme = useTheme() as MyMD3Theme;
@@ -30,11 +31,19 @@ export const EnterGroupName = () => {
     const inputRef = useRef();
     const [loading, setLoading] = useState(false);
     const { client } = useAuth();
+    const [isFocused, setIsFocused] = useState(false)
 
     const selectedUserList = route?.params?.selectedUserList as UserInterface[];
 
+    const isDisabled = useMemo(() => {
+        return !inputMessage
+    }, [inputMessage])
+
     useEffect(() => {
-        if (inputRef.current) inputRef?.current?.focus();
+        if (inputRef.current) {
+            inputRef?.current?.focus();
+            setIsFocused(true)
+        }
     }, [])
 
     const goBack = () => {
@@ -51,9 +60,9 @@ export const EnterGroupName = () => {
     }
 
     const onCreateClick = async () => {
+        const updatedInputmessage = inputMessage.trim()
         //first create a channel
         setLoading(true);
-        const updatedInputmessage = inputMessage.trim()
         const channel = await createAmityChannel((client as Amity.Client).userId as string, selectedUserList);
         if (channel) {
             try {
@@ -106,7 +115,7 @@ export const EnterGroupName = () => {
     }
 
     const renderItem = ({ item }: ListRenderItemInfo<UserInterface>) => {
-        const userObj: UserInterface = { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
+        const userObj: UserInterface = { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string, chapterName: item.chapterName }
 
         return (
             <UserItem showCheckMark={false} showThreeDot={false} user={userObj} />
@@ -119,19 +128,21 @@ export const EnterGroupName = () => {
                 <TouchableOpacity style={styles.closeButton} onPress={() => {
                     goBack();
                 }}>
-                    <CloseIcon color={theme.colors.base} />
+                    <BackIcon color={theme.colors.base} />
                 </TouchableOpacity>
                 <View style={styles.headerTextContainer}>
                     <Text style={styles.headerText}>New Chat</Text>
                 </View>
-                <TouchableOpacity style={styles.doneContainer} onPress={onCreateClick}>
+                <TouchableOpacity disabled={isDisabled} style={[styles.doneContainer, isDisabled && styles.disabledDone]} onPress={onCreateClick}>
                     <Text style={styles.doneText}>{'Create'}</Text>
                 </TouchableOpacity>
             </View>
             <View style={styles.innerContainer}>
-                <View style={styles.inputWrap}>
+                <View style={[styles.inputWrap, { borderWidth: 1, borderColor: isFocused ? theme.colors.base : theme.colors.baseShade3 }]}>
                     <TextInput
                         ref={inputRef}
+                        onFocus={() => { setIsFocused(true) }}
+                        onBlur={() => { setIsFocused(false) }}
                         value={inputMessage}
                         onChangeText={(text) => setInputMessage(text)}
                         placeholder="Conversation Name..."

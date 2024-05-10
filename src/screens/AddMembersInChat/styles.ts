@@ -10,10 +10,8 @@ export const useStyles = () => {
         container: {
             flex: 1,
             backgroundColor: theme.colors.background,
-            paddingTop: Platform.OS === 'android' ? 35 : 10, // Adjust for Android status bar
         },
         header: {
-            paddingTop: Platform.OS === 'ios' ? 50 : 20, // Adjust for iOS notch
             zIndex: 1,
             flexDirection: 'row',
             alignItems: 'center',
@@ -64,7 +62,16 @@ export const useStyles = () => {
             alignItems: 'center',
             paddingHorizontal: 10,
             marginVertical: 10,
-            paddingVertical: 10
+            paddingVertical: 10,
+            borderWidth: 1,
+        },
+        memberText: {
+            fontWeight: '300',
+            fontSize: 12,
+            textAlign: 'left',
+            color: theme.colors.baseShade1,
+            marginVertical: 20,
+            paddingLeft: 10
         },
         input: { flex: 1, marginHorizontal: 6 },
         cancelBtn: {

@@ -50,23 +50,31 @@ export default function UserItem({
     return `https://api.${apiRegion}.amity.co/api/v3/files/${fileId}/download?size=medium`;
   };
 
+
   return (
     <TouchableOpacity style={styles.listItem} disabled={!showCheckMark} onPress={handleToggle}>
       <View style={styles.listItem} >
-        <View style={styles.leftContainer}>
-          {
-            user?.avatarFileId ? (
-              <Image
-                style={styles.avatar}
-                source={{ uri: avatarFileURL(user.avatarFileId) }}
-              />
-            ) : (
-              <View style={styles.avatar}>
-                <AvatarIcon />
-              </View>
-            )
-          }
-          <Text style={styles.itemText}>{displayName()}</Text>
+        <View style={[styles.leftContainer, { alignItems: 'center' }]}>
+          <View style={{ width: '15%' }}>
+            {
+              user?.avatarFileId ? (
+                <Image
+                  style={styles.avatar}
+                  source={{ uri: avatarFileURL(user.avatarFileId) }}
+                />
+              ) : (
+                <View style={styles.avatar}>
+                  <AvatarIcon />
+                </View>
+              )
+            }
+          </View>
+          <View style={styles.middleContainer}>
+            <Text style={styles.itemText}>{displayName()}</Text>
+            {
+              user.chapterName ? <Text style={styles.chapterName}>{user.chapterName}</Text> : null
+            }
+          </View>
         </View>
       </View >
       {

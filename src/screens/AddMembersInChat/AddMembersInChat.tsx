@@ -4,18 +4,15 @@ import {
     TouchableOpacity,
     View,
     Text,
-    type NativeScrollEvent,
     type ListRenderItemInfo,
     TextInput,
     FlatList,
-    type NativeSyntheticEvent,
 } from 'react-native';
 import { useStyles } from './styles';
 import type { UserInterface } from '../../types/user.interface';
 import UserItem from '../../components/UserItem';
 import SectionHeader from '../../components/ListSectionHeader';
 import SelectedUserHorizontal from '../../components/SelectedUserHorizontal';
-import { CloseIcon } from '../../svg/CloseIcon';
 import { SearchIcon } from '../../svg/SearchIcon';
 import { CircleCloseIcon } from '../../svg/CircleCloseIcon';
 import { useTheme } from 'react-native-paper';
@@ -24,16 +21,19 @@ import { CommonActions, useNavigation } from '@react-navigation/native';
 import { createAmityChannel } from '../../providers/channel-provider';
 import useAuth from '../../hooks/useAuth';
 import { LoadingOverlay } from '../../components/LoadingOverlay';
+import { TCommunity } from '../../types/common';
+import { BackIcon } from '../../svg/BackIcon';
 
-interface IModal {
+type TAddMembersInChat = {
     initUserList?: UserInterface[];
+    chapters: TCommunity[]
 }
 export type SelectUserList = {
     title: string;
     data: UserInterface[];
 };
 
-const AddMembersInChat = ({ initUserList = [] }: IModal) => {
+const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) => {
     const { client } = useAuth();
 
     const theme = useTheme() as MyMD3Theme;
@@ -46,6 +46,7 @@ const AddMembersInChat = ({ initUserList = [] }: IModal) => {
     const { data: userArr = [], onNextPage } = usersObject ?? {};
     const navigation = useNavigation<any>();
     const [loading, setLoading] = useState(false);
+    const [isFocused, setIsFocused] = useState(false)
 
     const handleOnFinish = async (users: UserInterface[]) => {
         setLoading(true)
@@ -86,15 +87,14 @@ const AddMembersInChat = ({ initUserList = [] }: IModal) => {
     }, [selectedUserList])
 
     const queryAccounts = (text: string = '') => {
+        setLoading(true);
         UserRepository.getUsers(
             { displayName: text, limit: 20 },
             (data) => {
                 setUsersObject(data)
-
+                setLoading(data?.loading);
             }
         );
-
-
     };
     const handleChange = (text: string) => {
         setSearchTerm(text);
@@ -111,8 +111,14 @@ const AddMembersInChat = ({ initUserList = [] }: IModal) => {
 
     const createSectionGroup = () => {
         const sectionUserArr = userArr.map((item) => {
-            return { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
-
+            const chapterName = chapters.find((eachChapter) => eachChapter.communityId === item?.metadata?.chapter?.id)?.displayName || ''
+            return {
+                userId: item.userId,
+                displayName: item.displayName as string,
+                avatarFileId: item.avatarFileId as string,
+                chapterId: item?.metadata?.chapter?.id || '',
+                chapterName: chapterName
+            }
         })
         setSectionedUserList(sectionUserArr)
     }
@@ -152,10 +158,9 @@ const AddMembersInChat = ({ initUserList = [] }: IModal) => {
         const selectedUser = selectedUserList.some(
             (user) => user.userId === item.userId
         );
-        const userObj: UserInterface = { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
+        const userObj: UserInterface = { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string, chapterName: item.chapterName }
 
         if (index > 0 && sectionedUserList.length > 0) {
-
             const isPreviousletterAlphabet = /^[A-Z]$/i.test(((sectionedUserList[index - 1]) as any).displayName[0]);
             const previousLetter = isPreviousletterAlphabet ? ((sectionedUserList[index - 1]) as any).displayName.charAt(0).toUpperCase() : '#'
             if (currentLetter === previousLetter) {
@@ -163,12 +168,11 @@ const AddMembersInChat = ({ initUserList = [] }: IModal) => {
             } else {
                 isrenderheader = true
             }
-
         }
         return (
             <View>
                 {isrenderheader && <SectionHeader title={currentLetter} />}
-                <View style={{ paddingHorizontal: 16, }}>
+                <View style={{ paddingHorizontal: 16 }}>
                     <UserItem showCheckMark showThreeDot={false} user={userObj} isCheckmark={selectedUser} onPress={onUserPressed} />
                 </View>
             </View>
@@ -179,16 +183,6 @@ const AddMembersInChat = ({ initUserList = [] }: IModal) => {
 
 
     const flatListRef = useRef(null);
-
-    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const yOffset = event.nativeEvent.contentOffset.y;
-
-        if (yOffset >= 40) {
-            setIsShowSectionHeader(true)
-        } else {
-            setIsShowSectionHeader(false)
-        }
-    };
 
     const handleOnClose = () => {
         setSelectedUserList(initUserList)
@@ -221,7 +215,7 @@ const AddMembersInChat = ({ initUserList = [] }: IModal) => {
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity style={styles.closeButton} onPress={handleOnClose}>
-                    <CloseIcon color={theme.colors.base} />
+                    <BackIcon color={theme.colors.base} />
                 </TouchableOpacity>
                 <View style={styles.headerTextContainer}>
                     <Text style={styles.headerText}>New Chat</Text>
@@ -230,13 +224,15 @@ const AddMembersInChat = ({ initUserList = [] }: IModal) => {
                     <Text style={[selectedUserList.length > 0 ? styles.doneText : styles.disabledDone]}>{isGroupSelected ? 'Next' : 'Done'}</Text>
                 </TouchableOpacity>
             </View>
-            <View style={styles.inputWrap}>
+            <View style={[styles.inputWrap, { borderColor: isFocused ? theme.colors.base : theme.colors.baseShade3 }]}>
                 <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
-                    <SearchIcon color={theme.colors.base} />
+                    <SearchIcon color={isFocused ? theme.colors.base : theme.colors.baseShade2} />
                 </TouchableOpacity>
                 <TextInput
                     style={styles.input}
                     value={searchTerm}
+                    onFocus={() => { setIsFocused(true) }}
+                    onBlur={() => { setIsFocused(false) }}
                     onChangeText={handleChange}
                     placeholder='Search Members'
                     placeholderTextColor={'#6E768A'}
@@ -253,6 +249,7 @@ const AddMembersInChat = ({ initUserList = [] }: IModal) => {
             ) : (
                 <View />
             )}
+            <Text style={styles.memberText}>Recents</Text>
             <FlatList
                 data={sectionedUserList}
                 renderItem={renderItem}
@@ -263,7 +260,6 @@ const AddMembersInChat = ({ initUserList = [] }: IModal) => {
                 stickyHeaderIndices={[0]}
                 showsVerticalScrollIndicator={false}
                 ref={flatListRef}
-                onScroll={handleScroll}
             />
             {
                 loading ? <LoadingOverlay /> : null

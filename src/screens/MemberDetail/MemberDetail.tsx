@@ -19,6 +19,7 @@ import { CircleCloseIcon } from '../../svg/CircleCloseIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import BackButton from '@amityco/react-native-cli-chat-ui-kit/src/components/BackButton';
+import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/components/LoadingOverlay';
 
 export type SelectUserList = {
   title: string;
@@ -35,15 +36,19 @@ export default function MemberDetail({ route, navigation }: any) {
   const [searchTerm, setSearchTerm] = useState('');
   const [tabIndex] = useState<number>(1)
   const { data: userArr = [], onNextPage } = usersObject ?? {};
+  const [isFocused, setIsFocused] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const theme = useTheme() as MyMD3Theme;
 
   const queryAccounts = (text: string = '', roles?: string[]) => {
+    setLoading(true);
     ChannelRepository.Membership.getMembers(
       { channelId: channelID, limit: 15, search: text, roles: roles ?? [] },
       (data) => {
-        setUsersObject(data)
-
+        console.log("data", data)
+        setUsersObject(data);
+        setLoading(data?.loading);
       }
     );
   };
@@ -106,13 +111,15 @@ export default function MemberDetail({ route, navigation }: any) {
           <Text style={styles.headerText}>Member Detail</Text>
         </View>
       </View>
-      <View style={styles.inputWrap}>
+      <View style={[styles.inputWrap, { borderColor: isFocused ? theme.colors.base : theme.colors.baseShade3 }]}>
         <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
-          <SearchIcon color={theme.colors.base} />
+          <SearchIcon color={isFocused ? theme.colors.base : theme.colors.baseShade2} />
         </TouchableOpacity>
         <TextInput
           style={styles.input}
           value={searchTerm}
+          onFocus={() => { setIsFocused(true) }}
+          onBlur={() => { setIsFocused(false) }}
           placeholder='Search Members'
           placeholderTextColor={'#6E768A'}
           onChangeText={handleChange}
@@ -130,6 +137,7 @@ export default function MemberDetail({ route, navigation }: any) {
         style={styles.membersContainer}
         keyExtractor={(item) => item.userId}
       />
+      {loading ? <LoadingOverlay /> : null}
     </View>
 
   );

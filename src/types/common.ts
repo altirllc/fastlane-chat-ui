@@ -1,0 +1,31 @@
+export type TCommunity = {
+    _id: string;
+    path: string;
+    isOfficial: boolean;
+    isPublic: boolean;
+    onlyAdminCanPost: boolean;
+    postsCount: number;
+    membersCount: number;
+    moderatorMemberCount: number;
+    updatedAt: string;
+    createdAt: string;
+    isDeleted: boolean;
+    needApprovalOnPostCreation: boolean;
+    displayName: string;
+    tags: string[];
+    metadata: {
+        partners?: string[];
+    };
+    hasFlaggedComment: boolean;
+    hasFlaggedPost: boolean;
+    allowCommentInStory: boolean;
+    communityId: string;
+    channelId: string;
+    userId: string;
+    userPublicId: string;
+    userInternalId: string;
+    isJoined: boolean;
+    avatarFileId: string;
+    categoryIds: string[];
+    notificationMode: "default" | "custom";
+};
