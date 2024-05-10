@@ -1,4 +1,3 @@
-import { CloseIcon } from '@amityco/react-native-cli-chat-ui-kit/src/svg/CloseIcon';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     TouchableOpacity,
@@ -28,7 +27,7 @@ export const EnterGroupName = () => {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
     const [inputMessage, setInputMessage] = useState('');
-    const inputRef = useRef();
+    const inputRef = useRef<TextInput>();
     const [loading, setLoading] = useState(false);
     const { client } = useAuth();
     const [isFocused, setIsFocused] = useState(false)

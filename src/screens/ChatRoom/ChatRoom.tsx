@@ -19,7 +19,6 @@ import CustomText from '../../components/CustomText';
 import { useStyles } from './styles';
 import { type RouteProp, useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import type { RootStackParamList } from '../../routes/RouteParamList';
-import type { StackNavigationProp } from '@react-navigation/stack';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import BackButton from '../../components/BackButton';
 import moment from 'moment';

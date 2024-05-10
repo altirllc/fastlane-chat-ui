@@ -42,7 +42,7 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
     const [selectedUserList, setSelectedUserList] = useState<UserInterface[]>(initUserList);
     const [usersObject, setUsersObject] = useState<Amity.LiveCollection<Amity.User>>();
     const [searchTerm, setSearchTerm] = useState('');
-    const [isShowSectionHeader, setIsShowSectionHeader] = useState<boolean>(false)
+    const [isShowSectionHeader] = useState<boolean>(false)
     const { data: userArr = [], onNextPage } = usersObject ?? {};
     const navigation = useNavigation<any>();
     const [loading, setLoading] = useState(false);

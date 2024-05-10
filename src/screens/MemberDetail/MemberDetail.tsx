@@ -26,7 +26,7 @@ export type SelectUserList = {
   data: UserInterface[];
 };
 
-export default function MemberDetail({ route, navigation }: any) {
+export default function MemberDetail({ route }: any) {
 
   const styles = useStyles();
   const { channelID } = route.params;
