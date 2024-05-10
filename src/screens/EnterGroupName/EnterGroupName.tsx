@@ -87,6 +87,7 @@ export const EnterGroupName = () => {
                             name: "ChatRoom", params: {
                                 channelId: channel.channelId,
                                 groupChat: groupChatObject,
+                                from: 'AddGroupNameFlow'
                             }
                         }],
                     }),

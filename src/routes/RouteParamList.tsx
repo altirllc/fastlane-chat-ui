@@ -8,6 +8,7 @@ export type RootStackParamList = {
     channelId: string;
     chatReceiver?: UserInterface;
     groupChat?: IGroupChatObject;
+    from: 'AddGroupNameFlow'
   };
   RecentChat: undefined;
   ChatDetail: {

@@ -77,9 +77,6 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
 
 
     }
-    const handleGoBack = () => {
-        navigation.goBack()
-    }
 
     const renderItem = ({ item }: any) => {
         switch (item.id) {
@@ -125,7 +122,7 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <BackButton styles={styles.closeButton} onPress={handleGoBack} />
+                <BackButton styles={styles.closeButton} />
                 <View style={styles.headerTextContainer}>
                     <Text style={styles.headerText}>Chat Detail</Text>
                 </View>

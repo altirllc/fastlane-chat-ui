@@ -92,7 +92,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const route = useRoute<RouteProp<RootStackParamList, 'ChatRoom'>>();
-  const { chatReceiver, groupChat, channelId } = route.params;
+  const { chatReceiver, groupChat, channelId, from } = route.params;
 
   const isGroupChat = useMemo(() => {
     return groupChat !== undefined;
@@ -247,9 +247,20 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   };
 
   function handleBack(): void {
-    navigation.navigate("RecentChat");
     disposers.forEach((fn) => fn());
     stopRead();
+    if (from === "AddGroupNameFlow") {
+      //if coming from add group name screen, reload the chats
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "RecentChat" }],
+        }),
+      );
+    } else {
+      //or else just go back
+      navigation.goBack()
+    }
   }
 
   const loadNextMessages = () => {

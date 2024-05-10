@@ -16,9 +16,8 @@ export default function BackButton({ onPress, styles }: IBackBtn) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   return (
     <TouchableOpacity
-      onPress={() => {
+      onPress={typeof onPress === 'function' ? onPress : () => {
         navigation.goBack();
-        onPress && onPress();
       }}
       style={styles ? styles : {}}
     >
