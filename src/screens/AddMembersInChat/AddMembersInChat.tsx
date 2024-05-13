@@ -20,9 +20,8 @@ import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { createAmityChannel } from '../../providers/channel-provider';
 import useAuth from '../../hooks/useAuth';
-import { LoadingOverlay } from '../../components/LoadingOverlay';
 import { TCommunity } from '../../types/common';
-import { BackIcon } from '../../svg/BackIcon';
+import { CloseIcon } from '../../svg/CloseIcon';
 
 type TAddMembersInChat = {
     initUserList?: UserInterface[];
@@ -46,7 +45,11 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
     const { data: userArr = [], onNextPage } = usersObject ?? {};
     const navigation = useNavigation<any>();
     const [loading, setLoading] = useState(false);
-    const [isFocused, setIsFocused] = useState(false)
+    const [isFocused, setIsFocused] = useState(false);
+    //const route = useRoute<any>();
+    //const recentChatIds = route?.params?.recentChatIds as string[];
+
+
 
     const handleOnFinish = async (users: UserInterface[]) => {
         setLoading(true)
@@ -91,7 +94,7 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
         UserRepository.getUsers(
             { displayName: text, limit: 20 },
             (data) => {
-                setUsersObject(data)
+                setUsersObject(data);
                 setLoading(data?.loading);
             }
         );
@@ -110,16 +113,18 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
     };
 
     const createSectionGroup = () => {
-        const sectionUserArr = userArr.map((item) => {
-            const chapterName = chapters.find((eachChapter) => eachChapter.communityId === item?.metadata?.chapter?.id)?.displayName || ''
-            return {
-                userId: item.userId,
-                displayName: item.displayName as string,
-                avatarFileId: item.avatarFileId as string,
-                chapterId: item?.metadata?.chapter?.id || '',
-                chapterName: chapterName
-            }
-        })
+        const sectionUserArr = userArr
+            .filter((eachUser) => eachUser?.metadata?.chapter?.id)
+            .map((item) => {
+                const chapterName = chapters.find((eachChapter) => eachChapter.communityId === item?.metadata?.chapter?.id)?.displayName || ''
+                return {
+                    userId: item.userId,
+                    displayName: item.displayName as string,
+                    avatarFileId: item.avatarFileId as string,
+                    chapterId: item?.metadata?.chapter?.id || '',
+                    chapterName: chapterName
+                }
+            })
         setSectionedUserList(sectionUserArr)
     }
 
@@ -215,7 +220,7 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity style={styles.closeButton} onPress={handleOnClose}>
-                    <BackIcon color={theme.colors.base} />
+                    <CloseIcon color={theme.colors.base} />
                 </TouchableOpacity>
                 <View style={styles.headerTextContainer}>
                     <Text style={styles.headerText}>New Chat</Text>
@@ -224,6 +229,17 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
                     <Text style={[selectedUserList.length > 0 ? styles.doneText : styles.disabledDone]}>{isGroupSelected ? 'Next' : 'Done'}</Text>
                 </TouchableOpacity>
             </View>
+            {selectedUserList.length > 0 ? (
+                <>
+                    <SelectedUserHorizontal
+                        users={selectedUserList}
+                        onDeleteUserPressed={onDeleteUserPressed}
+                    />
+                    <View style={styles.separator} />
+                </>
+            ) : (
+                <View />
+            )}
             <View style={[styles.inputWrap, { borderColor: isFocused ? theme.colors.base : theme.colors.baseShade3 }]}>
                 <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
                     <SearchIcon color={isFocused ? theme.colors.base : theme.colors.baseShade2} />
@@ -237,32 +253,36 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
                     placeholder='Search Members'
                     placeholderTextColor={'#6E768A'}
                 />
-                <TouchableOpacity onPress={clearButton}>
-                    <CircleCloseIcon color={theme.colors.base} />
-                </TouchableOpacity>
+                {
+                    searchTerm.length > 0 ? (
+                        <TouchableOpacity onPress={clearButton}>
+                            <CircleCloseIcon color={theme.colors.base} />
+                        </TouchableOpacity>
+                    ) : null
+                }
+
             </View>
-            {selectedUserList.length > 0 ? (
-                <SelectedUserHorizontal
-                    users={selectedUserList}
-                    onDeleteUserPressed={onDeleteUserPressed}
-                />
-            ) : (
-                <View />
-            )}
-            <Text style={styles.memberText}>Recents</Text>
-            <FlatList
-                data={sectionedUserList}
-                renderItem={renderItem}
-                onEndReached={handleLoadMore}
-                onEndReachedThreshold={0.5}
-                keyExtractor={(item) => item.userId}
-                ListHeaderComponent={isShowSectionHeader ? renderSectionHeader : <View />}
-                stickyHeaderIndices={[0]}
-                showsVerticalScrollIndicator={false}
-                ref={flatListRef}
-            />
             {
-                loading ? <LoadingOverlay /> : null
+                sectionedUserList.length > 0 ? (
+                    <>
+                        <Text style={styles.memberText}>All Members</Text>
+                        <FlatList
+                            data={sectionedUserList}
+                            renderItem={renderItem}
+                            onEndReached={handleLoadMore}
+                            onEndReachedThreshold={0.5}
+                            keyExtractor={(item) => item.userId}
+                            ListHeaderComponent={isShowSectionHeader ? renderSectionHeader : <View />}
+                            stickyHeaderIndices={[0]}
+                            showsVerticalScrollIndicator={false}
+                            ref={flatListRef}
+                        />
+                    </>
+                ) : !loading ? (
+                    <View style={styles.noMembersContainer}>
+                        <Text style={styles.noMembersText}>No Members found.</Text>
+                    </View>
+                ) : null
             }
         </View>
     );

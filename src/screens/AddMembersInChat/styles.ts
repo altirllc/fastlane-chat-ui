@@ -1,6 +1,7 @@
 import { StyleSheet } from "react-native";
 import { useTheme } from "react-native-paper";
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
+import { SCREEN_PADDING } from "@amityco/react-native-cli-chat-ui-kit/src/theme";
 
 export const useStyles = () => {
 
@@ -87,6 +88,30 @@ export const useStyles = () => {
         disabledDone: {
             opacity: 0.5
         },
+        noMembersContainer: {
+            backgroundColor: theme.colors.background,
+            height: 100,
+            width: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginTop: 50,
+            paddingHorizontal: SCREEN_PADDING
+        },
+        noMembersText: { fontSize: 24, fontWeight: '700', marginBottom: 10 },
+        noMembersDesc: { fontSize: 14, fontWeight: 'normal', color: theme.colors.base },
+        separator: {
+            borderBottomWidth: 0.7,
+            borderColor: theme.colors.baseShade3,
+            marginVertical: 10,
+            shadowColor: theme.colors.baseShade3,
+            shadowOffset: {
+                width: 0,
+                height: 2,
+            },
+            shadowOpacity: 0.4,
+            shadowRadius: 2,
+            elevation: 2,
+        }
     });
     return styles;
 }

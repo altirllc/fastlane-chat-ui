@@ -20,7 +20,7 @@ import AddMembersInChat from '../screens/AddMembersInChat/AddMembersInChat'
 import { TCommunity } from '../types/common';
 
 type TChatNavigator = {
-  chapters: TCommunity[]
+  chapters: TCommunity[];
 }
 
 export default function ChatNavigator({ chapters }: TChatNavigator) {
@@ -59,43 +59,28 @@ export default function ChatNavigator({ chapters }: TChatNavigator) {
           {() => <EnterGroupName />}
         </Stack.Screen>
 
-        <Stack.Screen options={{ headerShown: false }} name="ChatRoom">
+        <Stack.Screen name="ChatRoom">
           {() => <ChatRoom />}
         </Stack.Screen>
 
         <Stack.Screen
           name="ChatDetail"
           component={ChatRoomSetting}
-          options={{
-            headerShown: false
-          }}
 
         />
         <Stack.Screen
           name="MemberDetail"
           component={MemberDetail}
-          options={{
-            title: 'Member Detail',
-            headerShown: false
-          }}
         />
         <Stack.Screen
           name="EditChatDetail"
           component={EditChatRoomDetail}
-          options={{
-            title: 'Edit Chat Detail',
-            headerShown: false
-          }}
         />
 
         <Stack.Group screenOptions={{ presentation: 'modal' }}>
           <Stack.Screen
             name="SelectMembers"
             component={SelectMembers}
-            options={({ }) => ({
-              title: '',
-              headerShown: false
-            })}
           />
         </Stack.Group>
       </Stack.Navigator>}

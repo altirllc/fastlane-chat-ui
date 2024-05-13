@@ -30,14 +30,14 @@ export interface IGroupChatObject {
   users: UserInterface[];
   avatarFileId: string | undefined;
 }
-const ChatList: React.FC<IChatListProps> = ({
+const ChatList = ({
   chatId,
   chatName,
   chatMemberNumber,
   unReadMessage,
   messageDate,
   channelType,
-  avatarFileId,
+  avatarFileId
 }: IChatListProps) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { client, apiRegion } = useAuth();
@@ -90,7 +90,7 @@ const ChatList: React.FC<IChatListProps> = ({
       if (chatReceiver.userId) {
         navigation.navigate('ChatRoom', {
           channelId: chatId,
-          chatReceiver: chatReceiver,
+          chatReceiver: chatReceiver
         });
       }
     }
@@ -114,6 +114,7 @@ const ChatList: React.FC<IChatListProps> = ({
       });
     }
   };
+
   useEffect(() => {
     ChannelRepository.Membership.getMembers(
       { channelId: chatId },

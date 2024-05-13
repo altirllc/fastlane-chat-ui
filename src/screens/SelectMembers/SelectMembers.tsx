@@ -113,7 +113,7 @@ export default function SelectMembers() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container]}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.closeButton}>
           <SvgXml xml={closeIcon} width="14" height="14" />

@@ -22,7 +22,9 @@ import { useCustomTheme } from '../../hooks/useCustomTheme';
 import { getShadowProps } from '../../theme/helpers';
 import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/components/LoadingOverlay';
 
-export default function RecentChat() {
+export type TRecentChat = {}
+
+export default function RecentChat({ }: TRecentChat) {
   const { isConnected } = useAuth();
   const [channelObjects, setChannelObjects] = useState<IChatListProps[]>([]);
   const [loadChannel, setLoadChannel] = useState<boolean>(false);
@@ -33,14 +35,24 @@ export default function RecentChat() {
 
   const [channelData, setChannelData] = useState<Amity.LiveCollection<Amity.Channel>>();
 
-
   const {
     data: channels = [],
     onNextPage,
     hasNextPage,
   } = channelData ?? {};
+
   const disposers: Amity.Unsubscriber[] = [];
   const subscribedChannels: Amity.Channel['channelId'][] = [];
+
+  const shouldShow = useMemo(() => {
+    return !loadChannel && channelObjects.length > 0
+  }, [loadChannel, channelObjects])
+
+  const recentChatIds = useMemo(() => {
+    return channelObjects
+      .filter((eachChannel) => eachChannel.chatMemberNumber === 1)
+      .map((channel) => channel.chatId)
+  }, [])
 
   const subscribeChannels = (channels: Amity.Channel[]) =>
     channels.forEach(c => {
@@ -64,9 +76,10 @@ export default function RecentChat() {
     const unsubscribe = ChannelRepository.getChannels(
       { sortBy: 'lastActivity', limit: 15, membership: 'member' },
       (value) => {
+        console.log("value", JSON.stringify(value))
         setChannelData(value);
+        setLoadChannel(value.loading);
         subscribeChannels(channels);
-        if (value?.data?.length > 0) setLoadChannel(false);
       },
     );
     disposers.push(unsubscribe);
@@ -82,30 +95,33 @@ export default function RecentChat() {
 
   useEffect(() => {
     if (channels.length > 0) {
-      const formattedChannelObjects: IChatListProps[] = channels.map(
-        (item: Amity.Channel<any>) => {
-          const lastActivityDate: string = moment(item.lastActivity).format(
-            'DD/MM/YYYY'
-          );
-          const todayDate = moment(Date.now()).format('DD/MM/YYYY');
-          let dateDisplay;
-          if (lastActivityDate === todayDate) {
-            dateDisplay = moment(item.lastActivity).format('hh:mm A');
-          } else {
-            dateDisplay = moment(item.lastActivity).format('DD/MM/YYYY');
-          }
+      const formattedChannelObjects: IChatListProps[] =
+        channels
+          .filter((eachChannel) => !eachChannel.isDeleted)
+          .map(
+            (item: Amity.Channel<any>) => {
+              const lastActivityDate: string = moment(item.lastActivity).format(
+                'DD/MM/YYYY'
+              );
+              const todayDate = moment(Date.now()).format('DD/MM/YYYY');
+              let dateDisplay;
+              if (lastActivityDate === todayDate) {
+                dateDisplay = moment(item.lastActivity).format('hh:mm A');
+              } else {
+                dateDisplay = moment(item.lastActivity).format('DD/MM/YYYY');
+              }
 
-          return {
-            chatId: item.channelId ?? '',
-            chatName: item.displayName ?? '',
-            chatMemberNumber: item.memberCount ?? 0,
-            unReadMessage: item.unreadCount ?? 0,
-            messageDate: dateDisplay ?? '',
-            channelType: item.type ?? '',
-            avatarFileId: item.avatarFileId,
-          };
-        }
-      );
+              return {
+                chatId: item.channelId ?? '',
+                chatName: item.displayName ?? '',
+                chatMemberNumber: item.memberCount ?? 0,
+                unReadMessage: item.unreadCount ?? 0,
+                messageDate: dateDisplay ?? '',
+                channelType: item.type ?? '',
+                avatarFileId: item.avatarFileId,
+              };
+            }
+          );
       setChannelObjects([...formattedChannelObjects]);
       setLoadChannel(false);
     }
@@ -119,14 +135,20 @@ export default function RecentChat() {
 
 
   const renderRecentChat = useMemo(() => {
-    return loadChannel ? <LoadingOverlay /> : <FlatList
+    return loadChannel ? <LoadingOverlay /> : channelObjects.length > 0 ? <FlatList
       data={channelObjects}
       renderItem={({ item }) => renderChatList(item)}
       keyExtractor={(item) => item.chatId.toString()}
       onEndReached={handleLoadMore}
+      showsVerticalScrollIndicator={false}
       onEndReachedThreshold={0.4}
       ref={flatListRef}
-    />
+    /> : (
+      <View style={styles.noMessageContainer}>
+        <Text style={styles.noMessageText}>No Messages, yet.</Text>
+        <Text style={styles.noMessageDesc}>No messages in your inbox, yet!</Text>
+      </View>
+    )
   }, [loadChannel, channelObjects, handleLoadMore]);
 
 
@@ -148,11 +170,15 @@ export default function RecentChat() {
 
   return (
     <View style={styles.chatContainer}>
-      <Text style={styles.chatHeader}>Chats</Text>
+      {
+        shouldShow ? (
+          <Text style={styles.chatHeader}>Chats</Text>
+        ) : null
+      }
       {renderRecentChat}
       <TouchableOpacity
         onPress={() => {
-          navigation.navigate("AddMembersInChat")
+          navigation.navigate("AddMembersInChat", { recentChatIds })
         }}
         style={[
           styles.createFeedButton,

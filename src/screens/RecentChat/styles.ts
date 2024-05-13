@@ -86,6 +86,16 @@ export const useStyles = () => {
       alignItems: "center",
       justifyContent: "center",
     },
+    noMessageContainer: {
+      backgroundColor: theme.colors.background,
+      height: 100,
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 50
+    },
+    noMessageText: { fontSize: 24, fontWeight: '700', marginBottom: 10 },
+    noMessageDesc: { fontSize: 14, fontWeight: 'normal', color: theme.colors.base }
   });
   return styles;
 }
