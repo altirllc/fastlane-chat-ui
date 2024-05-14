@@ -103,7 +103,8 @@ export const useStyles = () => {
     disabledDone: {
       opacity: 0.5,
     },
-    membersContainer: { paddingHorizontal: 22 }
+    membersContainer: { paddingHorizontal: 22 },
+    addContainer: { width: '15%', paddingVertical: 12, alignItems: 'flex-end' },
   });
 
   return styles;

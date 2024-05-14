@@ -650,20 +650,18 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
             )}
           </View>
         </View>
-        {chatReceiver ? null : (
-          <TouchableOpacity
-            onPress={() => {
-              navigation.navigate('ChatDetail', {
-                channelId: channelId,
-                channelType: chatReceiver ? 'conversation' : 'community',
-                chatReceiver: chatReceiver ?? undefined,
-                groupChat: groupChat ?? undefined,
-              });
-            }}
-          >
-            <AlertIcon color={theme.colors.base} />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('ChatDetail', {
+              channelId: channelId,
+              channelType: chatReceiver ? 'conversation' : 'community',
+              chatReceiver: chatReceiver ?? undefined,
+              groupChat: groupChat ?? undefined,
+            });
+          }}
+        >
+          <AlertIcon color={theme.colors.base} />
+        </TouchableOpacity>
       </View>
       <View style={styles.chatContainer}>
         <FlatList

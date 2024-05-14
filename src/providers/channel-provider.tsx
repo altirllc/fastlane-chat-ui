@@ -4,8 +4,9 @@ import {
 
 import { getAmityUser } from './user-provider';
 import type { UserInterface } from '../types/user.interface';
-import { Alert } from 'react-native';
+import { Alert } from 'react-native'
 
+export const AMITY_HOST = 'https://api.us.amity.co';
 
 export async function createAmityChannel(
   currentUserID: string,
@@ -109,4 +110,90 @@ export async function updateAmityChannel(
 }
 
 
+export async function deleteAmityChannel(
+  channelID: string,
+  amityAccessToken: string
+): Promise<boolean | undefined> {
 
+  return await new Promise(async (resolve, reject) => {
+    if (!channelID) {
+      return reject(
+        new Error('Channel ID is missing')
+      );
+    } else if (!amityAccessToken) {
+      return reject(
+        new Error('Auth Token is missing')
+      );
+    }
+    try {
+      const response = await fetch(`${AMITY_HOST}/api/v3/channels/${channelID}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${amityAccessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      // Handle the response data
+      console.log(data);
+      resolve(true);
+    } catch (error) {
+      reject(new Error('Unable to delete channel ' + error));
+    }
+  });
+}
+
+export type TAddMemberToChannelRequest = {
+  userIds: string[]
+}
+
+export async function addMemberToChannel(
+  channelID: string,
+  amityAccessToken: string,
+  requestBody: TAddMemberToChannelRequest
+): Promise<boolean | undefined> {
+
+  return await new Promise(async (resolve, reject) => {
+    if (!channelID) {
+      return reject(
+        new Error('Channel ID is missing')
+      );
+    } else if (!amityAccessToken) {
+      return reject(
+        new Error('Auth Token is missing')
+      );
+    } else if (!requestBody?.userIds || requestBody?.userIds?.length === 0) {
+      return reject(
+        new Error('Could not find the members that needs to be added.')
+      );
+    }
+    try {
+      const response = await fetch(`${AMITY_HOST}/api/v3/channels/${channelID}/users`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${amityAccessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      // Handle the response data
+      console.log(data);
+      resolve(data);
+    } catch (error) {
+      reject(new Error('Unable to add member into channel ' + error));
+    }
+  });
+}

@@ -74,6 +74,9 @@ export const useStyles = () => {
             marginVertical: 20,
             paddingLeft: 10
         },
+        noData: {
+            textAlign: 'center'
+        },
         input: { flex: 1, marginHorizontal: 6 },
         cancelBtn: {
             marginRight: 16,
