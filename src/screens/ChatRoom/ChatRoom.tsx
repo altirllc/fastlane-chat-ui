@@ -179,43 +179,36 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
           avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver.avatarFileId}/download`;
         }
 
+        let commonObj = {
+          _id: item.messageId,
+          createdAt: item.createdAt as string,
+          editedAt: item.updatedAt as string,
+          user: {
+            _id: item.creatorId ?? '',
+            name: chatReceiver?.displayName ??
+              groupChat?.users?.find((user) => user.userId === item.creatorId)
+                ?.displayName ??
+              '',
+            avatar: avatarUrl,
+          },
+          messageType: item.dataType,
+          isDeleted: item.isDeleted as boolean,
+        }
         if ((item?.data as Record<string, any>)?.fileId) {
-          // single chat
+          //if file present
           return {
-            _id: item.messageId,
             text: '',
             image:
               `https://api.${apiRegion}.amity.co/api/v3/files/${(item?.data as Record<string, any>).fileId
               }/download` ?? undefined,
-            createdAt: item.createdAt as string,
-            editedAt: item.updatedAt as string,
-            user: {
-              _id: item.creatorId ?? '',
-              name: chatReceiver?.displayName ?? '',
-              avatar: avatarUrl,
-            },
-            messageType: item.dataType,
-            isDeleted: item.isDeleted as boolean,
+            ...commonObj
           };
         } else {
-          // group
+          //if file doesnt present
           return {
-            _id: item.messageId,
             text:
               ((item?.data as Record<string, string>)?.text as string) ?? '',
-            createdAt: item.createdAt as string,
-            editedAt: item.updatedAt as string,
-            user: {
-              _id: item.creatorId ?? '',
-              name:
-                chatReceiver?.displayName ??
-                groupChat?.users?.find((user) => user.userId === item.creatorId)
-                  ?.displayName ??
-                '',
-              avatar: avatarUrl,
-            },
-            messageType: item.dataType,
-            isDeleted: item.isDeleted as boolean,
+            ...commonObj
           };
         }
       });
@@ -657,20 +650,18 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
             )}
           </View>
         </View>
-        {chatReceiver ? null : (
-          <TouchableOpacity
-            onPress={() => {
-              navigation.navigate('ChatDetail', {
-                channelId: channelId,
-                channelType: chatReceiver ? 'conversation' : 'community',
-                chatReceiver: chatReceiver ?? undefined,
-                groupChat: groupChat ?? undefined,
-              });
-            }}
-          >
-            <AlertIcon color={theme.colors.base} />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('ChatDetail', {
+              channelId: channelId,
+              channelType: chatReceiver ? 'conversation' : 'community',
+              chatReceiver: chatReceiver ?? undefined,
+              groupChat: groupChat ?? undefined,
+            });
+          }}
+        >
+          <AlertIcon color={theme.colors.base} />
+        </TouchableOpacity>
       </View>
       <View style={styles.chatContainer}>
         <FlatList

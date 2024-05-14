@@ -1,5 +1,5 @@
 import { UserRepository } from '@amityco/ts-sdk-react-native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
     TouchableOpacity,
     View,
@@ -7,6 +7,8 @@ import {
     type ListRenderItemInfo,
     TextInput,
     FlatList,
+    SectionList,
+    Alert,
 } from 'react-native';
 import { useStyles } from './styles';
 import type { UserInterface } from '../../types/user.interface';
@@ -17,12 +19,15 @@ import { SearchIcon } from '../../svg/SearchIcon';
 import { CircleCloseIcon } from '../../svg/CircleCloseIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
-import { CommonActions, useNavigation } from '@react-navigation/native';
-import { createAmityChannel } from '../../providers/channel-provider';
+import { CommonActions, useNavigation, useRoute } from '@react-navigation/native';
+import { TAddMemberToChannelRequest, addMemberToChannel, createAmityChannel } from '../../providers/channel-provider';
 import useAuth from '../../hooks/useAuth';
-import { LoadingOverlay } from '../../components/LoadingOverlay';
 import { TCommunity } from '../../types/common';
-import { BackIcon } from '../../svg/BackIcon';
+import { CloseIcon } from '../../svg/CloseIcon';
+import { ChannelRepository } from '@amityco/ts-sdk-react-native';
+import { TFinalUser } from '@amityco/react-native-cli-chat-ui-kit/src/screens/AddMembersInChat/types';
+import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/components/LoadingOverlay';
+import { AuthContext } from '@amityco/react-native-cli-chat-ui-kit/src/store/context';
 
 type TAddMembersInChat = {
     initUserList?: UserInterface[];
@@ -38,15 +43,140 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
 
     const theme = useTheme() as MyMD3Theme;
     const styles = useStyles();
-    const [sectionedUserList, setSectionedUserList] = useState<UserInterface[]>(initUserList);
-    const [selectedUserList, setSelectedUserList] = useState<UserInterface[]>(initUserList);
+    const { amityAccessToken } = useContext(AuthContext);
+
+    //all members list
     const [usersObject, setUsersObject] = useState<Amity.LiveCollection<Amity.User>>();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [isShowSectionHeader] = useState<boolean>(false)
     const { data: userArr = [], onNextPage } = usersObject ?? {};
+    const [sectionedUserList, setSectionedUserList] = useState<UserInterface[]>(initUserList);
+
+    //selected user list
+    const [selectedUserList, setSelectedUserList] = useState<UserInterface[]>(initUserList);
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const isShowSectionHeader = false;
     const navigation = useNavigation<any>();
     const [loading, setLoading] = useState(false);
-    const [isFocused, setIsFocused] = useState(false)
+    const [isFocused, setIsFocused] = useState(false);
+
+    //routes
+    const route = useRoute<any>();
+    const recentChatIds = route?.params?.recentChatIds as string[];
+    const from = route?.params?.from as 'MembersScreen' | undefined;
+    const channelID = route?.params?.channelID as 'string' | undefined;
+    const memberIdsToSkip = route?.params?.memberIdsToSkip as string[] | undefined;
+
+    //recent member ids
+    const [recentMembersIdsSet, setRecentMemberIdsSet] = useState(new Set());
+
+    //all users for filtering the recent members
+    const [allUsersObject, setAllUsersObject] = useState<Amity.LiveCollection<Amity.User>>();
+    const { data: allUserArr = [] } = allUsersObject ?? {};
+
+    //final user list combining selectedUserList and recentMembers
+    const [finalUserList, setFinalUserList] = useState<TFinalUser[]>([
+        {
+            title: 'Recent Members',
+            data: [],
+            noDataText: ''
+        },
+        {
+            title: 'All Members',
+            data: [],
+            noDataText: ''
+        }
+    ]);
+
+
+    const createSectionGroup = (users: Amity.User[]) => {
+        return users
+            .filter((eachUser) => eachUser?.metadata?.chapter?.id)
+            .map((item) => {
+                const chapterName = chapters.find((eachChapter) => eachChapter.communityId === item?.metadata?.chapter?.id)?.displayName || ''
+                return {
+                    userId: item.userId,
+                    displayName: item.displayName as string,
+                    avatarFileId: item.avatarFileId as string,
+                    chapterId: item?.metadata?.chapter?.id || '',
+                    chapterName: chapterName
+                }
+            });
+    }
+
+    const recentMembers = useMemo(() => {
+        //once we have the all users array filter the chat group members and show as recent members
+        return [...createSectionGroup(allUserArr)
+            .filter(eachUser => recentMembersIdsSet.has(eachUser.userId))]
+    }, [allUserArr])
+
+    useEffect(() => {
+        if (recentMembersIdsSet.size > 0) {
+            //once we got the recent member ids, fetch all members available max limit 60 for now.
+            UserRepository.getUsers(
+                { displayName: '', limit: 60 },
+                (data) => {
+                    if (data && data.data.length > 0) {
+                        setAllUsersObject(data);
+                    }
+                }
+            );
+        }
+    }, [recentMembersIdsSet])
+
+    useEffect(() => {
+        if (sectionedUserList.length > 0)
+            setFinalUserList(prevUserList => {
+                const updatedList = prevUserList.map(item => {
+                    if (item.title === 'All Members') {
+                        return {
+                            ...item,
+                            data: sectionedUserList
+                        };
+                    }
+                    return item;
+                });
+                return updatedList;
+            });
+    }, [sectionedUserList])
+
+    useEffect(() => {
+        if (recentMembers.length > 0)
+            setFinalUserList(prevUserList => {
+                const updatedList = prevUserList.map(item => {
+                    if (item.title === 'Recent Members') {
+                        return {
+                            ...item,
+                            data: recentMembers
+                        };
+                    }
+                    return item;
+                });
+                return updatedList;
+            });
+    }, [recentMembers])
+
+    useEffect(() => {
+        if (recentChatIds.length > 0 && sectionedUserList.length > 0) {
+            const ids = new Set();
+            recentChatIds.forEach((eachChatId) => {
+                //loop for each Chat obj and get all members associated with it.
+                ChannelRepository.Membership.getMembers(
+                    { channelId: eachChatId },
+                    ({ data: members }) => {
+                        if (members.length === 2) {
+                            //only consider one to one chats to show members in recent members
+                            const targetIndex: number = members?.findIndex(
+                                (item) => item.userId !== (client as Amity.Client).userId
+                            );
+                            ids.add(members[targetIndex]?.userId)
+                        }
+                    }
+                );
+            })
+            //set recent members 
+            setRecentMemberIdsSet(prevMemberIds => new Set([...prevMemberIds, ...ids]));
+        }
+    }, [recentChatIds, sectionedUserList])
 
     const handleOnFinish = async (users: UserInterface[]) => {
         setLoading(true)
@@ -87,12 +217,10 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
     }, [selectedUserList])
 
     const queryAccounts = (text: string = '') => {
-        setLoading(true);
         UserRepository.getUsers(
             { displayName: text, limit: 20 },
             (data) => {
-                setUsersObject(data)
-                setLoading(data?.loading);
+                setUsersObject(data);
             }
         );
     };
@@ -109,22 +237,15 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
         setSearchTerm('');
     };
 
-    const createSectionGroup = () => {
-        const sectionUserArr = userArr.map((item) => {
-            const chapterName = chapters.find((eachChapter) => eachChapter.communityId === item?.metadata?.chapter?.id)?.displayName || ''
-            return {
-                userId: item.userId,
-                displayName: item.displayName as string,
-                avatarFileId: item.avatarFileId as string,
-                chapterId: item?.metadata?.chapter?.id || '',
-                chapterName: chapterName
-            }
-        })
-        setSectionedUserList(sectionUserArr)
-    }
-
     useEffect(() => {
-        createSectionGroup()
+        let allMembers = [...createSectionGroup(userArr)];
+        if (memberIdsToSkip && memberIdsToSkip?.length > 0) {
+            //if we need to skip showing some members, skip them from list
+            const filteredMembers = allMembers.filter(member => !memberIdsToSkip.includes(member.userId));
+            setSectionedUserList(filteredMembers);
+        } else {
+            setSectionedUserList(allMembers)
+        }
     }, [userArr])
 
     useEffect(() => {
@@ -133,11 +254,6 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
         }
 
     }, [searchTerm])
-
-
-    const renderSectionHeader = () => (
-        <SectionHeader title={''} />
-    );
 
     const onUserPressed = (user: UserInterface) => {
         const isIncluded = selectedUserList.some(item => item.userId === user.userId)
@@ -161,8 +277,8 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
         const userObj: UserInterface = { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string, chapterName: item.chapterName }
 
         if (index > 0 && sectionedUserList.length > 0) {
-            const isPreviousletterAlphabet = /^[A-Z]$/i.test(((sectionedUserList[index - 1]) as any).displayName[0]);
-            const previousLetter = isPreviousletterAlphabet ? ((sectionedUserList[index - 1]) as any).displayName.charAt(0).toUpperCase() : '#'
+            const isPreviousletterAlphabet = /^[A-Z]$/i.test(((sectionedUserList[index - 1]) as any)?.displayName[0]);
+            const previousLetter = isPreviousletterAlphabet ? ((sectionedUserList[index - 1]) as any)?.displayName.charAt(0).toUpperCase() : '#'
             if (currentLetter === previousLetter) {
                 isrenderheader = false
             } else {
@@ -186,7 +302,11 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
 
     const handleOnClose = () => {
         setSelectedUserList(initUserList)
-        navigation.goBack();
+        if (from === 'MembersScreen') {
+            navigation.navigate('MemberDetail', { channelID });
+        } else {
+            navigation.goBack();
+        }
     }
 
     const handleLoadMore = () => {
@@ -211,19 +331,81 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
         navigation.navigate("EnterGroupName", { selectedUserList })
     }
 
+    const getTopRightText = () => {
+        return from === 'MembersScreen' ? 'Add' : isGroupSelected ? 'Next' : 'Done';
+    }
+
+
+    const addMembers = async () => {
+        try {
+            if (!channelID) return;
+            let requestBody: TAddMemberToChannelRequest = {
+                userIds: []
+            };
+            selectedUserList.forEach((eachUser) => {
+                requestBody.userIds.push(eachUser.userId);
+            })
+            setLoading(true);
+            const result = await addMemberToChannel(channelID, amityAccessToken, requestBody);
+            console.log("Result", JSON.stringify(result))
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: "RecentChat" }],
+                }),
+            );
+        } catch (e: { data: { message: string | undefined } } | any) {
+            Alert.alert(
+                'Error!',
+                e?.data?.message || e.message || `New members could not be added.`,
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                        text: 'Retry',
+                        style: 'destructive',
+                        onPress: () => { addMembers() },
+                    },
+                ]
+            )
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const onTopRightButtonPress = () => {
+        if (from === 'MembersScreen') {
+            addMembers()
+        } else if (isGroupSelected) {
+            onNext();
+        } else {
+            onDone();
+        }
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity style={styles.closeButton} onPress={handleOnClose}>
-                    <BackIcon color={theme.colors.base} />
+                    <CloseIcon color={theme.colors.base} />
                 </TouchableOpacity>
                 <View style={styles.headerTextContainer}>
                     <Text style={styles.headerText}>New Chat</Text>
                 </View>
-                <TouchableOpacity style={styles.doneContainer} disabled={selectedUserList.length === 0} onPress={isGroupSelected ? onNext : onDone}>
-                    <Text style={[selectedUserList.length > 0 ? styles.doneText : styles.disabledDone]}>{isGroupSelected ? 'Next' : 'Done'}</Text>
+                <TouchableOpacity style={styles.doneContainer} disabled={selectedUserList.length === 0} onPress={onTopRightButtonPress}>
+                    <Text style={[selectedUserList.length > 0 ? styles.doneText : styles.disabledDone]}>{getTopRightText()}</Text>
                 </TouchableOpacity>
             </View>
+            {selectedUserList.length > 0 ? (
+                <>
+                    <SelectedUserHorizontal
+                        users={selectedUserList}
+                        onDeleteUserPressed={onDeleteUserPressed}
+                    />
+                    <View style={styles.separator} />
+                </>
+            ) : (
+                <View />
+            )}
             <View style={[styles.inputWrap, { borderColor: isFocused ? theme.colors.base : theme.colors.baseShade3 }]}>
                 <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
                     <SearchIcon color={isFocused ? theme.colors.base : theme.colors.baseShade2} />
@@ -237,29 +419,31 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
                     placeholder='Search Members'
                     placeholderTextColor={'#6E768A'}
                 />
-                <TouchableOpacity onPress={clearButton}>
-                    <CircleCloseIcon color={theme.colors.base} />
-                </TouchableOpacity>
+                {
+                    searchTerm.length > 0 ? (
+                        <TouchableOpacity onPress={clearButton}>
+                            <CircleCloseIcon color={theme.colors.base} />
+                        </TouchableOpacity>
+                    ) : null
+                }
+
             </View>
-            {selectedUserList.length > 0 ? (
-                <SelectedUserHorizontal
-                    users={selectedUserList}
-                    onDeleteUserPressed={onDeleteUserPressed}
-                />
-            ) : (
-                <View />
-            )}
-            <Text style={styles.memberText}>Recents</Text>
-            <FlatList
-                data={sectionedUserList}
+            <SectionList
+                sections={finalUserList}
+                keyExtractor={(item, index) => item.userId + index}
                 renderItem={renderItem}
-                onEndReached={handleLoadMore}
-                onEndReachedThreshold={0.5}
-                keyExtractor={(item) => item.userId}
-                ListHeaderComponent={isShowSectionHeader ? renderSectionHeader : <View />}
-                stickyHeaderIndices={[0]}
                 showsVerticalScrollIndicator={false}
                 ref={flatListRef}
+                renderSectionHeader={({ section }) => (
+                    <View>
+                        <Text style={styles.memberText}>{section.title}</Text>
+                        {section.data.length === 0 ? <Text style={styles.noData}>No data available</Text> : null}
+                    </View>
+                )}
+                onEndReached={handleLoadMore}
+                onEndReachedThreshold={0.5}
+                stickySectionHeadersEnabled={false}
+                ListHeaderComponent={isShowSectionHeader ? <SectionHeader title={''} /> : <View />}
             />
             {
                 loading ? <LoadingOverlay /> : null

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
-import { leaveAmityChannel } from '../../providers/channel-provider';
+import { deleteAmityChannel, leaveAmityChannel } from '../../providers/channel-provider';
 import { useStyles } from './styles';
 import { createReport } from '@amityco/ts-sdk-react-native';
 import AwesomeAlert from 'react-native-awesome-alerts';
@@ -10,6 +10,9 @@ import { GroupMembersIcon } from '../../svg/GroupMembersIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import BackButton from '@amityco/react-native-cli-chat-ui-kit/src/components/BackButton';
+import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/components/LoadingOverlay';
+import { AuthContext } from '@amityco/react-native-cli-chat-ui-kit/src/store/context';
+import { CommonActions } from '@react-navigation/native';
 
 interface ChatDetailProps {
     navigation: any;
@@ -19,8 +22,18 @@ interface ChatDetailProps {
 export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }) => {
     const theme = useTheme() as MyMD3Theme;
     const styles = useStyles();
-    const { channelId, channelType, chatReceiver, groupChat } = route.params;
+    const { amityAccessToken } = useContext(AuthContext);
+    const { channelId, channelType, groupChat } = route.params;
+    const [loading, setLoading] = useState(false);
     const [showReportAlert, setShowReportAlert] = useState<boolean>(false);
+
+    const data = [
+        { id: 1 },
+        { id: 2 },
+        { id: 3 },
+        { id: 4 }
+    ];
+
     const handleGroupProfilePress = () => {
         navigation.navigate('EditChatDetail', { navigation, channelId: channelId, groupChat: groupChat });
     };
@@ -48,21 +61,19 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
         );
 
     };
-    async function flagUser() {
-        if (chatReceiver) {
-            const didCreateUserReport = await createReport('user', chatReceiver.userId);
-            if (didCreateUserReport) {
-                Alert.alert('Report sent', '', [{
-                    text: 'Ok',
 
-                },]);
-            }
+    // async function flagUser() {
+    //     if (chatReceiver) {
+    //         const didCreateUserReport = await createReport('user', chatReceiver.userId);
+    //         if (didCreateUserReport) {
+    //             Alert.alert('Report sent', '', [{
+    //                 text: 'Ok',
+    //             }]);
+    //         }
+    //     }
+    // }
 
-        }
-
-    }
     const onLeaveChat = async () => {
-
         try {
             const isLeave = await leaveAmityChannel(channelId)
             if (isLeave) {
@@ -70,12 +81,7 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
             }
         } catch (error) {
             console.log('error: ', error);
-
         }
-
-
-
-
     }
 
     const renderItem = ({ item }: any) => {
@@ -108,16 +114,61 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
                         </View>
                     </TouchableOpacity>
                 );
+            case 4:
+                return (
+                    <TouchableOpacity style={styles.rowContainer} onPress={showConfirmationPopup}>
+                        <View style={styles.ChatSettingContainer}>
+                            <Text style={styles.leaveChatLabel}>Delete Chat</Text>
+                        </View>
+                    </TouchableOpacity>
+                )
             default:
                 return null;
         }
     };
 
-    const data = [
-        { id: 1 },
-        { id: 2 },
-        { id: 3 },
-    ];
+    const deleteChannel = async () => {
+        try {
+            setLoading(true);
+            await deleteAmityChannel(channelId, amityAccessToken);
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: "RecentChat" }],
+                }),
+            );
+        } catch (e: { data: { message: string | undefined } } | any) {
+            Alert.alert(
+                'Error!',
+                e?.data?.message || e.message || `This chat couldn't be deleted.`,
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                        text: 'Retry',
+                        style: 'destructive',
+                        onPress: () => { deleteChannel() },
+                    },
+                ]
+            )
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const showConfirmationPopup = () => {
+        Alert.alert(
+            'Are you sure?',
+            `This chat will be also be permanently removed from your friend's devices.`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => { deleteChannel() },
+                },
+            ]
+        )
+    }
 
     return (
         <View style={styles.container}>
@@ -128,11 +179,19 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
                 </View>
             </View>
             {channelType == 'conversation' ?
-                <TouchableOpacity style={styles.rowContainer} onPress={flagUser}>
-                    <View style={styles.ChatSettingContainer}>
-                        <Text style={styles.reportChatLabel}>Report User</Text>
-                    </View>
-                </TouchableOpacity> :
+                <>
+                    {/* <TouchableOpacity style={styles.rowContainer} onPress={flagUser}>
+                        <View style={styles.ChatSettingContainer}>
+                            <Text style={styles.reportChatLabel}>Report User</Text>
+                        </View>
+                    </TouchableOpacity> */}
+                    <TouchableOpacity style={styles.rowContainer} onPress={showConfirmationPopup}>
+                        <View style={styles.ChatSettingContainer}>
+                            <Text style={styles.leaveChatLabel}>Delete Chat</Text>
+                        </View>
+                    </TouchableOpacity>
+                </>
+                :
                 <FlatList
                     data={data}
                     renderItem={renderItem}
@@ -155,6 +214,7 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({ navigation, route }
                 onConfirmPressed={() => setShowReportAlert(false)}
                 onDismiss={() => setShowReportAlert(false)}
             />
+            {loading ? <LoadingOverlay /> : null}
         </View>
     );
 };
