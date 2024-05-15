@@ -51,13 +51,14 @@ export default function RecentChat({ }: TRecentChat) {
       .map((channel) => channel.chatId)
   }, [channelObjects])
 
-  const subscribeChannels = (channels: Amity.Channel[]) =>
+  const subscribeChannels = (channels: Amity.Channel[]) => {
     channels.forEach(c => {
       if (!subscribedChannels.includes(c.channelId) && !c.isDeleted) {
         subscribedChannels.push(c.channelId);
         disposers.push(subscribeTopic(getChannelTopic(c)));
       }
     });
+  }
 
 
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -72,10 +73,9 @@ export default function RecentChat({ }: TRecentChat) {
     const unsubscribe = ChannelRepository.getChannels(
       { sortBy: 'lastActivity', limit: 15, membership: 'member', isDeleted: false },
       (value) => {
-        console.log("value", JSON.stringify(value));
         setChannelData(value);
         setLoadChannel(value.loading);
-        subscribeChannels(channels);
+        if (value.data.length > 0) subscribeChannels(value.data);
       },
     );
     disposers.push(unsubscribe);

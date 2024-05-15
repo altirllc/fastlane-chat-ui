@@ -2,7 +2,6 @@ import React, { useContext, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { deleteAmityChannel, leaveAmityChannel } from '../../providers/channel-provider';
 import { useStyles } from './styles';
-import { createReport } from '@amityco/ts-sdk-react-native';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import EditIcon from '../../svg/EditIcon';
 import { ArrowRightIcon } from '../../svg/ArrowRightIcon';
@@ -11,7 +10,7 @@ import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import BackButton from '@amityco/react-native-cli-chat-ui-kit/src/components/BackButton';
 import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/components/LoadingOverlay';
-import { AuthContext } from '@amityco/react-native-cli-chat-ui-kit/src/store/context';
+import { AuthContext } from '../../store/context';
 import { CommonActions } from '@react-navigation/native';
 
 interface ChatDetailProps {

@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@amityco/react-native-cli-chat-ui-kit-example@file:/Users/ssai/Documents/fastlane-chat-ui/example":
+"@amityco/react-native-cli-chat-ui-kit-example@file:/Users/vkukade/Documents/GitHub/fastlane-chat-ui/example":
   version "0.0.1"
   resolved "file:example"
   dependencies:
@@ -8153,7 +8153,7 @@ typedarray-to-buffer@^3.1.5:
 typedarray@^0.0.6:
   version "0.0.6"
 
-"typescript@^4.6.4 || ^5.2.2", typescript@>=2.7, "typescript@>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta", typescript@>=4, typescript@>=4.3, typescript@>=4.9.5, typescript@5.2.2:
+"typescript@^4.6.4 || ^5.2.2", typescript@^5.2.2, typescript@>=2.7, "typescript@>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta", typescript@>=4, typescript@>=4.3, typescript@>=4.9.5:
   version "5.2.2"
   resolved "https://registry.npmjs.org/typescript/-/typescript-5.2.2.tgz"
   integrity sha512-mI4WrpHsbCIcwT9cF4FZvr80QUeKvsUsUvKDoR+X/7XHQH98xYD8YHZg7ANtz2GtZt/CBq2QJ0thkGJMHfqc1w==
