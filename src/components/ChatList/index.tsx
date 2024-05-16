@@ -14,6 +14,8 @@ import { useEffect, useMemo, useState } from 'react';
 import type { UserInterface } from '../../types/user.interface';
 import { CommunityChatIcon } from '../../svg/CommunityChatIcon';
 import { PrivateChatIcon } from '../../svg/PrivateChatIcon';
+import { EUserRoles } from '../../enum/sessionState';
+
 export interface IChatListProps {
   chatId: string;
   chatName: string;
@@ -37,7 +39,7 @@ const ChatList = ({
   unReadMessage,
   messageDate,
   channelType,
-  avatarFileId
+  avatarFileId,
 }: IChatListProps) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { client, apiRegion } = useAuth();
@@ -90,7 +92,7 @@ const ChatList = ({
       if (chatReceiver.userId) {
         navigation.navigate('ChatRoom', {
           channelId: chatId,
-          chatReceiver: chatReceiver
+          chatReceiver: chatReceiver,
         });
       }
     }
@@ -100,6 +102,9 @@ const ChatList = ({
           userId: item.userId as string,
           displayName: item.user?.displayName as string,
           avatarFileId: item.user?.avatarFileId as string,
+          isChannelModerator: item?.roles?.includes(
+            EUserRoles['channel-moderator']
+          ) as boolean,
         };
       });
       const groupChat: IGroupChatObject = {
