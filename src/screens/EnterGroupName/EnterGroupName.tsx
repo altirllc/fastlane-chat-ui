@@ -35,8 +35,8 @@ export const EnterGroupName = () => {
     const selectedUserList = route?.params?.selectedUserList as UserInterface[];
 
     const isDisabled = useMemo(() => {
-        return !inputMessage
-    }, [inputMessage])
+        return !inputMessage || loading
+    }, [inputMessage, loading])
 
     useEffect(() => {
         if (inputRef.current) {
@@ -122,46 +122,48 @@ export const EnterGroupName = () => {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.closeButton} onPress={() => {
-                    goBack();
-                }}>
-                    <BackIcon color={theme.colors.base} />
-                </TouchableOpacity>
-                <View style={styles.headerTextContainer}>
-                    <Text style={styles.headerText}>New Chat</Text>
-                </View>
-                <TouchableOpacity disabled={isDisabled} style={[styles.doneContainer, isDisabled && styles.disabledDone]} onPress={onCreateClick}>
-                    <Text style={styles.doneText}>{'Create'}</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.innerContainer}>
-                <View style={[styles.inputWrap, { borderWidth: 1, borderColor: isFocused ? theme.colors.base : theme.colors.baseShade3 }]}>
-                    <TextInput
-                        ref={inputRef as any}
-                        onFocus={() => { setIsFocused(true) }}
-                        onBlur={() => { setIsFocused(false) }}
-                        value={inputMessage}
-                        onChangeText={(text) => setInputMessage(text)}
-                        placeholder="Conversation Name..."
-                        placeholderTextColor={theme.colors.baseShade3}
-                    />
-                    <TouchableOpacity onPress={clearGroupName}>
-                        <CircleCloseIcon color={theme.colors.base} />
+        <>
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <TouchableOpacity style={styles.closeButton} onPress={() => {
+                        goBack();
+                    }}>
+                        <BackIcon color={theme.colors.base} />
+                    </TouchableOpacity>
+                    <View style={styles.headerTextContainer}>
+                        <Text style={styles.headerText}>New Chat</Text>
+                    </View>
+                    <TouchableOpacity disabled={isDisabled} style={[styles.doneContainer, isDisabled && styles.disabledDone]} onPress={onCreateClick}>
+                        <Text style={styles.doneText}>{'Create'}</Text>
                     </TouchableOpacity>
                 </View>
+                <View style={styles.innerContainer}>
+                    <View style={[styles.inputWrap, { borderWidth: 1, borderColor: isFocused ? theme.colors.base : theme.colors.baseShade3 }]}>
+                        <TextInput
+                            ref={inputRef as any}
+                            onFocus={() => { setIsFocused(true) }}
+                            onBlur={() => { setIsFocused(false) }}
+                            value={inputMessage}
+                            onChangeText={(text) => setInputMessage(text)}
+                            placeholder="Conversation Name..."
+                            placeholderTextColor={theme.colors.baseShade3}
+                        />
+                        <TouchableOpacity onPress={clearGroupName}>
+                            <CircleCloseIcon color={theme.colors.base} />
+                        </TouchableOpacity>
+                    </View>
 
-                <Text style={styles.memberText}>Members</Text>
-                <FlatList
-                    data={selectedUserList || []}
-                    renderItem={renderItem}
-                    style={{ marginTop: 15 }}
-                    keyExtractor={(item) => item.userId}
-                    showsVerticalScrollIndicator={false}
-                />
+                    <Text style={styles.memberText}>Members</Text>
+                    <FlatList
+                        data={selectedUserList || []}
+                        renderItem={renderItem}
+                        style={{ marginTop: 15 }}
+                        keyExtractor={(item) => item.userId}
+                        showsVerticalScrollIndicator={false}
+                    />
+                </View>
             </View>
             {loading ? <LoadingOverlay /> : null}
-        </View>
+        </>
     )
 }

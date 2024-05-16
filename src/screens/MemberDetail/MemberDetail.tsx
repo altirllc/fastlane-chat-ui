@@ -1,5 +1,5 @@
 import { ChannelRepository } from '@amityco/ts-sdk-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   TouchableOpacity,
   View,
@@ -20,6 +20,8 @@ import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import BackButton from '@amityco/react-native-cli-chat-ui-kit/src/components/BackButton';
 import { useNavigation } from '@react-navigation/native';
+import useAuth from '../../hooks/useAuth';
+import { IGroupChatObject } from '../../components/ChatList';
 
 export type SelectUserList = {
   title: string;
@@ -27,19 +29,32 @@ export type SelectUserList = {
 };
 
 export default function MemberDetail({ route }: any) {
-
   const styles = useStyles();
   const { channelID } = route.params;
-  const [sectionedUserList, setSectionedUserList] = useState<UserInterface[]>([]);
+  const groupChat = route?.params?.groupChat as IGroupChatObject;
+  const [sectionedUserList, setSectionedUserList] = useState<UserInterface[]>(
+    []
+  );
 
-  const [usersObject, setUsersObject] = useState<Amity.LiveCollection<Amity.Membership<"channel">>>();
+  const [usersObject, setUsersObject] =
+    useState<Amity.LiveCollection<Amity.Membership<'channel'>>>();
   const [searchTerm, setSearchTerm] = useState('');
-  const [tabIndex] = useState<number>(1)
+  const [tabIndex] = useState<number>(1);
   const { data: userArr = [], onNextPage } = usersObject ?? {};
   const [isFocused, setIsFocused] = useState(false);
   const navigation = useNavigation<any>();
 
   const theme = useTheme() as MyMD3Theme;
+  const { client } = useAuth();
+
+  const isGroupAdminLoggedin = useMemo(() => {
+    if (groupChat && groupChat.users?.length > 0 && client?.userId) {
+      return (
+        groupChat.users.find((eachUser) => eachUser.isChannelModerator)
+          ?.userId === (client as Amity.Client).userId
+      );
+    } else return false;
+  }, [groupChat, client]);
 
   const queryAccounts = (text: string = '', roles?: string[]) => {
     ChannelRepository.Membership.getMembers(
@@ -57,8 +72,7 @@ export default function MemberDetail({ route }: any) {
   useEffect(() => {
     if (searchTerm.length > 0 && tabIndex === 1) {
       queryAccounts(searchTerm);
-    }
-    else if (searchTerm.length > 0 && tabIndex === 2) {
+    } else if (searchTerm.length > 0 && tabIndex === 2) {
       queryAccounts(searchTerm, ['channel-moderator']);
     }
   }, [searchTerm]);
@@ -69,47 +83,50 @@ export default function MemberDetail({ route }: any) {
 
   const createUserList = () => {
     const sectionUserArr = userArr.map((item) => {
-      return { userId: item.userId, displayName: item.user?.displayName as string, avatarFileId: item.user?.avatarFileId as string }
-    })
-    setSectionedUserList(sectionUserArr)
-
-  }
+      return {
+        userId: item.userId,
+        displayName: item.user?.displayName as string,
+        avatarFileId: item.user?.avatarFileId as string,
+      };
+    });
+    setSectionedUserList(sectionUserArr);
+  };
 
   useEffect(() => {
-    createUserList()
-  }, [userArr])
+    createUserList();
+  }, [userArr]);
 
   useEffect(() => {
     if (searchTerm.length === 0 && tabIndex === 1) {
-      queryAccounts()
+      queryAccounts();
     } else if (searchTerm.length === 0 && tabIndex === 2) {
-      queryAccounts('', ['channel-moderator'])
+      queryAccounts('', ['channel-moderator']);
     }
-
-  }, [searchTerm, tabIndex])
+  }, [searchTerm, tabIndex]);
 
   const renderItem = ({ item }: ListRenderItemInfo<UserInterface>) => {
-    const userObj: UserInterface = { userId: item.userId, displayName: item.displayName as string, avatarFileId: item.avatarFileId as string }
-    return (
-      <UserItem showThreeDot={false} user={userObj} />
-    );
+    const userObj: UserInterface = {
+      userId: item.userId,
+      displayName: item.displayName as string,
+      avatarFileId: item.avatarFileId as string,
+    };
+    return <UserItem showThreeDot={false} user={userObj} />;
   };
-
 
   const handleLoadMore = () => {
     if (onNextPage) {
-      onNextPage()
+      onNextPage();
     }
-  }
+  };
 
   const addNewMembers = () => {
-    navigation.navigate("AddMembersInChat", {
+    navigation.navigate('AddMembersInChat', {
       recentChatIds: [],
       from: 'MembersScreen',
       channelID,
-      memberIdsToSkip: sectionedUserList.map((eachUser) => eachUser.userId)
-    })
-  }
+      memberIdsToSkip: sectionedUserList.map((eachUser) => eachUser.userId),
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -120,20 +137,39 @@ export default function MemberDetail({ route }: any) {
             <Text style={styles.headerText}>Member Detail</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.addContainer} onPress={addNewMembers}>
-          <Text style={styles.doneText}>{'Add'}</Text>
-        </TouchableOpacity>
+        {isGroupAdminLoggedin ? (
+          <TouchableOpacity style={styles.addContainer} onPress={addNewMembers}>
+            <Text style={styles.doneText}>{'Add'}</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.addContainer} />
+        )}
       </View>
-      <View style={[styles.inputWrap, { borderColor: isFocused ? theme.colors.base : theme.colors.baseShade3 }]}>
+      <View
+        style={[
+          styles.inputWrap,
+          {
+            borderColor: isFocused
+              ? theme.colors.base
+              : theme.colors.baseShade3,
+          },
+        ]}
+      >
         <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
-          <SearchIcon color={isFocused ? theme.colors.base : theme.colors.baseShade2} />
+          <SearchIcon
+            color={isFocused ? theme.colors.base : theme.colors.baseShade2}
+          />
         </TouchableOpacity>
         <TextInput
           style={styles.input}
           value={searchTerm}
-          onFocus={() => { setIsFocused(true) }}
-          onBlur={() => { setIsFocused(false) }}
-          placeholder='Search Members'
+          onFocus={() => {
+            setIsFocused(true);
+          }}
+          onBlur={() => {
+            setIsFocused(false);
+          }}
+          placeholder="Search Members"
           placeholderTextColor={'#6E768A'}
           onChangeText={handleChange}
         />
@@ -151,6 +187,5 @@ export default function MemberDetail({ route }: any) {
         keyExtractor={(item) => item.userId}
       />
     </View>
-
   );
 }

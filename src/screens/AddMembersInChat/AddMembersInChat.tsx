@@ -6,7 +6,6 @@ import {
     Text,
     type ListRenderItemInfo,
     TextInput,
-    FlatList,
     SectionList,
     Alert,
 } from 'react-native';
@@ -25,9 +24,9 @@ import useAuth from '../../hooks/useAuth';
 import { TCommunity } from '../../types/common';
 import { CloseIcon } from '../../svg/CloseIcon';
 import { ChannelRepository } from '@amityco/ts-sdk-react-native';
-import { TFinalUser } from '@amityco/react-native-cli-chat-ui-kit/src/screens/AddMembersInChat/types';
-import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/components/LoadingOverlay';
-import { AuthContext } from '@amityco/react-native-cli-chat-ui-kit/src/store/context';
+import { TFinalUser } from './types';
+import { LoadingOverlay } from '../../components/LoadingOverlay';
+import { AuthContext } from '../../store/context';
 
 type TAddMembersInChat = {
     initUserList?: UserInterface[];
@@ -383,72 +382,74 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.closeButton} onPress={handleOnClose}>
-                    <CloseIcon color={theme.colors.base} />
-                </TouchableOpacity>
-                <View style={styles.headerTextContainer}>
-                    <Text style={styles.headerText}>New Chat</Text>
-                </View>
-                <TouchableOpacity style={styles.doneContainer} disabled={selectedUserList.length === 0} onPress={onTopRightButtonPress}>
-                    <Text style={[selectedUserList.length > 0 ? styles.doneText : styles.disabledDone]}>{getTopRightText()}</Text>
-                </TouchableOpacity>
-            </View>
-            {selectedUserList.length > 0 ? (
-                <>
-                    <SelectedUserHorizontal
-                        users={selectedUserList}
-                        onDeleteUserPressed={onDeleteUserPressed}
-                    />
-                    <View style={styles.separator} />
-                </>
-            ) : (
-                <View />
-            )}
-            <View style={[styles.inputWrap, { borderColor: isFocused ? theme.colors.base : theme.colors.baseShade3 }]}>
-                <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
-                    <SearchIcon color={isFocused ? theme.colors.base : theme.colors.baseShade2} />
-                </TouchableOpacity>
-                <TextInput
-                    style={styles.input}
-                    value={searchTerm}
-                    onFocus={() => { setIsFocused(true) }}
-                    onBlur={() => { setIsFocused(false) }}
-                    onChangeText={handleChange}
-                    placeholder='Search Members'
-                    placeholderTextColor={'#6E768A'}
-                />
-                {
-                    searchTerm.length > 0 ? (
-                        <TouchableOpacity onPress={clearButton}>
-                            <CircleCloseIcon color={theme.colors.base} />
-                        </TouchableOpacity>
-                    ) : null
-                }
-
-            </View>
-            <SectionList
-                sections={finalUserList}
-                keyExtractor={(item, index) => item.userId + index}
-                renderItem={renderItem}
-                showsVerticalScrollIndicator={false}
-                ref={flatListRef}
-                renderSectionHeader={({ section }) => (
-                    <View>
-                        <Text style={styles.memberText}>{section.title}</Text>
-                        {section.data.length === 0 ? <Text style={styles.noData}>No data available</Text> : null}
+        <>
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <TouchableOpacity style={styles.closeButton} onPress={handleOnClose}>
+                        <CloseIcon color={theme.colors.base} />
+                    </TouchableOpacity>
+                    <View style={styles.headerTextContainer}>
+                        <Text style={styles.headerText}>New Chat</Text>
                     </View>
+                    <TouchableOpacity style={styles.doneContainer} disabled={selectedUserList.length === 0 || loading} onPress={onTopRightButtonPress}>
+                        <Text style={[selectedUserList.length > 0 && !loading ? styles.doneText : styles.disabledDone]}>{getTopRightText()}</Text>
+                    </TouchableOpacity>
+                </View>
+                {selectedUserList.length > 0 ? (
+                    <>
+                        <SelectedUserHorizontal
+                            users={selectedUserList}
+                            onDeleteUserPressed={onDeleteUserPressed}
+                        />
+                        <View style={styles.separator} />
+                    </>
+                ) : (
+                    <View />
                 )}
-                onEndReached={handleLoadMore}
-                onEndReachedThreshold={0.5}
-                stickySectionHeadersEnabled={false}
-                ListHeaderComponent={isShowSectionHeader ? <SectionHeader title={''} /> : <View />}
-            />
+                <View style={[styles.inputWrap, { borderColor: isFocused ? theme.colors.base : theme.colors.baseShade3 }]}>
+                    <TouchableOpacity onPress={() => queryAccounts(searchTerm)}>
+                        <SearchIcon color={isFocused ? theme.colors.base : theme.colors.baseShade2} />
+                    </TouchableOpacity>
+                    <TextInput
+                        style={styles.input}
+                        value={searchTerm}
+                        onFocus={() => { setIsFocused(true) }}
+                        onBlur={() => { setIsFocused(false) }}
+                        onChangeText={handleChange}
+                        placeholder='Search Members'
+                        placeholderTextColor={'#6E768A'}
+                    />
+                    {
+                        searchTerm.length > 0 ? (
+                            <TouchableOpacity onPress={clearButton}>
+                                <CircleCloseIcon color={theme.colors.base} />
+                            </TouchableOpacity>
+                        ) : null
+                    }
+
+                </View>
+                <SectionList
+                    sections={finalUserList}
+                    keyExtractor={(item, index) => item.userId + index}
+                    renderItem={renderItem}
+                    showsVerticalScrollIndicator={false}
+                    ref={flatListRef}
+                    renderSectionHeader={({ section }) => (
+                        <View>
+                            <Text style={styles.memberText}>{section.title}</Text>
+                            {section.data.length === 0 ? <Text style={styles.noData}>No data available</Text> : null}
+                        </View>
+                    )}
+                    onEndReached={handleLoadMore}
+                    onEndReachedThreshold={0.5}
+                    stickySectionHeadersEnabled={false}
+                    ListHeaderComponent={isShowSectionHeader ? <SectionHeader title={''} /> : <View />}
+                />
+            </View>
             {
                 loading ? <LoadingOverlay /> : null
             }
-        </View>
+        </>
     );
 };
 
