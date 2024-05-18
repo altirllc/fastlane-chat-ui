@@ -85,7 +85,10 @@ export const EnterGroupName = () => {
                     displayName: updatedInputmessage ? updatedInputmessage : chatDisplayName.join(','),
                     users: userObject,
                     memberCount: channel.memberCount as number,
-                    avatarFileId: channel.avatarFileId
+                    avatarFileId: channel.avatarFileId,
+                    channelModerator: {
+                        userId: (client as Amity.Client).userId //because loggedin user is creating group.
+                    }
                 };
                 setLoading(false)
                 navigation.dispatch(

@@ -13,5 +13,4 @@ export interface UserInterface {
   avatarFileId: string;
   chapterId?: string;
   chapterName?: string;
-  isChannelModerator?: boolean;
 }

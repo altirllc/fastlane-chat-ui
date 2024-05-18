@@ -31,6 +31,7 @@ export interface IGroupChatObject {
   memberCount: number;
   users: UserInterface[];
   avatarFileId: string | undefined;
+  channelModerator?: Partial<UserInterface>;
 }
 const ChatList = ({
   chatId,
@@ -102,17 +103,23 @@ const ChatList = ({
           userId: item.userId as string,
           displayName: item.user?.displayName as string,
           avatarFileId: item.user?.avatarFileId as string,
-          isChannelModerator: item?.roles?.includes(
-            EUserRoles['channel-moderator']
-          ) as boolean,
         };
       });
+      let channelModerator = groupChatObject?.find((eachUser) => eachUser.roles?.includes(
+        EUserRoles['channel-moderator']
+      ))
       const groupChat: IGroupChatObject = {
         users: userArr,
         displayName: chatName as string,
         avatarFileId: avatarFileId,
         memberCount: chatMemberNumber,
       };
+      if (channelModerator) {
+        //if channel admin exist, add its info separately
+        groupChat.channelModerator = {
+          userId: channelModerator.userId,
+        }
+      }
       navigation.navigate('ChatRoom', {
         channelId: chatId,
         groupChat: groupChat,
