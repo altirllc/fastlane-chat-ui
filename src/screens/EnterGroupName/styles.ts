@@ -1,12 +1,17 @@
 import { StyleSheet } from "react-native";
 import { useTheme } from "react-native-paper";
 import type { MyMD3Theme } from "../../providers/amity-ui-kit-provider";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const useEnterGroupNameStyles = () => {
     const theme = useTheme() as MyMD3Theme;
+    const { top, bottom } = useSafeAreaInsets();
+
     const styles = StyleSheet.create({
         container: {
-            flex: 1,
+            height: '100%',
+            marginTop: top,
+            marginBottom: bottom,
             backgroundColor: theme.colors.background,
         },
         header: {

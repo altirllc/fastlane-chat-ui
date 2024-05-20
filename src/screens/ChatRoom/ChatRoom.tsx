@@ -107,6 +107,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   }, [groupChat])
 
   const { client, apiRegion } = useAuth();
+  // const { setIsTabBarVisible } = useContext(AuthContext)
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [messagesData, setMessagesData] =
     useState<Amity.LiveCollection<Amity.Message>>();
@@ -134,6 +135,10 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
 
   const [messageStatusMap, setMessageStatusMap] = useState<MessageStatusMap>(new Map());
   const [isSendLoading, setIsSendLoading] = useState(false);
+
+  // useLayoutEffect(() => {
+  //   setIsTabBarVisible(false);
+  // }, []);
 
   const setMessageStatus = (messageId: string, readMessageStatus: boolean) => {
     setMessageStatusMap(prevMap => {
@@ -779,7 +784,6 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
           ListHeaderComponent={renderLoadingImages}
         />
       </View>
-
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.select({ ios: 120, android: 80 })}

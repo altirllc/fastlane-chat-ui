@@ -148,7 +148,7 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
 
   }
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.topMostContainer}>
       <View style={styles.topBar}>
         <BackButton styles={styles.backButton} />
         <View style={styles.headerTextContainer}>
@@ -156,8 +156,6 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
         </View>
         <DoneButton navigation={navigation} onDonePressed={onDonePressed} />
       </View>
-      {/* <SafeAreaView style={styles.topBarContainer} edges={['top']}>
-      </SafeAreaView> */}
 
       <View style={styles.container}>
         <View style={styles.avatarContainer}>
@@ -215,6 +213,5 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
         showLoadingIndicator ? <LoadingOverlay /> : null
       }
     </View>
-
   );
 };

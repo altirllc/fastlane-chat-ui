@@ -6,6 +6,7 @@ import {
     TextInput,
     FlatList,
     ListRenderItemInfo,
+    Keyboard,
 } from 'react-native';
 import { useEnterGroupNameStyles } from './styles'
 import { useTheme } from 'react-native-paper';
@@ -60,6 +61,7 @@ export const EnterGroupName = () => {
 
     const onCreateClick = async () => {
         const updatedInputmessage = inputMessage.trim()
+        Keyboard.dismiss()
         //first create a channel
         setLoading(true);
         const channel = await createAmityChannel((client as Amity.Client).userId as string, selectedUserList);
@@ -85,7 +87,10 @@ export const EnterGroupName = () => {
                     displayName: updatedInputmessage ? updatedInputmessage : chatDisplayName.join(','),
                     users: userObject,
                     memberCount: channel.memberCount as number,
-                    avatarFileId: channel.avatarFileId
+                    avatarFileId: channel.avatarFileId,
+                    channelModerator: {
+                        userId: (client as Amity.Client).userId //because loggedin user is creating group.
+                    }
                 };
                 setLoading(false)
                 navigation.dispatch(

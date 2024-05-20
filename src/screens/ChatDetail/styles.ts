@@ -1,14 +1,19 @@
 import { StyleSheet } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const useStyles = () => {
   const theme = useTheme() as MyMD3Theme;
+  const { top, bottom } = useSafeAreaInsets();
 
   const styles = StyleSheet.create({
     container: {
-      flex: 1,
+      height: '100%',
+      width: '100%',
       backgroundColor: theme.colors.background,
+      marginTop: top,
+      marginBottom: bottom
     },
     backIcon: {
       width: 25,
@@ -91,7 +96,7 @@ export const useStyles = () => {
       padding: 10,
     },
     headerTextContainer: {
-      flex: 1,
+      width: '80%',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -102,6 +107,7 @@ export const useStyles = () => {
       textAlign: 'center',
       color: theme.colors.base,
     },
+    width: { width: '10%' }
   });
   return styles;
 };

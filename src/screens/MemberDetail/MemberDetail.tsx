@@ -48,10 +48,13 @@ export default function MemberDetail({ route }: any) {
   const { client } = useAuth();
 
   const isGroupAdminLoggedin = useMemo(() => {
-    if (groupChat && groupChat.users?.length > 0 && client?.userId) {
+    if (
+      groupChat &&
+      groupChat.channelModerator &&
+      (client as Amity.Client)?.userId
+    ) {
       return (
-        groupChat.users.find((eachUser) => eachUser.isChannelModerator)
-          ?.userId === (client as Amity.Client).userId
+        groupChat.channelModerator.userId === (client as Amity.Client).userId
       );
     } else return false;
   }, [groupChat, client]);

@@ -86,6 +86,10 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
         }
     ]);
 
+    // useLayoutEffect(() => {
+    //     setIsTabBarVisible(false);
+    // }, []);
+
 
     const createSectionGroup = (users: Amity.User[]) => {
         return users
@@ -382,11 +386,11 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
     }
 
     return (
-        <>
+        <View style={styles.topmostContainer}>
             <View style={styles.container}>
                 <View style={styles.header}>
                     <TouchableOpacity style={styles.closeButton} onPress={handleOnClose}>
-                        <CloseIcon color={theme.colors.base} />
+                        <CloseIcon height={17} width={17} color={theme.colors.base} />
                     </TouchableOpacity>
                     <View style={styles.headerTextContainer}>
                         <Text style={styles.headerText}>New Chat</Text>
@@ -449,7 +453,7 @@ const AddMembersInChat = ({ initUserList = [], chapters }: TAddMembersInChat) =>
             {
                 loading ? <LoadingOverlay /> : null
             }
-        </>
+        </View>
     );
 };
 

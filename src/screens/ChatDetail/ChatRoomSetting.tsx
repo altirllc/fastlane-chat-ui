@@ -195,10 +195,12 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <BackButton styles={styles.closeButton} />
+        <View style={styles.width}><BackButton styles={styles.closeButton} /></View>
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerText}>Chat Detail</Text>
         </View>
+        <View style={styles.width} />
+
       </View>
       {channelType == 'conversation' ? (
         <>

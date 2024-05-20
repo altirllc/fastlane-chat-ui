@@ -2,9 +2,12 @@ import { StyleSheet } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { ColorValue } from 'react-native/types';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
+import { SCREEN_PADDING } from '../../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const useStyles = () => {
   const theme = useTheme() as MyMD3Theme;
+  const { top } = useSafeAreaInsets();
   const styles = StyleSheet.create({
     fontStyle: {
       color: '#1054DE',
@@ -95,7 +98,24 @@ export const useStyles = () => {
       marginTop: 50
     },
     noMessageText: { fontSize: 24, fontWeight: '700', marginBottom: 10 },
-    noMessageDesc: { fontSize: 14, fontWeight: 'normal', color: theme.colors.base }
+    noMessageDesc: { fontSize: 14, fontWeight: 'normal', color: theme.colors.base },
+    welcomeContainer: {
+      paddingHorizontal: SCREEN_PADDING,
+      paddingTop: top,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      width: '100%',
+      paddingBottom: 10,
+    },
+    width1: {
+      width: '10%',
+      alignItems: 'center',
+    },
+    width2: {
+      width: '80%',
+      alignItems: 'center',
+    },
   });
   return styles;
 }
