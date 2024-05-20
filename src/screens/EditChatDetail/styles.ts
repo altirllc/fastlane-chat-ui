@@ -1,11 +1,20 @@
 import { StyleSheet } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const CAMERA_ICON_SIZE = 30;
 
 export const useStyles = () => {
     const theme = useTheme() as MyMD3Theme;
+    const { top, bottom } = useSafeAreaInsets();
+
     const styles = StyleSheet.create({
+        topMostContainer: {
+            width: '100%',
+            height: '100%',
+            marginTop: top,
+            marginBottom: bottom,
+        },
         topBarContainer: {
             backgroundColor: theme.colors.background,
         },

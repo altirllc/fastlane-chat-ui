@@ -2,7 +2,9 @@
 import { createContext } from 'react';
 
 export const AuthContext = createContext<{
-    amityAccessToken: string;
+    amityAccessToken: string,
+    setIsTabBarVisible: (value: boolean) => void
 }>({
-    amityAccessToken: ''
+    amityAccessToken: '',
+    setIsTabBarVisible: () => { }
 });

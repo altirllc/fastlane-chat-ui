@@ -15,6 +15,7 @@ import type { UserInterface } from '../../types/user.interface';
 
 import SelectedUserHorizontal from '../../components/SelectedUserHorizontal';
 import UserItem from '../../components/UserItem';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type SelectUserList = {
   title: string;
@@ -27,6 +28,7 @@ export default function SelectMembers() {
   const [selectedUserList, setSelectedUserList] = useState<UserInterface[]>([]);
   const [usersObject, setUsersObject] = useState<Amity.LiveCollection<Amity.User>>();
   const [searchTerm, setSearchTerm] = useState('');
+  const { top } = useSafeAreaInsets();
 
   const { data: userArr = [], onNextPage } = usersObject ?? {};
 
@@ -113,7 +115,7 @@ export default function SelectMembers() {
   }
 
   return (
-    <View style={[styles.container]}>
+    <View style={[styles.container, { marginTop: top }]}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.closeButton}>
           <SvgXml xml={closeIcon} width="14" height="14" />

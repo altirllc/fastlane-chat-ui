@@ -1,4 +1,4 @@
-import React, { type ReactElement, useMemo, useRef } from 'react';
+import React, { type ReactElement, useMemo, useRef, useCallback, useContext, useLayoutEffect } from 'react';
 
 import {
   View,
@@ -15,20 +15,30 @@ import moment from 'moment';
 import { PlusIcon } from '../../svg/PlusIcon';
 
 import { useStyles } from './styles';
-import { useNavigation } from '@react-navigation/native';
+import { DrawerActions, useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Icon } from 'react-native-paper';
 import { useCustomTheme } from '../../hooks/useCustomTheme';
 import { getShadowProps } from '../../theme/helpers';
-import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/components/LoadingOverlay';
+import { LoadingOverlay } from '../../components/LoadingOverlay';
+import { SideBarIcon } from '../../svg/Sidebar';
+import { Avatar } from '../../../../../../src/components/Avatar/Avatar';
+import { screens } from '../../../../../../src/constants/screens'
+import { AuthContext } from '../../store/context';
 
-export type TRecentChat = {}
+export type TRecentChat = {
+  chatNavigation: any
+  avatarUrl: string
+}
 
-export default function RecentChat({ }: TRecentChat) {
+export default function RecentChat({ chatNavigation, avatarUrl }: TRecentChat) {
   const { isConnected } = useAuth();
   const [channelObjects, setChannelObjects] = useState<IChatListProps[]>([]);
   const [loadChannel, setLoadChannel] = useState<boolean>(false);
   const styles = useStyles()
+  const { setIsTabBarVisible } = useContext(AuthContext);
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
 
   const flatListRef = useRef(null);
   const { colors } = useCustomTheme();
@@ -60,13 +70,17 @@ export default function RecentChat({ }: TRecentChat) {
     });
   }
 
+  useFocusEffect(
+    useCallback(() => {
+      setIsTabBarVisible(true)
+    }, [])
+  )
 
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  useEffect(() => {
+  useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
-  }, [])
+  }, []);
 
   const onQueryChannel = () => {
     setLoadChannel(true)
@@ -74,8 +88,10 @@ export default function RecentChat({ }: TRecentChat) {
       { sortBy: 'lastActivity', limit: 15, membership: 'member', isDeleted: false },
       (value) => {
         setChannelData(value);
-        setLoadChannel(value.loading);
-        if (value.data.length > 0) subscribeChannels(value.data);
+        if (value.data.length > 0) {
+          setLoadChannel(false);
+          subscribeChannels(value.data);
+        }
       },
     );
     disposers.push(unsubscribe);
@@ -130,7 +146,7 @@ export default function RecentChat({ }: TRecentChat) {
 
 
   const renderRecentChat = useMemo(() => {
-    return channelObjects.length > 0 ? <FlatList
+    return !loadChannel ? channelObjects.length > 0 ? <FlatList
       data={channelObjects}
       renderItem={({ item }) => renderChatList(item)}
       keyExtractor={(item) => item.chatId.toString()}
@@ -143,7 +159,7 @@ export default function RecentChat({ }: TRecentChat) {
         <Text style={styles.noMessageText}>No Messages, yet.</Text>
         <Text style={styles.noMessageDesc}>No messages in your inbox, yet!</Text>
       </View>
-    )
+    ) : null
   }, [loadChannel, channelObjects, handleLoadMore]);
 
 
@@ -164,29 +180,47 @@ export default function RecentChat({ }: TRecentChat) {
 
 
   return (
-    <>
+    <View style={{ position: 'relative', height: '100%', width: '100%', backgroundColor: 'cyan' }}>
       <View style={styles.chatContainer}>
+        <View style={[styles.welcomeContainer, { backgroundColor: colors.secondary.main }]}>
+          <View style={styles.width1}>
+            <TouchableOpacity
+              onPress={() => {
+                chatNavigation.dispatch(DrawerActions.openDrawer());
+              }}>
+              <SideBarIcon height={30} width={30} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.width2} />
+          <View style={styles.width1}>
+            <Avatar image={avatarUrl} size={40} onPress={() => {
+              chatNavigation.navigate(screens.Profile);
+            }} light={true} shadow />
+          </View>
+        </View>
         <Text style={styles.chatHeader}>Chats</Text>
-        {renderRecentChat}
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate("AddMembersInChat", { recentChatIds })
-          }}
-          style={[
-            styles.createFeedButton,
-            {
-              ...getShadowProps({ color: colors.secondary.main }),
-              backgroundColor: colors.primary.main,
-            },
-          ]}>
-          <Icon
-            source={PlusIcon}
-            size={"xs"}
-            color="transparent"
-          />
-        </TouchableOpacity>
+        <View style={{ backgroundColor: 'red', flex: 1 }}>
+          {renderRecentChat}
+        </View>
       </View>
       {loadChannel ? <LoadingOverlay /> : null}
-    </>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate("AddMembersInChat", { recentChatIds })
+        }}
+        style={[
+          styles.createFeedButton,
+          {
+            ...getShadowProps({ color: colors.secondary.main }),
+            backgroundColor: colors.primary.main,
+          },
+        ]}>
+        <Icon
+          source={PlusIcon}
+          size={"xs"}
+          color="transparent"
+        />
+      </TouchableOpacity>
+    </View>
   );
 }
