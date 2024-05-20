@@ -31,7 +31,10 @@ export type TRecentChat = {
   avatarUrl: string
 }
 
-export default function RecentChat({ chatNavigation, avatarUrl }: TRecentChat) {
+export default function RecentChat({
+  chatNavigation,
+  avatarUrl
+}: TRecentChat) {
   const { isConnected } = useAuth();
   const [channelObjects, setChannelObjects] = useState<IChatListProps[]>([]);
   const [loadChannel, setLoadChannel] = useState<boolean>(false);
@@ -180,7 +183,7 @@ export default function RecentChat({ chatNavigation, avatarUrl }: TRecentChat) {
 
 
   return (
-    <View style={{ position: 'relative', height: '100%', width: '100%', backgroundColor: 'cyan' }}>
+    <View style={{ position: 'relative', height: '100%', width: '100%' }}>
       <View style={styles.chatContainer}>
         <View style={[styles.welcomeContainer, { backgroundColor: colors.secondary.main }]}>
           <View style={styles.width1}>
@@ -199,7 +202,7 @@ export default function RecentChat({ chatNavigation, avatarUrl }: TRecentChat) {
           </View>
         </View>
         <Text style={styles.chatHeader}>Chats</Text>
-        <View style={{ backgroundColor: 'red', flex: 1 }}>
+        <View style={{ flex: 1 }}>
           {renderRecentChat}
         </View>
       </View>

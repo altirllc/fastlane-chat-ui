@@ -6,6 +6,7 @@ import {
     TextInput,
     FlatList,
     ListRenderItemInfo,
+    Keyboard,
 } from 'react-native';
 import { useEnterGroupNameStyles } from './styles'
 import { useTheme } from 'react-native-paper';
@@ -60,6 +61,7 @@ export const EnterGroupName = () => {
 
     const onCreateClick = async () => {
         const updatedInputmessage = inputMessage.trim()
+        Keyboard.dismiss()
         //first create a channel
         setLoading(true);
         const channel = await createAmityChannel((client as Amity.Client).userId as string, selectedUserList);

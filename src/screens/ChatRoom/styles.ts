@@ -5,18 +5,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const useStyles = () => {
   const theme = useTheme() as MyMD3Theme;
-  const { top, bottom } = useSafeAreaInsets();
+  const { bottom, top } = useSafeAreaInsets();
 
   const styles = StyleSheet.create({
     topBarContainer: {
       backgroundColor: theme.colors.chatTopBar,
     },
     container: {
-      width: '100%',
-      height: '100%',
-      marginTop: top,
-      marginBottom: bottom,
+      flex: 1,
       backgroundColor: theme.colors.background,
+      marginTop: top,
+      marginBottom: bottom
     },
     textChatBubble: {
       alignSelf: 'flex-start',
