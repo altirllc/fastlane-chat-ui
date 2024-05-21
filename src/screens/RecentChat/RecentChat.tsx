@@ -22,7 +22,9 @@ import { useCustomTheme } from '../../hooks/useCustomTheme';
 import { getShadowProps } from '../../theme/helpers';
 import { LoadingOverlay } from '../../components/LoadingOverlay';
 import { SideBarIcon } from '../../svg/Sidebar';
+// @ts-ignore
 import { Avatar } from '../../../../../../src/components/Avatar/Avatar';
+// @ts-ignore
 import { screens } from '../../../../../../src/constants/screens'
 import { AuthContext } from '../../store/context';
 
