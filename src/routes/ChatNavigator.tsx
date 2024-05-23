@@ -25,9 +25,9 @@ type TChatNavigator = {
   amityAccessToken: string;
   chatNavigation: any;
   userData: {
-    avatarUrl: string
-  },
-  setIsTabBarVisible: (value: boolean) => void
+    avatarUrl: string;
+  };
+  setIsTabBarVisible: (value: boolean) => void;
 };
 
 export default function ChatNavigator({
@@ -35,7 +35,7 @@ export default function ChatNavigator({
   amityAccessToken,
   chatNavigation,
   userData,
-  setIsTabBarVisible
+  setIsTabBarVisible,
 }: TChatNavigator) {
   const Stack = createNativeStackNavigator<RootStackParamList>();
   const { isConnected } = useAuth();
@@ -52,19 +52,24 @@ export default function ChatNavigator({
               headerShown: false,
             }}
           >
-            <Stack.Screen options={({ }) => ({ title: '' })} name="RecentChat">
-              {() => <RecentChat chatNavigation={chatNavigation} avatarUrl={userData?.avatarUrl} />}
+            <Stack.Screen options={({}) => ({ title: '' })} name="RecentChat">
+              {() => (
+                <RecentChat
+                  chatNavigation={chatNavigation}
+                  avatarUrl={userData?.avatarUrl}
+                />
+              )}
             </Stack.Screen>
 
             <Stack.Screen
-              options={({ }) => ({ title: '' })}
+              options={({}) => ({ title: '' })}
               name="AddMembersInChat"
             >
               {() => <AddMembersInChat chapters={chapters} />}
             </Stack.Screen>
 
             <Stack.Screen
-              options={({ }) => ({ title: '' })}
+              options={({}) => ({ title: '' })}
               name="EnterGroupName"
             >
               {() => <EnterGroupName />}

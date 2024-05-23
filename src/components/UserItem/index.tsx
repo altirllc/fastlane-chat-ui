@@ -16,18 +16,19 @@ export default function UserItem({
   onPress,
   // onThreeDotTap,
   showCheckMark = false,
+  rightContentText = '',
 }: {
   user: UserInterface;
   isCheckmark?: boolean | undefined;
   showThreeDot?: boolean | undefined;
   onPress?: (user: UserInterface) => void;
   onThreeDotTap?: (user: UserInterface) => void;
-  showCheckMark?: boolean
+  showCheckMark?: boolean;
+  rightContentText?: string;
 }) {
-
   // const theme = useTheme() as MyMD3Theme;
   const styles = useStyles();
-  const { apiRegion } = useAuth()
+  const { apiRegion } = useAuth();
   const [isChecked, setIsChecked] = useState(false);
   const maxLength = 25;
   const handleToggle = () => {
@@ -50,37 +51,42 @@ export default function UserItem({
     return `https://api.${apiRegion}.amity.co/api/v3/files/${fileId}/download?size=medium`;
   };
 
-
   return (
-    <TouchableOpacity style={styles.listItem} disabled={!showCheckMark} onPress={handleToggle}>
-      <View style={styles.listItem} >
-        <View style={[styles.leftContainer, { alignItems: 'center' }]}>
-          <View style={{ width: '15%' }}>
-            {
-              user?.avatarFileId ? (
-                <Image
-                  style={styles.avatar}
-                  source={{ uri: avatarFileURL(user.avatarFileId) }}
-                />
-              ) : (
-                <View style={styles.avatar}>
-                  <AvatarIcon />
-                </View>
-              )
-            }
-          </View>
-          <View style={styles.middleContainer}>
-            <Text style={styles.itemText}>{displayName()}</Text>
-            {
-              user.chapterName ? <Text style={styles.chapterName}>{user.chapterName}</Text> : null
-            }
-          </View>
+    <TouchableOpacity
+      style={styles.listItem}
+      disabled={!showCheckMark}
+      onPress={handleToggle}
+    >
+      <View style={[styles.leftContainer, { alignItems: 'center' }]}>
+        <View style={{ width: '15%' }}>
+          {user?.avatarFileId ? (
+            <Image
+              style={styles.avatar}
+              source={{ uri: avatarFileURL(user.avatarFileId) }}
+            />
+          ) : (
+            <View style={styles.avatar}>
+              <AvatarIcon />
+            </View>
+          )}
         </View>
-      </View >
-      {
-        showCheckMark ? <RoundCheckbox isChecked={isCheckmark ?? false} /> : null
-      }
+        <View style={styles.middleContainer}>
+          <Text style={styles.itemText}>{displayName()}</Text>
+          {user.chapterName ? (
+            <Text style={styles.chapterName}>{user.chapterName}</Text>
+          ) : null}
+        </View>
+        <View style={{ width: '15%' }}>
+          {showCheckMark ? (
+            <RoundCheckbox isChecked={isCheckmark ?? false} />
+          ) : null}
+          {rightContentText ? (
+            <View>
+              <Text style={styles.adminTag}>{rightContentText}</Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
     </TouchableOpacity>
-
   );
 }

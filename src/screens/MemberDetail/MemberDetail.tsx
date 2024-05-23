@@ -113,7 +113,15 @@ export default function MemberDetail({ route }: any) {
       displayName: item.displayName as string,
       avatarFileId: item.avatarFileId as string,
     };
-    return <UserItem showThreeDot={false} user={userObj} />;
+    return (
+      <UserItem
+        rightContentText={
+          item.userId === groupChat?.channelModerator?.userId ? 'Admin' : ''
+        }
+        showThreeDot={false}
+        user={userObj}
+      />
+    );
   };
 
   const handleLoadMore = () => {
