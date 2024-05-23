@@ -79,7 +79,7 @@ const ChatList = ({
   }, [oneOnOneChatObject, groupChatObject, chatName]);
 
   const handlePress = (chatMemberNumber: number) => {
-    if (oneOnOneChatObject) {
+    if (oneOnOneChatObject && oneOnOneChatObject.length > 0) {
       const targetIndex: number = oneOnOneChatObject?.findIndex(
         (item) => item.userId !== (client as Amity.Client).userId
       );
@@ -97,7 +97,7 @@ const ChatList = ({
         });
       }
     }
-    if (groupChatObject) {
+    if (groupChatObject && groupChatObject?.length > 0) {
       const userArr: UserInterface[] = groupChatObject?.map((item) => {
         return {
           userId: item.userId as string,
@@ -105,9 +105,9 @@ const ChatList = ({
           avatarFileId: item.user?.avatarFileId as string,
         };
       });
-      let channelModerator = groupChatObject?.find((eachUser) => eachUser.roles?.includes(
-        EUserRoles['channel-moderator']
-      ))
+      let channelModerator = groupChatObject?.find((eachUser) =>
+        eachUser.roles?.includes(EUserRoles['channel-moderator'])
+      );
       const groupChat: IGroupChatObject = {
         users: userArr,
         displayName: chatName as string,
@@ -118,7 +118,7 @@ const ChatList = ({
         //if channel admin exist, add its info separately
         groupChat.channelModerator = {
           userId: channelModerator.userId,
-        }
+        };
       }
       navigation.navigate('ChatRoom', {
         channelId: chatId,

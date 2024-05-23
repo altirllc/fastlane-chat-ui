@@ -1,6 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  useLayoutEffect,
+  useContext,
+} from 'react';
 import {
   View,
   Image,
@@ -14,11 +21,18 @@ import {
   Keyboard,
   Alert,
   ActivityIndicator,
+  LayoutAnimation,
 } from 'react-native';
 import ImageView from 'react-native-image-viewing';
 import CustomText from '../../components/CustomText';
 import { useStyles } from './styles';
-import { type RouteProp, useNavigation, useRoute, CommonActions } from '@react-navigation/native';
+import {
+  type RouteProp,
+  useNavigation,
+  useRoute,
+  CommonActions,
+  useIsFocused,
+} from '@react-navigation/native';
 import type { RootStackParamList } from '../../routes/RouteParamList';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import BackButton from '../../components/BackButton';
@@ -61,6 +75,7 @@ import { AlertIcon } from '../../svg/AlertIcon';
 import { CommunityChatIcon } from '../../svg/CommunityChatIcon';
 import { SendImage } from '../../svg/SendImage';
 import { CheckIcon } from '../../svg/CheckIcon';
+import { AuthContext } from '../../store/context';
 
 type ChatRoomScreenComponentType = React.FC<{}>;
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
@@ -104,10 +119,10 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
 
   const isGroupChat = useMemo(() => {
     return groupChat !== undefined;
-  }, [groupChat])
+  }, [groupChat]);
 
   const { client, apiRegion } = useAuth();
-  // const { setIsTabBarVisible } = useContext(AuthContext)
+  const { setIsTabBarVisible } = useContext(AuthContext);
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [messagesData, setMessagesData] =
     useState<Amity.LiveCollection<Amity.Message>>();
@@ -133,21 +148,31 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const [editMessageText, setEditMessageText] = useState<string>('');
   const disposers: Amity.Unsubscriber[] = [];
 
-  const [messageStatusMap, setMessageStatusMap] = useState<MessageStatusMap>(new Map());
+  const [messageStatusMap, setMessageStatusMap] = useState<MessageStatusMap>(
+    new Map()
+  );
   const [isSendLoading, setIsSendLoading] = useState(false);
 
-  // useLayoutEffect(() => {
-  //   setIsTabBarVisible(false);
-  // }, []);
+  const isFocused = useIsFocused();
+
+  useLayoutEffect(() => {
+    //IMP: Don't remove setTimeout as this is used for showing footer on the screen.
+    setTimeout(() => {
+      if (isFocused) {
+        //after screen focus, hide tabbar
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
+        setIsTabBarVisible(false);
+      }
+    }, 500);
+  }, [isFocused]);
 
   const setMessageStatus = (messageId: string, readMessageStatus: boolean) => {
-    setMessageStatusMap(prevMap => {
+    setMessageStatusMap((prevMap) => {
       const newMap = new Map(prevMap);
       newMap.set(messageId, { readMessageStatus });
       return newMap;
     });
   };
-
 
   const subscribeSubChannel = (subChannel: Amity.SubChannel) =>
     disposers.push(subscribeTopic(getSubChannelTopic(subChannel)));
@@ -185,7 +210,9 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
     }
   }, [subChannelData]);
 
-  const getReadStatusForMessage = async (messageId: string): Promise<boolean | undefined> => {
+  const getReadStatusForMessage = async (
+    messageId: string
+  ): Promise<boolean | undefined> => {
     return await new Promise(async (resolve, reject) => {
       try {
         const { data: users } = await MessageRepository.getReadUsers({
@@ -194,14 +221,18 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
         });
         if (users) {
           let isMessageReadByReceiver = false;
-          const messageSeenUserIds = users.map(user => user.userId);
+          const messageSeenUserIds = users.map((user) => user.userId);
 
           if (chatReceiver) {
             //if one to one chat, check if reciever id exist in list of users who has seen this message.
-            isMessageReadByReceiver = messageSeenUserIds.includes(chatReceiver?.userId);
-
-          } else if (isGroupChat && groupChat?.users && groupChat.users.length > 0) {
-
+            isMessageReadByReceiver = messageSeenUserIds.includes(
+              chatReceiver?.userId
+            );
+          } else if (
+            isGroupChat &&
+            groupChat?.users &&
+            groupChat.users.length > 0
+          ) {
             let haveAllUsersSeenMessage = true;
 
             for (let i = 0; i < groupChat?.users.length; i++) {
@@ -213,16 +244,16 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
               }
             }
 
-            isMessageReadByReceiver = haveAllUsersSeenMessage
+            isMessageReadByReceiver = haveAllUsersSeenMessage;
           }
-          setMessageStatus(messageId, isMessageReadByReceiver)
+          setMessageStatus(messageId, isMessageReadByReceiver);
           resolve(true);
         }
       } catch (error) {
         reject(new Error('Unable to create channel ' + error));
       }
     });
-  }
+  };
 
   useEffect(() => {
     (async () => {
@@ -235,14 +266,15 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
         //for each message, get the status
 
         //first check if creator id is same as the logged in user.
-        const isUserChat = eachMessage.creatorId === (client as Amity.Client).userId;
+        const isUserChat =
+          eachMessage.creatorId === (client as Amity.Client).userId;
         if (isUserChat) {
           //get read status only for the logged in user's own chats
           await getReadStatusForMessage(eachMessage.messageId);
         }
       }
-    })()
-  }, [messagesArr, isGroupChat, chatReceiver])
+    })();
+  }, [messagesArr, isGroupChat, chatReceiver]);
 
   useEffect(() => {
     if (messagesArr.length > 0) {
@@ -258,9 +290,10 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
           targetIndex &&
           (groupChat?.users as any)[targetIndex as number]?.avatarFileId
         ) {
-          avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${(groupChat?.users as any)[targetIndex as number]
-            ?.avatarFileId as any
-            }/download`;
+          avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${
+            (groupChat?.users as any)[targetIndex as number]
+              ?.avatarFileId as any
+          }/download`;
         } else if (chatReceiver && chatReceiver.avatarFileId) {
           avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver.avatarFileId}/download`;
         }
@@ -271,7 +304,8 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
           editedAt: item.updatedAt as string,
           user: {
             _id: item.creatorId ?? '',
-            name: chatReceiver?.displayName ??
+            name:
+              chatReceiver?.displayName ??
               groupChat?.users?.find((user) => user.userId === item.creatorId)
                 ?.displayName ??
               '',
@@ -279,22 +313,23 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
           },
           messageType: item.dataType,
           isDeleted: item.isDeleted as boolean,
-        }
+        };
         if ((item?.data as Record<string, any>)?.fileId) {
           //if file present
           return {
             text: '',
             image:
-              `https://api.${apiRegion}.amity.co/api/v3/files/${(item?.data as Record<string, any>).fileId
+              `https://api.${apiRegion}.amity.co/api/v3/files/${
+                (item?.data as Record<string, any>).fileId
               }/download` ?? undefined,
-            ...commonObj
+            ...commonObj,
           };
         } else {
           //if file doesnt present
           return {
             text:
               ((item?.data as Record<string, string>)?.text as string) ?? '',
-            ...commonObj
+            ...commonObj,
           };
         }
       });
@@ -303,7 +338,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   }, [messagesArr]);
 
   const handleSend = async () => {
-    setIsSendLoading(true)
+    setIsSendLoading(true);
     if (inputMessage.trim() === '') {
       return;
     }
@@ -322,7 +357,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
     if (message) {
       setInputMessage('');
       scrollToBottom();
-      setIsSendLoading(false)
+      setIsSendLoading(false);
     }
   };
 
@@ -334,12 +369,12 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{ name: "RecentChat" }],
-        }),
+          routes: [{ name: 'RecentChat' }],
+        })
       );
     } else {
       //or else just go back
-      navigation.goBack()
+      navigation.goBack();
     }
   }
 
@@ -473,7 +508,9 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
                       style={[
                         styles.textChatBubble,
                         isUserChat ? styles.userBubble : styles.friendBubble,
-                        isGroupChat ? { marginVertical: 5 } : { marginBottom: 5 }
+                        isGroupChat
+                          ? { marginVertical: 5 }
+                          : { marginBottom: 5 },
                       ]}
                     >
                       <Text
@@ -510,9 +547,9 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
                       ...styles.optionsContainer,
                       marginLeft: isUserChat
                         ? 240 +
-                        (message.text && message.text.length < 5
-                          ? message.text.length * 10
-                          : 10)
+                          (message.text && message.text.length < 5
+                            ? message.text.length * 10
+                            : 10)
                         : 0,
                     },
                   }}
@@ -555,7 +592,12 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
                 </MenuOptions>
               </Menu>
             )}
-            <View style={{ flexDirection: 'row', alignSelf: isUserChat ? 'flex-end' : 'flex-start' }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignSelf: isUserChat ? 'flex-end' : 'flex-start',
+              }}
+            >
               <Text
                 style={[
                   styles.chatTimestamp,
@@ -567,17 +609,30 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
                 {message.createdAt != message.editedAt ? 'Edited ·' : ''}{' '}
                 {moment(message.createdAt).format('hh:mm A')}
               </Text>
-              {
-                isUserChat && isDelivered ?
-                  (
-                    <View style={{ marginLeft: 5, flexDirection: 'row' }}>
-                      <CheckIcon height={20} width={20} color={isRead ? theme.colors.chatBubbles?.userBubble : theme.colors.baseShade2} />
-                      <View style={{ marginLeft: -10 }}>
-                        <CheckIcon height={20} width={20} color={isRead ? theme.colors.chatBubbles?.userBubble : theme.colors.baseShade2} />
-                      </View>
-                    </View>
-                  ) : null
-              }
+              {isUserChat && isDelivered ? (
+                <View style={{ marginLeft: 5, flexDirection: 'row' }}>
+                  <CheckIcon
+                    height={20}
+                    width={20}
+                    color={
+                      isRead
+                        ? theme.colors.chatBubbles?.userBubble
+                        : theme.colors.baseShade2
+                    }
+                  />
+                  <View style={{ marginLeft: -10 }}>
+                    <CheckIcon
+                      height={20}
+                      width={20}
+                      color={
+                        isRead
+                          ? theme.colors.chatBubbles?.userBubble
+                          : theme.colors.baseShade2
+                      }
+                    />
+                  </View>
+                </View>
+              ) : null}
             </View>
           </View>
         </View>
@@ -786,7 +841,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       </View>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.select({ ios: 120, android: 80 })}
+        keyboardVerticalOffset={Platform.select({ ios: 50, android: 80 })}
         style={styles.AllInputWrap}
       >
         <View style={styles.InputWrap}>
@@ -799,10 +854,14 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
             onFocus={handleOnFocus}
           />
 
-          {inputMessage.length > 0 ? isSendLoading ? <ActivityIndicator style={styles.sendIcon} /> : (
-            <TouchableOpacity onPress={handleSend} style={styles.sendIcon}>
-              <SendChatIcon color={theme.colors.primary} />
-            </TouchableOpacity>
+          {inputMessage.length > 0 ? (
+            isSendLoading ? (
+              <ActivityIndicator style={styles.sendIcon} />
+            ) : (
+              <TouchableOpacity onPress={handleSend} style={styles.sendIcon}>
+                <SendChatIcon color={theme.colors.primary} />
+              </TouchableOpacity>
+            )
           ) : (
             <View>
               <TouchableOpacity onPress={handlePress} style={styles.sendIcon}>

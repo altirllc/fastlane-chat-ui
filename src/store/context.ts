@@ -3,8 +3,8 @@ import { createContext } from 'react';
 
 export const AuthContext = createContext<{
     amityAccessToken: string,
-    setIsTabBarVisible: (value: boolean) => void
+    setIsTabBarVisible: (value: boolean) => void,
 }>({
     amityAccessToken: '',
-    setIsTabBarVisible: () => { }
+    setIsTabBarVisible: () => { },
 });

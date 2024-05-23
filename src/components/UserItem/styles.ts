@@ -10,7 +10,8 @@ export const useStyles = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             height: 50,
-            marginVertical: 10
+            marginVertical: 10,
+            width: '100%',
         },
         avatar: {
             width: 40,
@@ -37,7 +38,12 @@ export const useStyles = () => {
             width: 16,
             height: 12
         },
-        middleContainer: { width: '80%', height: '100%', justifyContent: 'space-evenly' }
+        middleContainer: { width: '70%', height: '100%', justifyContent: 'space-evenly' },
+        adminTag: {
+            fontSize: 12,
+            fontWeight: '300',
+            color: theme.colors.base
+        }
     })
     return styles;
 }
