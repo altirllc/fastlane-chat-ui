@@ -136,6 +136,7 @@ export default function MemberDetail({ route }: any) {
       from: 'MembersScreen',
       channelID,
       memberIdsToSkip: sectionedUserList.map((eachUser) => eachUser.userId),
+      groupChat
     });
   };
 

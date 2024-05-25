@@ -28,9 +28,7 @@ export const useStyles = () => {
       flexDirection: 'row',
       justifyContent: 'space-between',
       paddingRight: 16,
-  
     },
-  
     avatarSection: {
       flex: 1,
       paddingVertical: 16,
@@ -52,6 +50,12 @@ export const useStyles = () => {
       marginHorizontal: 4,
       marginVertical: 2,
       color: theme.colors.baseShade1
+    },
+    messagePreview: {
+      fontWeight: '400',
+      fontSize: 15,
+      color: theme.colors.baseShade1,
+      alignItems: 'center'
     },
     unReadBadge: {
       borderRadius: 72,

@@ -74,8 +74,8 @@ import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import { AlertIcon } from '../../svg/AlertIcon';
 import { CommunityChatIcon } from '../../svg/CommunityChatIcon';
 import { SendImage } from '../../svg/SendImage';
-import { CheckIcon } from '../../svg/CheckIcon';
 import { AuthContext } from '../../store/context';
+import { useReadStatus } from '../../hooks/useReadStatus';
 
 type ChatRoomScreenComponentType = React.FC<{}>;
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
@@ -103,12 +103,6 @@ export interface IDisplayImage {
   isUploaded: boolean;
   thumbNail?: string;
 }
-
-interface MessageStatus {
-  readMessageStatus: boolean;
-}
-
-type MessageStatusMap = Map<string, MessageStatus>;
 
 const ChatRoom: ChatRoomScreenComponentType = () => {
   const styles = useStyles();
@@ -148,9 +142,8 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const [editMessageText, setEditMessageText] = useState<string>('');
   const disposers: Amity.Unsubscriber[] = [];
 
-  const [messageStatusMap, setMessageStatusMap] = useState<MessageStatusMap>(
-    new Map()
-  );
+  const { getReadStatusForMessage, isDelivered, getReadComponent, messageStatusMap } = useReadStatus()
+
   const [isSendLoading, setIsSendLoading] = useState(false);
 
   const isFocused = useIsFocused();
@@ -165,14 +158,6 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       }
     }, 500);
   }, [isFocused]);
-
-  const setMessageStatus = (messageId: string, readMessageStatus: boolean) => {
-    setMessageStatusMap((prevMap) => {
-      const newMap = new Map(prevMap);
-      newMap.set(messageId, { readMessageStatus });
-      return newMap;
-    });
-  };
 
   const subscribeSubChannel = (subChannel: Amity.SubChannel) =>
     disposers.push(subscribeTopic(getSubChannelTopic(subChannel)));
@@ -210,51 +195,6 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
     }
   }, [subChannelData]);
 
-  const getReadStatusForMessage = async (
-    messageId: string
-  ): Promise<boolean | undefined> => {
-    return await new Promise(async (resolve, reject) => {
-      try {
-        const { data: users } = await MessageRepository.getReadUsers({
-          messageId,
-          memberships: ['member', 'banned', 'muted', 'non-member', 'deleted'],
-        });
-        if (users) {
-          let isMessageReadByReceiver = false;
-          const messageSeenUserIds = users.map((user) => user.userId);
-
-          if (chatReceiver) {
-            //if one to one chat, check if reciever id exist in list of users who has seen this message.
-            isMessageReadByReceiver = messageSeenUserIds.includes(
-              chatReceiver?.userId
-            );
-          } else if (
-            isGroupChat &&
-            groupChat?.users &&
-            groupChat.users.length > 0
-          ) {
-            let haveAllUsersSeenMessage = true;
-
-            for (let i = 0; i < groupChat?.users.length; i++) {
-              const eachUser = groupChat?.users[i];
-              if (eachUser && !messageSeenUserIds.includes(eachUser.userId)) {
-                //if even one user from group chat haven't seen the message, just mark read status as false
-                haveAllUsersSeenMessage = false;
-                break; // Exit the loop
-              }
-            }
-
-            isMessageReadByReceiver = haveAllUsersSeenMessage;
-          }
-          setMessageStatus(messageId, isMessageReadByReceiver);
-          resolve(true);
-        }
-      } catch (error) {
-        reject(new Error('Unable to create channel ' + error));
-      }
-    });
-  };
-
   useEffect(() => {
     (async () => {
       //if messages are changed, get the latest read status of them.
@@ -270,11 +210,11 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
           eachMessage.creatorId === (client as Amity.Client).userId;
         if (isUserChat) {
           //get read status only for the logged in user's own chats
-          await getReadStatusForMessage(eachMessage.messageId);
+          await getReadStatusForMessage(eachMessage.messageId, chatReceiver, groupChat, isGroupChat);
         }
       }
     })();
-  }, [messagesArr, isGroupChat, chatReceiver]);
+  }, [messagesArr, isGroupChat, chatReceiver, groupChat]);
 
   useEffect(() => {
     if (messagesArr.length > 0) {
@@ -290,10 +230,9 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
           targetIndex &&
           (groupChat?.users as any)[targetIndex as number]?.avatarFileId
         ) {
-          avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${
-            (groupChat?.users as any)[targetIndex as number]
-              ?.avatarFileId as any
-          }/download`;
+          avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${(groupChat?.users as any)[targetIndex as number]
+            ?.avatarFileId as any
+            }/download`;
         } else if (chatReceiver && chatReceiver.avatarFileId) {
           avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver.avatarFileId}/download`;
         }
@@ -319,8 +258,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
           return {
             text: '',
             image:
-              `https://api.${apiRegion}.amity.co/api/v3/files/${
-                (item?.data as Record<string, any>).fileId
+              `https://api.${apiRegion}.amity.co/api/v3/files/${(item?.data as Record<string, any>).fileId
               }/download` ?? undefined,
             ...commonObj,
           };
@@ -447,10 +385,6 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       isRenderDivider = true;
     }
 
-    //as message is apprearing on feed, mark it as delivered
-    const isDelivered = true;
-    const isRead = messageStatusMap.get(message._id)?.readMessageStatus;
-
     return (
       <View>
         {isRenderDivider && renderTimeDivider(message.createdAt)}
@@ -547,9 +481,9 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
                       ...styles.optionsContainer,
                       marginLeft: isUserChat
                         ? 240 +
-                          (message.text && message.text.length < 5
-                            ? message.text.length * 10
-                            : 10)
+                        (message.text && message.text.length < 5
+                          ? message.text.length * 10
+                          : 10)
                         : 0,
                     },
                   }}
@@ -609,30 +543,9 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
                 {message.createdAt != message.editedAt ? 'Edited ·' : ''}{' '}
                 {moment(message.createdAt).format('hh:mm A')}
               </Text>
-              {isUserChat && isDelivered ? (
-                <View style={{ marginLeft: 5, flexDirection: 'row' }}>
-                  <CheckIcon
-                    height={20}
-                    width={20}
-                    color={
-                      isRead
-                        ? theme.colors.chatBubbles?.userBubble
-                        : theme.colors.baseShade2
-                    }
-                  />
-                  <View style={{ marginLeft: -10 }}>
-                    <CheckIcon
-                      height={20}
-                      width={20}
-                      color={
-                        isRead
-                          ? theme.colors.chatBubbles?.userBubble
-                          : theme.colors.baseShade2
-                      }
-                    />
-                  </View>
-                </View>
-              ) : null}
+              {isUserChat && isDelivered ?
+                getReadComponent(message._id)
+                : null}
             </View>
           </View>
         </View>

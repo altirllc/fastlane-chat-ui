@@ -43,6 +43,7 @@ import { ChannelRepository } from '@amityco/ts-sdk-react-native';
 import { TFinalUser } from './types';
 import { LoadingOverlay } from '../../components/LoadingOverlay';
 import { AuthContext } from '../../store/context';
+import { IGroupChatObject } from '../../components/ChatList';
 
 type TAddMembersInChat = {
   initUserList?: UserInterface[];
@@ -98,6 +99,7 @@ const AddMembersInChat = ({
   //routes
   const route = useRoute<any>();
   const recentChatIds = route?.params?.recentChatIds as string[];
+  const groupChat = route?.params?.groupChat as IGroupChatObject;
   const from = route?.params?.from as 'MembersScreen' | undefined;
   const channelID = route?.params?.channelID as 'string' | undefined;
   const memberIdsToSkip = route?.params?.memberIdsToSkip as
@@ -372,7 +374,7 @@ const AddMembersInChat = ({
   const handleOnClose = () => {
     setSelectedUserList(initUserList);
     if (from === 'MembersScreen') {
-      navigation.navigate('MemberDetail', { channelID });
+      navigation.navigate('MemberDetail', { channelID, groupChat });
     } else {
       navigation.goBack();
     }
@@ -419,12 +421,6 @@ const AddMembersInChat = ({
         requestBody
       );
       console.log('Result', JSON.stringify(result));
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'RecentChat' }],
-        })
-      );
     } catch (e: { data: { message: string | undefined } } | any) {
       Alert.alert(
         'Error!',
