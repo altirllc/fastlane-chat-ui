@@ -66,6 +66,7 @@ const ChatList = ({
       };
       return chatReceiver;
     }
+    return undefined
   }, [oneOnOneChatObject, client])
 
   const groupChat = useMemo(() => {
@@ -94,6 +95,7 @@ const ChatList = ({
       }
       return groupChat
     }
+    return undefined
   }, [groupChatObject, chatName, avatarFileId, chatMemberNumber])
 
   const isGroupChat = useMemo(() => {
@@ -250,6 +252,7 @@ const ChatList = ({
         </View>
       )
     }
+    return <></>
   }
 
   return (

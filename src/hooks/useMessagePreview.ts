@@ -1,5 +1,6 @@
 import { ChannelRepository } from '@amityco/ts-sdk-react-native';
 import { useEffect, useState } from 'react';
+// @ts-ignore
 import { TUser, TMetadata } from '../../../../../src/services/types';
 
 export type TMessagePreview = {
