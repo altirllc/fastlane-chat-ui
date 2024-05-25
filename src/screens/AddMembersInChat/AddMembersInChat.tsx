@@ -344,8 +344,8 @@ const AddMembersInChat = ({
       );
       const previousLetter = isPreviousletterAlphabet
         ? (sectionedUserList[index - 1] as any)?.displayName
-            .charAt(0)
-            .toUpperCase()
+          .charAt(0)
+          .toUpperCase()
         : '#';
       if (currentLetter === previousLetter) {
         isrenderheader = false;
@@ -421,6 +421,12 @@ const AddMembersInChat = ({
         requestBody
       );
       console.log('Result', JSON.stringify(result));
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'RecentChat' }],
+        })
+      );
     } catch (e: { data: { message: string | undefined } } | any) {
       Alert.alert(
         'Error!',
