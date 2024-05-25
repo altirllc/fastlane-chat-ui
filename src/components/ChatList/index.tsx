@@ -213,7 +213,7 @@ const ChatList = ({
             ) : null
           }
           <CustomText numberOfLines={1} style={styles.messagePreview}>
-            {dataType === "text" ? (previewText ? previewText : '') : "Photo"}
+            {dataType ? dataType === "text" ? (previewText ? previewText : '') : "Photo" : ''}
           </CustomText>
         </View>
       )

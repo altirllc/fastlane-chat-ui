@@ -106,12 +106,12 @@ export default function RecentChat({ chatNavigation, avatarUrl }: TRecentChat) {
       },
       (value) => {
         setChannelData(value);
+        subscribeChannels(channels);
         if (value.data.length > 0 || (value.data.length === 0 && !value.hasNextPage && !value.loading)) {
           setTimeout(() => {
             setLoadChannel(false);
             setShowFabIcon(true);
           }, 1000);
-          subscribeChannels(value.data);
         }
       }
     );
