@@ -72,10 +72,11 @@ import { AlbumIcon } from '../../svg/AlbumIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import { AlertIcon } from '../../svg/AlertIcon';
-import { CommunityChatIcon } from '../../svg/CommunityChatIcon';
 import { SendImage } from '../../svg/SendImage';
 import { AuthContext } from '../../store/context';
 import { useReadStatus } from '../../hooks/useReadStatus';
+import { useAvatarArray } from '../../../src/hooks/useAvatarArray';
+import { Avatar } from '../../../src/components/Avatar/Avatar';
 
 type ChatRoomScreenComponentType = React.FC<{}>;
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
@@ -110,6 +111,8 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
 
   const route = useRoute<RouteProp<RootStackParamList, 'ChatRoom'>>();
   const { chatReceiver, groupChat, channelId, from } = route.params;
+
+  const { avatarArray } = useAvatarArray(groupChat)
 
   const isGroupChat = useMemo(() => {
     return groupChat !== undefined;
@@ -709,7 +712,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
             />
           ) : (
             <View style={styles.icon}>
-              <CommunityChatIcon />
+              <Avatar avatars={avatarArray} />
             </View>
           )}
           <View>

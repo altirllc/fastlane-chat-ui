@@ -142,13 +142,6 @@ export const useStyles = () => {
       color: theme.colors.base
     },
     icon: {
-      backgroundColor: '#D9E5FC',
-      width: 42,
-      height: 42,
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderRadius: 72,
       marginRight: 8,
       marginLeft: 10,
     },

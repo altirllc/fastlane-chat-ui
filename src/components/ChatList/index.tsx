@@ -12,12 +12,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import useAuth from '../../hooks/useAuth';
 import { useEffect, useMemo, useState } from 'react';
 import type { UserInterface } from '../../types/user.interface';
-import { CommunityChatIcon } from '../../svg/CommunityChatIcon';
 import { PrivateChatIcon } from '../../svg/PrivateChatIcon';
 import { EUserRoles } from '../../enum/sessionState';
 import { useMessagePreview } from '../../hooks/useMessagePreview';
 import { ImageIcon } from '../../svg/ImageIcon';
 import { useReadStatus } from '../../hooks/useReadStatus';
+import { Avatar } from '../../../src/components/Avatar/Avatar';
+import { useAvatarArray } from '../../../src/hooks/useAvatarArray';
 
 export interface IChatListProps {
   chatId: string;
@@ -36,6 +37,7 @@ export interface IGroupChatObject {
   avatarFileId: string | undefined;
   channelModerator?: Partial<UserInterface>;
 }
+
 const ChatList = ({
   chatId,
   chatName,
@@ -47,6 +49,11 @@ const ChatList = ({
 }: IChatListProps) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { client, apiRegion } = useAuth();
+
+  const [usersObject, setUsersObject] =
+    useState<Amity.LiveCollection<Amity.Membership<'channel'>>>();
+  const { data: usersArr = [] } = usersObject ?? {};
+
   const [oneOnOneChatObject, setOneOnOneChatObject] =
     useState<Amity.Membership<'channel'>[]>();
   const [groupChatObject, setGroupChatObject] =
@@ -97,6 +104,8 @@ const ChatList = ({
     }
     return undefined
   }, [groupChatObject, chatName, avatarFileId, chatMemberNumber])
+
+  const { avatarArray } = useAvatarArray(groupChat)
 
   const isGroupChat = useMemo(() => {
     return groupChat !== undefined;
@@ -157,14 +166,19 @@ const ChatList = ({
   };
 
   useEffect(() => {
+    if (chatMemberNumber === 2 && usersArr) {
+      setOneOnOneChatObject(usersArr);
+    } else if (usersArr) {
+      setGroupChatObject(usersArr);
+    }
+  }, [usersArr]);
+
+
+  useEffect(() => {
     ChannelRepository.Membership.getMembers(
-      { channelId: chatId },
-      ({ data: members }) => {
-        if (chatMemberNumber === 2 && members) {
-          setOneOnOneChatObject(members);
-        } else if (members) {
-          setGroupChatObject(members);
-        }
+      { channelId: chatId, limit: 100 },
+      (data) => {
+        setUsersObject(data);
       }
     );
   }, []);
@@ -269,7 +283,7 @@ const ChatList = ({
           ) : (
             <View style={styles.icon}>
               {channelType === 'community' ? (
-                <CommunityChatIcon />
+                <Avatar avatars={avatarArray} />
               ) : (
                 <PrivateChatIcon />
               )}

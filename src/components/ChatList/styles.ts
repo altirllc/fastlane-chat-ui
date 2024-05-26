@@ -2,18 +2,19 @@
 import { StyleSheet } from 'react-native';
 import { useTheme } from "react-native-paper";
 import type { MyMD3Theme } from "../../providers/amity-ui-kit-provider";
+import { AVATAR_SIZE } from '../../../src/components/Avatar/Avatar.styles';
 
 export const useStyles = () => {
   const theme = useTheme() as MyMD3Theme;
   const styles = StyleSheet.create({
     icon: {
-      backgroundColor: '#D9E5FC',
-      width: 42,
-      height: 42,
+      backgroundColor: '#EDEFF5',
+      width: AVATAR_SIZE,
+      height: AVATAR_SIZE,
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      borderRadius: 72,
+      borderRadius: AVATAR_SIZE / 2,
     },
     chatCard: {
       backgroundColor: theme.colors.background,
