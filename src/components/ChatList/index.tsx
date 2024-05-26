@@ -19,6 +19,7 @@ import { ImageIcon } from '../../svg/ImageIcon';
 import { useReadStatus } from '../../hooks/useReadStatus';
 import { Avatar } from '../../../src/components/Avatar/Avatar';
 import { useAvatarArray } from '../../../src/hooks/useAvatarArray';
+// @ts-ignore
 import { ECustomData } from '@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/ChatRoom';
 
 export interface IChatListProps {

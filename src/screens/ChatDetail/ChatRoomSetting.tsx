@@ -16,6 +16,7 @@ import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/compon
 import { AuthContext } from '../../store/context';
 import { CommonActions } from '@react-navigation/native';
 import { MessageContentType, MessageRepository } from '@amityco/ts-sdk-react-native';
+// @ts-ignore
 import { ECustomData } from '@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/ChatRoom';
 import { IGroupChatObject } from '@amityco/react-native-cli-chat-ui-kit/src/components/ChatList';
 import useAuth from '@amityco/react-native-cli-chat-ui-kit/src/hooks/useAuth';

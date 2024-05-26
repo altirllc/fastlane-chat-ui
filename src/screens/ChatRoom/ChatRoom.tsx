@@ -116,13 +116,13 @@ export interface IDisplayImage {
   thumbNail?: string;
 }
 
-type TPostDetailsMap = Map<string, TPostDetail>;
+//type TPostDetailsMap = Map<string, TPostDetail>;
 
-type TPostDetail = {
-  postImage: string;
-  postId: string;
-  postText: string;
-}
+// type TPostDetail = {
+//   postImage: string;
+//   postId: string;
+//   postText: string;
+// }
 
 const ChatRoom: ChatRoomScreenComponentType = () => {
   const styles = useStyles();
@@ -167,7 +167,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const { getReadStatusForMessage, isDelivered, getReadComponent, messageStatusMap } = useReadStatus()
 
   const [isSendLoading, setIsSendLoading] = useState(false);
-  const [postDetailsMap, setPostDetailsMap] = useState<TPostDetailsMap>(new Map())
+  // const [postDetailsMap, setPostDetailsMap] = useState<TPostDetailsMap>(new Map())
 
   const isFocused = useIsFocused();
 
@@ -283,14 +283,15 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
               id: ''
             }
           };
+          // @ts-ignore
           if (item.dataType === 'custom' && item?.data?.type === ECustomData.post && item?.data?.id) {
             //if datatype is custom and data is post from social feed
             //TODO: Handle post image data and UI also
-            console.log("postId", item.data?.id)
+            // @ts-ignore
             PostRepository.getPost(item.data?.id, ({ data }) => {
               console.log("data for post", data)
               if (data) {
-                let imageUrls = []
+                //let imageUrls = []
                 if (data.children?.length > 0) {
                   //if post has any images children, fetch image data from childrenPostId
                   for (const item of data.children) {
@@ -307,12 +308,14 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
                 commonObj.customData.text = data?.data?.text;
               }
             });
+            // @ts-ignore
           } else if (item.dataType === 'custom' && item?.data?.type === ECustomData.announcement) {
             commonObj.customData.type = ECustomData.announcement
             commonObj.customData.text = (item?.data as Record<string, string>)?.text as string;
           }
           if ((item?.data as Record<string, any>)?.fileId) {
             //if file present
+            // @ts-ignore
             formattedMessages.push({
               text: '',
               image:
@@ -322,6 +325,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
             })
           } else {
             //if file doesnt present
+            // @ts-ignore
             formattedMessages.push({
               text:
                 ((item?.data as Record<string, string>)?.text as string) ?? '',

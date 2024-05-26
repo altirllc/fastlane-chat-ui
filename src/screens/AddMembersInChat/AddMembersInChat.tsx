@@ -44,6 +44,7 @@ import { TFinalUser } from './types';
 import { LoadingOverlay } from '../../components/LoadingOverlay';
 import { AuthContext } from '../../store/context';
 import { IGroupChatObject } from '../../components/ChatList';
+// @ts-ignore
 import { ECustomData } from '@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/ChatRoom';
 
 type TAddMembersInChat = {
