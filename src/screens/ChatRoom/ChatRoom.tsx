@@ -40,6 +40,7 @@ import moment from 'moment';
 import {
   MessageContentType,
   MessageRepository,
+  PostRepository,
   SubChannelRepository,
   getSubChannelTopic,
   subscribeTopic,
@@ -82,6 +83,10 @@ type ChatRoomScreenComponentType = React.FC<{}>;
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();
 
+export enum ECustomData {
+  announcement = 'announcement',
+  post = 'post'
+}
 interface IMessage {
   _id: string;
   text?: string;
@@ -96,6 +101,12 @@ interface IMessage {
   messageType: string;
   isPending?: boolean;
   isDeleted: boolean;
+  customData?: {
+    type?: ECustomData
+    text?: string;
+    images?: never[];
+    id?: string;
+  };
 }
 export interface IDisplayImage {
   url: string;
@@ -103,6 +114,14 @@ export interface IDisplayImage {
   fileName: string;
   isUploaded: boolean;
   thumbNail?: string;
+}
+
+type TPostDetailsMap = Map<string, TPostDetail>;
+
+type TPostDetail = {
+  postImage: string;
+  postId: string;
+  postText: string;
 }
 
 const ChatRoom: ChatRoomScreenComponentType = () => {
@@ -148,6 +167,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const { getReadStatusForMessage, isDelivered, getReadComponent, messageStatusMap } = useReadStatus()
 
   const [isSendLoading, setIsSendLoading] = useState(false);
+  const [postDetailsMap, setPostDetailsMap] = useState<TPostDetailsMap>(new Map())
 
   const isFocused = useIsFocused();
 
@@ -220,62 +240,98 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   }, [messagesArr, isGroupChat, chatReceiver, groupChat]);
 
   useEffect(() => {
-    if (messagesArr.length > 0) {
-      const formattedMessages = messagesArr.map((item) => {
-        const targetIndex: number | undefined =
-          groupChat &&
-          groupChat.users?.findIndex(
-            (groupChatItem) => item.creatorId === groupChatItem.userId
-          );
-        let avatarUrl = '';
-        if (
-          groupChat &&
-          targetIndex &&
-          (groupChat?.users as any)[targetIndex as number]?.avatarFileId
-        ) {
-          avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${(groupChat?.users as any)[targetIndex as number]
-            ?.avatarFileId as any
-            }/download`;
-        } else if (chatReceiver && chatReceiver.avatarFileId) {
-          avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver.avatarFileId}/download`;
-        }
+    (() => {
+      if (messagesArr.length > 0) {
+        let formattedMessages: IMessage[] = [];
+        for (const item of messagesArr) {
+          const targetIndex: number | undefined =
+            groupChat &&
+            groupChat.users?.findIndex(
+              (groupChatItem) => item.creatorId === groupChatItem.userId
+            );
+          let avatarUrl = '';
+          if (
+            groupChat &&
+            targetIndex &&
+            (groupChat?.users as any)[targetIndex as number]?.avatarFileId
+          ) {
+            avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${(groupChat?.users as any)[targetIndex as number]
+              ?.avatarFileId as any
+              }/download`;
+          } else if (chatReceiver && chatReceiver.avatarFileId) {
+            avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver.avatarFileId}/download`;
+          }
+          let commonObj = {
+            _id: item.messageId,
+            createdAt: item.createdAt as string,
+            editedAt: item.updatedAt as string,
+            user: {
+              _id: item.creatorId ?? '',
+              name:
+                chatReceiver?.displayName ??
+                groupChat?.users?.find((user) => user.userId === item.creatorId)
+                  ?.displayName ??
+                '',
+              avatar: avatarUrl,
+            },
+            messageType: item.dataType,
+            isDeleted: item.isDeleted as boolean,
+            customData: {
+              type: '',
+              text: '',
+              images: [],
+              id: ''
+            }
+          };
+          if (item.dataType === 'custom' && item?.data?.type === ECustomData.post && item?.data?.id) {
+            //if datatype is custom and data is post from social feed
+            //TODO: Handle post image data and UI also
+            console.log("postId", item.data?.id)
+            PostRepository.getPost(item.data?.id, ({ data }) => {
+              console.log("data for post", data)
+              if (data) {
+                let imageUrls = []
+                if (data.children?.length > 0) {
+                  //if post has any images children, fetch image data from childrenPostId
+                  for (const item of data.children) {
+                    PostRepository.getPost(item.data?.postId, ({ data }) => {
+                      console.log("data for children post", data)
+                      if (data) {
 
-        let commonObj = {
-          _id: item.messageId,
-          createdAt: item.createdAt as string,
-          editedAt: item.updatedAt as string,
-          user: {
-            _id: item.creatorId ?? '',
-            name:
-              chatReceiver?.displayName ??
-              groupChat?.users?.find((user) => user.userId === item.creatorId)
-                ?.displayName ??
-              '',
-            avatar: avatarUrl,
-          },
-          messageType: item.dataType,
-          isDeleted: item.isDeleted as boolean,
-        };
-        if ((item?.data as Record<string, any>)?.fileId) {
-          //if file present
-          return {
-            text: '',
-            image:
-              `https://api.${apiRegion}.amity.co/api/v3/files/${(item?.data as Record<string, any>).fileId
-              }/download` ?? undefined,
-            ...commonObj,
-          };
-        } else {
-          //if file doesnt present
-          return {
-            text:
-              ((item?.data as Record<string, string>)?.text as string) ?? '',
-            ...commonObj,
-          };
+                      }
+                    });
+                  }
+                }
+                commonObj.customData.type = ECustomData.post
+                commonObj.customData.id = data._id;
+                commonObj.customData.text = data?.data?.text;
+              }
+            });
+          } else if (item.dataType === 'custom' && item?.data?.type === ECustomData.announcement) {
+            commonObj.customData.type = ECustomData.announcement
+            commonObj.customData.text = (item?.data as Record<string, string>)?.text as string;
+          }
+          if ((item?.data as Record<string, any>)?.fileId) {
+            //if file present
+            formattedMessages.push({
+              text: '',
+              image:
+                `https://api.${apiRegion}.amity.co/api/v3/files/${(item?.data as Record<string, any>).fileId
+                }/download` ?? undefined,
+              ...commonObj,
+            })
+          } else {
+            //if file doesnt present
+            formattedMessages.push({
+              text:
+                ((item?.data as Record<string, string>)?.text as string) ?? '',
+              ...commonObj,
+            })
+          }
         }
-      });
-      setMessages(formattedMessages);
-    }
+        setMessages(formattedMessages);
+      }
+    })()
   }, [messagesArr]);
 
   const handleSend = async () => {
@@ -388,13 +444,18 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       isRenderDivider = true;
     }
 
+    const isNormalText = message.messageType === 'text';
+    const isImage = message.messageType === 'image';
+    const isAnnouncement = message?.messageType === "custom" && message.customData?.type === ECustomData.announcement
+    const isSocialPost = message?.messageType === "custom" && message.customData?.type === ECustomData.post
+
     return (
       <View>
         {isRenderDivider && renderTimeDivider(message.createdAt)}
         <View
-          style={!isUserChat ? styles.leftMessageWrap : styles.rightMessageWrap}
+          style={!isUserChat ? isAnnouncement ? styles.leftMessageWrap : [styles.leftMessageWrap, { flexDirection: 'row' }] : styles.rightMessageWrap}
         >
-          {!isUserChat &&
+          {!isUserChat && !isAnnouncement &&
             (message.user.avatar ? (
               <Image
                 source={{ uri: message.user.avatar }}
@@ -407,11 +468,16 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
             ))}
 
           <View>
-            {!isUserChat && isGroupChat ? (
+            {!isUserChat && isGroupChat && !isAnnouncement ? (
               <Text
                 style={isUserChat ? styles.chatUserText : styles.chatFriendText}
               >
                 {message.user.name}
+              </Text>
+            ) : null}
+            {isAnnouncement && message.customData?.text ? (
+              <Text style={{ color: '#6E768A', fontSize: 12, fontWeight: '400', marginHorizontal: 20, lineHeight: 17, alignSelf: 'center' }}>
+                {message.customData?.text}
               </Text>
             ) : null}
             {message.isDeleted ? (
@@ -439,7 +505,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
                   }}
                   triggerOnLongPress
                 >
-                  {message.messageType === 'text' ? (
+                  {isNormalText ? (
                     <View
                       key={message._id}
                       style={[
@@ -460,7 +526,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
                         {message.text}
                       </Text>
                     </View>
-                  ) : (
+                  ) : isImage ? (
                     <View
                       style={[
                         styles.imageChatBubble,
@@ -476,7 +542,57 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
                         }}
                       />
                     </View>
-                  )}
+                  ) : isSocialPost ? (
+                    <>
+                      {
+                        message.customData?.images && message.customData.images?.length > 0 ? (
+                          message.customData.images?.map((eachImageUrl) => {
+                            return (
+                              <View
+                                style={[
+                                  styles.imageChatBubble,
+                                  isUserChat
+                                    ? styles.userImageBubble
+                                    : styles.friendBubble,
+                                ]}
+                              >
+                                <Image
+                                  style={styles.imageMessage}
+                                  source={{
+                                    uri: eachImageUrl + '?size=medium',
+                                  }}
+                                />
+                              </View>
+                            )
+                          })
+                        ) : null
+                      }
+                      {
+                        message.customData?.text ? (
+                          <View
+                            key={message._id}
+                            style={[
+                              styles.textChatBubble,
+                              isUserChat ? styles.userBubble : styles.friendBubble,
+                              isGroupChat
+                                ? { marginVertical: 5 }
+                                : { marginBottom: 5 },
+                            ]}
+                          >
+                            <Text
+                              style={
+                                isUserChat
+                                  ? styles.chatUserText
+                                  : styles.chatFriendText
+                              }
+                            >
+                              {message.customData.text}
+                            </Text>
+                          </View>
+                        ) : null
+                      }
+                    </>
+                  ) : null}
                 </MenuTrigger>
                 <MenuOptions
                   customStyles={{
@@ -529,27 +645,31 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
                 </MenuOptions>
               </Menu>
             )}
-            <View
-              style={{
-                flexDirection: 'row',
-                alignSelf: isUserChat ? 'flex-end' : 'flex-start',
-              }}
-            >
-              <Text
-                style={[
-                  styles.chatTimestamp,
-                  {
+            {
+              !isAnnouncement ? (
+                <View
+                  style={{
+                    flexDirection: 'row',
                     alignSelf: isUserChat ? 'flex-end' : 'flex-start',
-                  },
-                ]}
-              >
-                {message.createdAt != message.editedAt ? 'Edited ·' : ''}{' '}
-                {moment(message.createdAt).format('hh:mm A')}
-              </Text>
-              {isUserChat && isDelivered ?
-                getReadComponent(message._id)
-                : null}
-            </View>
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.chatTimestamp,
+                      {
+                        alignSelf: isUserChat ? 'flex-end' : 'flex-start',
+                      },
+                    ]}
+                  >
+                    {message.createdAt != message.editedAt ? 'Edited ·' : ''}{' '}
+                    {moment(message.createdAt).format('hh:mm A')}
+                  </Text>
+                  {isUserChat && isDelivered ?
+                    getReadComponent(message._id)
+                    : null}
+                </View>
+              ) : null
+            }
           </View>
         </View>
       </View>

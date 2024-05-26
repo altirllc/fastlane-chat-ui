@@ -2,6 +2,7 @@ import { SubChannelRepository } from '@amityco/ts-sdk-react-native';
 import { useEffect, useState } from 'react';
 // @ts-ignore
 import { TUser, TMetadata } from '../../../../../src/services/types';
+import { ECustomData } from '../../src/screens/ChatRoom/ChatRoom';
 
 export type TMessagePreview = {
   channelId: string;
@@ -9,8 +10,11 @@ export type TMessagePreview = {
   creatorId: string;
   data: {
     text: string;
+    type: ECustomData;
+    id?: string;
+    images?: string[];
   };
-  dataType: 'text' | 'image';
+  dataType: 'text' | 'image' | 'custom';
   isDeleted: boolean;
   messagePreviewId: string;
   segment: number;

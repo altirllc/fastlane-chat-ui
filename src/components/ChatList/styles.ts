@@ -56,11 +56,10 @@ export const useStyles = () => {
       fontWeight: '400',
       fontSize: 15,
       color: theme.colors.baseShade1,
-      alignItems: 'center'
     },
     unReadBadge: {
       borderRadius: 72,
-      backgroundColor: '#FA4D31',
+      backgroundColor: '#007AFF',
       width: 'auto',
       display: 'flex',
       alignItems: 'center',
@@ -74,6 +73,7 @@ export const useStyles = () => {
       minWidth: 20,
     },
     chatTimeWrap: {
+      width: '25%',
       flexDirection: 'column',
       alignItems: 'flex-end',
     },

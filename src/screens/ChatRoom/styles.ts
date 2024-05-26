@@ -205,7 +205,6 @@ export const useStyles = () => {
       marginRight: 12,
     },
     leftMessageWrap: {
-      flexDirection: 'row',
       marginVertical: 10,
     },
     rightMessageWrap: {

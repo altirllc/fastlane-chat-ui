@@ -1,4 +1,4 @@
-import { UserRepository } from '@amityco/ts-sdk-react-native';
+import { MessageContentType, MessageRepository, UserRepository } from '@amityco/ts-sdk-react-native';
 import React, {
   useContext,
   useEffect,
@@ -44,6 +44,7 @@ import { TFinalUser } from './types';
 import { LoadingOverlay } from '../../components/LoadingOverlay';
 import { AuthContext } from '../../store/context';
 import { IGroupChatObject } from '../../components/ChatList';
+import { ECustomData } from '@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/ChatRoom';
 
 type TAddMembersInChat = {
   initUserList?: UserInterface[];
@@ -420,13 +421,32 @@ const AddMembersInChat = ({
         amityAccessToken,
         requestBody
       );
-      console.log('Result', JSON.stringify(result));
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'RecentChat' }],
-        })
-      );
+      if (result) {
+        //now create new message along with some data to put in the channel;
+        const names = selectedUserList.map((eachUser) => eachUser.displayName).join(', ');
+        const customMessage = {
+          subChannelId: channelID,
+          dataType: MessageContentType.CUSTOM,
+          data: {
+            type: ECustomData.announcement,
+            text: `${names} has been added in the chat.`
+          }
+        };
+
+        try {
+          const { data: message } = await MessageRepository.createMessage(customMessage);
+          if (message) {
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'RecentChat' }],
+              })
+            );
+          }
+        } catch (e) {
+          console.log("e", e)
+        }
+      }
     } catch (e: { data: { message: string | undefined } } | any) {
       Alert.alert(
         'Error!',
@@ -484,13 +504,13 @@ const AddMembersInChat = ({
           </TouchableOpacity>
         </View>
         {selectedUserList.length > 0 ? (
-          <>
+          <View>
             <SelectedUserHorizontal
               users={selectedUserList}
               onDeleteUserPressed={onDeleteUserPressed}
             />
             <View style={styles.separator} />
-          </>
+          </View>
         ) : (
           <View />
         )}
