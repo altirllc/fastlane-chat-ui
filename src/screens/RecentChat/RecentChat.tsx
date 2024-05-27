@@ -2,7 +2,6 @@ import React, {
   type ReactElement,
   useMemo,
   useRef,
-  useCallback,
   useContext,
   useLayoutEffect,
 } from 'react';
@@ -107,12 +106,12 @@ export default function RecentChat({ chatNavigation, avatarUrl }: TRecentChat) {
       },
       (value) => {
         setChannelData(value);
-        if (value.data.length > 0) {
+        subscribeChannels(channels);
+        if (value.data.length > 0 || (value.data.length === 0 && !value.hasNextPage && !value.loading)) {
           setTimeout(() => {
             setLoadChannel(false);
             setShowFabIcon(true);
           }, 1000);
-          subscribeChannels(value.data);
         }
       }
     );

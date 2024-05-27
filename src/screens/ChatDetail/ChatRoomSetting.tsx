@@ -15,6 +15,11 @@ import BackButton from '@amityco/react-native-cli-chat-ui-kit/src/components/Bac
 import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/components/LoadingOverlay';
 import { AuthContext } from '../../store/context';
 import { CommonActions } from '@react-navigation/native';
+import { MessageContentType, MessageRepository } from '@amityco/ts-sdk-react-native';
+// @ts-ignore
+import { ECustomData } from '@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/ChatRoom';
+import { IGroupChatObject } from '@amityco/react-native-cli-chat-ui-kit/src/components/ChatList';
+import useAuth from '@amityco/react-native-cli-chat-ui-kit/src/hooks/useAuth';
 
 interface ChatDetailProps {
   navigation: any;
@@ -27,8 +32,10 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({
 }) => {
   const theme = useTheme() as MyMD3Theme;
   const styles = useStyles();
+  const { client } = useAuth()
   const { amityAccessToken } = useContext(AuthContext);
-  const { channelId, channelType, groupChat } = route.params;
+  const { channelId, channelType } = route.params;
+  const groupChat = route?.params?.groupChat as IGroupChatObject;
   const [loading, setLoading] = useState(false);
   const [showReportAlert, setShowReportAlert] = useState<boolean>(false);
 
@@ -81,12 +88,26 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({
 
   const onLeaveChat = async () => {
     try {
-      const isLeave = await leaveAmityChannel(channelId);
-      if (isLeave) {
-        navigation.navigate('RecentChat');
+      setLoading(true)
+      //now create new message along with some data to put in the channel;
+      const userName = groupChat?.users?.find((eachUser) => eachUser.userId === (client as Amity.Client).userId)?.displayName || ''
+      const customMessage = {
+        subChannelId: channelId,
+        dataType: MessageContentType.CUSTOM,
+        data: {
+          type: ECustomData.announcement,
+          text: `${userName ? userName : 'Someone'} has left the chat.`
+        }
+      };
+      const { data: message } = await MessageRepository.createMessage(customMessage);
+      if (message) {
+        const isLeave = await leaveAmityChannel(channelId);
+        if (isLeave) navigation.navigate('RecentChat');
       }
     } catch (error) {
       console.log('error: ', error);
+    } finally {
+      setLoading(false)
     }
   };
 

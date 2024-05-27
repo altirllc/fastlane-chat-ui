@@ -12,9 +12,15 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import useAuth from '../../hooks/useAuth';
 import { useEffect, useMemo, useState } from 'react';
 import type { UserInterface } from '../../types/user.interface';
-import { CommunityChatIcon } from '../../svg/CommunityChatIcon';
 import { PrivateChatIcon } from '../../svg/PrivateChatIcon';
 import { EUserRoles } from '../../enum/sessionState';
+import { useMessagePreview } from '../../hooks/useMessagePreview';
+import { ImageIcon } from '../../svg/ImageIcon';
+import { useReadStatus } from '../../hooks/useReadStatus';
+import { Avatar } from '../../../src/components/Avatar/Avatar';
+import { useAvatarArray } from '../../../src/hooks/useAvatarArray';
+// @ts-ignore
+import { ECustomData } from '@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/ChatRoom';
 
 export interface IChatListProps {
   chatId: string;
@@ -33,6 +39,7 @@ export interface IGroupChatObject {
   avatarFileId: string | undefined;
   channelModerator?: Partial<UserInterface>;
 }
+
 const ChatList = ({
   chatId,
   chatName,
@@ -44,11 +51,70 @@ const ChatList = ({
 }: IChatListProps) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { client, apiRegion } = useAuth();
+
+  const [usersObject, setUsersObject] =
+    useState<Amity.LiveCollection<Amity.Membership<'channel'>>>();
+  const { data: usersArr = [] } = usersObject ?? {};
+
   const [oneOnOneChatObject, setOneOnOneChatObject] =
     useState<Amity.Membership<'channel'>[]>();
   const [groupChatObject, setGroupChatObject] =
     useState<Amity.Membership<'channel'>[]>();
   const styles = useStyles();
+
+  const chatReceiver = useMemo(() => {
+    if (oneOnOneChatObject && oneOnOneChatObject.length > 0) {
+      const targetIndex: number = oneOnOneChatObject?.findIndex(
+        (item) => item.userId !== (client as Amity.Client).userId
+      );
+      const chatReceiver: UserInterface = {
+        userId: oneOnOneChatObject[targetIndex]?.userId as string,
+        displayName: oneOnOneChatObject[targetIndex]?.user
+          ?.displayName as string,
+        avatarFileId: oneOnOneChatObject[targetIndex]?.user?.avatarFileId ?? '',
+      };
+      return chatReceiver;
+    }
+    return undefined
+  }, [oneOnOneChatObject, client])
+
+  const groupChat = useMemo(() => {
+    if (groupChatObject && groupChatObject?.length > 0) {
+      const userArr: UserInterface[] = groupChatObject?.map((item) => {
+        return {
+          userId: item.userId as string,
+          displayName: item.user?.displayName as string,
+          avatarFileId: item.user?.avatarFileId as string,
+        };
+      });
+      let channelModerator = groupChatObject?.find((eachUser) => eachUser.roles?.includes(
+        EUserRoles['channel-moderator']
+      ))
+      const groupChat: IGroupChatObject = {
+        users: userArr,
+        displayName: chatName as string,
+        avatarFileId: avatarFileId,
+        memberCount: chatMemberNumber,
+      };
+      if (channelModerator) {
+        //if channel admin exist, add its info separately
+        groupChat.channelModerator = {
+          userId: channelModerator.userId,
+        }
+      }
+      return groupChat
+    }
+    return undefined
+  }, [groupChatObject, chatName, avatarFileId, chatMemberNumber])
+
+  const { avatarArray } = useAvatarArray(groupChat)
+
+  const isGroupChat = useMemo(() => {
+    return groupChat !== undefined;
+  }, [groupChat]);
+
+  const { messagePreview } = useMessagePreview(chatId);
+  const { getReadStatusForMessage, isDelivered, getReadComponent } = useReadStatus()
 
   const avatarId = useMemo(() => {
     //return latest avatarID
@@ -78,18 +144,14 @@ const ChatList = ({
     } else return '';
   }, [oneOnOneChatObject, groupChatObject, chatName]);
 
-  const handlePress = (chatMemberNumber: number) => {
-    if (oneOnOneChatObject && oneOnOneChatObject.length > 0) {
-      const targetIndex: number = oneOnOneChatObject?.findIndex(
-        (item) => item.userId !== (client as Amity.Client).userId
-      );
-      const chatReceiver: UserInterface = {
-        userId: oneOnOneChatObject[targetIndex]?.userId as string,
-        displayName: oneOnOneChatObject[targetIndex]?.user
-          ?.displayName as string,
-        avatarFileId: oneOnOneChatObject[targetIndex]?.user?.avatarFileId ?? '',
-      };
+  const isUserLoggedInPreviewChat = useMemo(() => {
+    const lastMessageCreatorId = messagePreview?.user?.userId;
+    const isUserChat = lastMessageCreatorId === (client as Amity.Client).userId
+    return isUserChat;
+  }, [messagePreview, client])
 
+  const handlePress = () => {
+    if (oneOnOneChatObject && oneOnOneChatObject.length > 0 && chatReceiver) {
       if (chatReceiver.userId) {
         navigation.navigate('ChatRoom', {
           channelId: chatId,
@@ -97,29 +159,7 @@ const ChatList = ({
         });
       }
     }
-    if (groupChatObject && groupChatObject?.length > 0) {
-      const userArr: UserInterface[] = groupChatObject?.map((item) => {
-        return {
-          userId: item.userId as string,
-          displayName: item.user?.displayName as string,
-          avatarFileId: item.user?.avatarFileId as string,
-        };
-      });
-      let channelModerator = groupChatObject?.find((eachUser) =>
-        eachUser.roles?.includes(EUserRoles['channel-moderator'])
-      );
-      const groupChat: IGroupChatObject = {
-        users: userArr,
-        displayName: chatName as string,
-        avatarFileId: avatarFileId,
-        memberCount: chatMemberNumber,
-      };
-      if (channelModerator) {
-        //if channel admin exist, add its info separately
-        groupChat.channelModerator = {
-          userId: channelModerator.userId,
-        };
-      }
+    if (groupChatObject && groupChatObject?.length > 0 && groupChat) {
       navigation.navigate('ChatRoom', {
         channelId: chatId,
         groupChat: groupChat,
@@ -128,20 +168,118 @@ const ChatList = ({
   };
 
   useEffect(() => {
+    if (chatMemberNumber === 2 && usersArr) {
+      setOneOnOneChatObject(usersArr);
+    } else if (usersArr) {
+      setGroupChatObject(usersArr);
+    }
+  }, [usersArr]);
+
+
+  useEffect(() => {
     ChannelRepository.Membership.getMembers(
-      { channelId: chatId },
-      ({ data: members }) => {
-        if (chatMemberNumber === 2 && members) {
-          setOneOnOneChatObject(members);
-        } else if (members) {
-          setGroupChatObject(members);
-        }
+      { channelId: chatId, limit: 100 },
+      (data) => {
+        setUsersObject(data);
       }
     );
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      //get the message read status
+      if (!messagePreview?.messagePreviewId) return;
+      if (!isGroupChat && !chatReceiver) {
+        //get the read statuses only if there is a group chat or one to one chat.
+        return;
+      }
+      if (isUserLoggedInPreviewChat) {
+        await getReadStatusForMessage(messagePreview?.messagePreviewId,
+          chatReceiver,
+          groupChat,
+          isGroupChat
+        );
+      }
+    })();
+  }, [messagePreview, isUserLoggedInPreviewChat]);
+
+  const getMessagePreview = () => {
+    const dataType = messagePreview?.dataType;
+    const isPost = dataType === "custom" && messagePreview?.data.type === ECustomData.post;
+    const isAnnouncement = dataType === "custom" && messagePreview?.data.type === ECustomData.announcement
+    const previewText = messagePreview?.data?.text;
+    const lastMessageCreatorDisplayName = messagePreview?.user?.displayName
+    const lastMessageCreatorId = messagePreview?.user?.userId;
+    const isLoggedInUser = lastMessageCreatorId === (client as Amity.Client).userId;
+    const text = dataType === "text" || isAnnouncement ? (previewText ? previewText : '') : dataType === "image" ? 'Photo' : isPost ? 'Post' : ''
+
+
+    if (chatMemberNumber === 2) {
+      //add read status if isLoggedInUser is true
+      return (
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 7, width: '100%', }}>
+          {
+            isUserLoggedInPreviewChat &&
+              isDelivered &&
+              messagePreview?.messagePreviewId ?
+              getReadComponent(messagePreview?.messagePreviewId) :
+              null
+          }
+          {
+            dataType === "image" || isPost ? (
+              <View style={{ marginRight: 5 }}>
+                <ImageIcon height={16} width={16} />
+              </View>
+            ) : null
+          }
+          <CustomText numberOfLines={1} style={styles.messagePreview}>
+            {text}
+          </CustomText>
+        </View>
+      )
+    }
+    if (chatMemberNumber > 2) {
+      //add read status if isLoggedInUser is true
+      return (
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 7, width: '100%', }}>
+          <CustomText numberOfLines={1} style={styles.messagePreview}>
+            {
+              isUserLoggedInPreviewChat &&
+                isDelivered &&
+                messagePreview?.messagePreviewId &&
+                !isAnnouncement
+                ?
+                getReadComponent(messagePreview?.messagePreviewId) :
+                null
+            }
+            {
+              lastMessageCreatorId ?
+                isLoggedInUser ?
+                  'You: ' :
+                  (lastMessageCreatorDisplayName ?
+                    `${lastMessageCreatorDisplayName}: ` : '') :
+                ''
+            }
+            {
+              dataType === "image" || isPost ? (
+                <View style={{ marginRight: 5 }}>
+                  <ImageIcon height={16} width={16} />
+                </View>
+              ) : null
+            }
+            {text}
+            {/* <CustomText numberOfLines={1} style={styles.messagePreview}>
+              {text}
+            </CustomText> */}
+          </CustomText>
+        </View>
+      )
+    }
+    return <></>
+  }
+
   return (
-    <TouchableHighlight onPress={() => handlePress(chatMemberNumber)}>
+    <TouchableHighlight onPress={() => handlePress()}>
       <View style={styles.chatCard}>
         <View style={styles.avatarSection}>
           {avatarId ? (
@@ -154,7 +292,7 @@ const ChatList = ({
           ) : (
             <View style={styles.icon}>
               {channelType === 'community' ? (
-                <CommunityChatIcon />
+                <Avatar avatars={avatarArray} />
               ) : (
                 <PrivateChatIcon />
               )}
@@ -163,15 +301,18 @@ const ChatList = ({
         </View>
 
         <View style={styles.chatDetailSection}>
-          <View style={styles.chatNameWrap}>
-            <CustomText style={styles.chatName} numberOfLines={1}>
-              {chatDisplayName}
-            </CustomText>
-            {chatMemberNumber > 2 ? (
-              <CustomText style={styles.chatLightText}>
-                ({chatMemberNumber})
+          <View style={{ width: '75%' }}>
+            <View style={styles.chatNameWrap}>
+              <CustomText style={styles.chatName} numberOfLines={1}>
+                {chatDisplayName}
               </CustomText>
-            ) : null}
+              {chatMemberNumber > 2 ? (
+                <CustomText style={styles.chatLightText}>
+                  ({chatMemberNumber})
+                </CustomText>
+              ) : null}
+            </View>
+            {getMessagePreview()}
           </View>
           <View style={styles.chatTimeWrap}>
             <CustomText style={styles.chatLightText}>{messageDate}</CustomText>

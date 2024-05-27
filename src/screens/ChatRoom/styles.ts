@@ -142,13 +142,6 @@ export const useStyles = () => {
       color: theme.colors.base
     },
     icon: {
-      backgroundColor: '#D9E5FC',
-      width: 42,
-      height: 42,
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderRadius: 72,
       marginRight: 8,
       marginLeft: 10,
     },
@@ -212,7 +205,6 @@ export const useStyles = () => {
       marginRight: 12,
     },
     leftMessageWrap: {
-      flexDirection: 'row',
       marginVertical: 10,
     },
     rightMessageWrap: {
@@ -252,7 +244,26 @@ export const useStyles = () => {
       width: 80, // Set the width of the options container
       marginTop: -50, // Adjust the top margin as needed
     },
-
+    bodySection: {
+      paddingVertical: 10,
+      marginVertical: 10,
+      minHeight: 300,
+      width: Dimensions.get("window").width * 0.7,
+      backgroundColor: theme.colors.border,
+      borderRadius: 20,
+    },
+    postCreatorContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 15
+    },
+    postCaption: {
+      fontSize: 13,
+      fontWeight: '400',
+      paddingHorizontal: 15,
+      paddingVertical: 10
+    }
   });
 
   return styles;

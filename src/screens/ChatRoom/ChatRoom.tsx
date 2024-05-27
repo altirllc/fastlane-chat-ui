@@ -7,6 +7,7 @@ import React, {
   useRef,
   useLayoutEffect,
   useContext,
+  useCallback,
 } from 'react';
 import {
   View,
@@ -15,11 +16,9 @@ import {
   TouchableOpacity,
   TextInput,
   Platform,
-  Text,
   KeyboardAvoidingView,
   FlatList,
   Keyboard,
-  Alert,
   ActivityIndicator,
   LayoutAnimation,
 } from 'react-native';
@@ -36,10 +35,10 @@ import {
 import type { RootStackParamList } from '../../routes/RouteParamList';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import BackButton from '../../components/BackButton';
-import moment from 'moment';
 import {
   MessageContentType,
   MessageRepository,
+  PostRepository,
   SubChannelRepository,
   getSubChannelTopic,
   subscribeTopic,
@@ -53,14 +52,6 @@ import ImagePicker, {
 } from 'react-native-image-picker';
 // import { SafeAreaView } from 'react-native-safe-area-context';
 import LoadingImage from '../../components/LoadingImage';
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
-import { SvgXml } from 'react-native-svg';
-import { deletedIcon } from '../../svg/svg-xml-list';
 import EditMessageModal from '../../components/EditMessageModal';
 // import { GroupChatIcon } from '../../svg/GroupChatIcon';
 import { AvatarIcon } from '../../svg/AvatarIcon';
@@ -72,16 +63,33 @@ import { AlbumIcon } from '../../svg/AlbumIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import { AlertIcon } from '../../svg/AlertIcon';
-import { CommunityChatIcon } from '../../svg/CommunityChatIcon';
 import { SendImage } from '../../svg/SendImage';
-import { CheckIcon } from '../../svg/CheckIcon';
 import { AuthContext } from '../../store/context';
+import { useReadStatus } from '../../hooks/useReadStatus';
+import { useAvatarArray } from '../../../src/hooks/useAvatarArray';
+import { Avatar } from '../../../src/components/Avatar/Avatar';
+// @ts-ignore
+import { EachChatMessage } from '@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/EachChatMessage';
 
 type ChatRoomScreenComponentType = React.FC<{}>;
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();
 
-interface IMessage {
+export enum ECustomData {
+  announcement = 'announcement',
+  post = 'post'
+}
+
+export type TCustomData = {
+  type?: ECustomData
+  text?: string;
+  imageIds?: string[];
+  id?: string;
+  extraData: {
+    postCreator: Amity.User
+  }
+}
+export interface IMessage {
   _id: string;
   text?: string;
   createdAt: string;
@@ -95,6 +103,7 @@ interface IMessage {
   messageType: string;
   isPending?: boolean;
   isDeleted: boolean;
+  customData?: TCustomData;
 }
 export interface IDisplayImage {
   url: string;
@@ -104,11 +113,13 @@ export interface IDisplayImage {
   thumbNail?: string;
 }
 
-interface MessageStatus {
-  readMessageStatus: boolean;
-}
+//type TPostDetailsMap = Map<string, TPostDetail>;
 
-type MessageStatusMap = Map<string, MessageStatus>;
+// type TPostDetail = {
+//   postImage: string;
+//   postId: string;
+//   postText: string;
+// }
 
 const ChatRoom: ChatRoomScreenComponentType = () => {
   const styles = useStyles();
@@ -116,6 +127,8 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
 
   const route = useRoute<RouteProp<RootStackParamList, 'ChatRoom'>>();
   const { chatReceiver, groupChat, channelId, from } = route.params;
+
+  const { avatarArray } = useAvatarArray(groupChat)
 
   const isGroupChat = useMemo(() => {
     return groupChat !== undefined;
@@ -148,10 +161,10 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const [editMessageText, setEditMessageText] = useState<string>('');
   const disposers: Amity.Unsubscriber[] = [];
 
-  const [messageStatusMap, setMessageStatusMap] = useState<MessageStatusMap>(
-    new Map()
-  );
+  const { getReadStatusForMessage, messageStatusMap } = useReadStatus()
+
   const [isSendLoading, setIsSendLoading] = useState(false);
+  // const [postDetailsMap, setPostDetailsMap] = useState<TPostDetailsMap>(new Map())
 
   const isFocused = useIsFocused();
 
@@ -165,14 +178,6 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       }
     }, 500);
   }, [isFocused]);
-
-  const setMessageStatus = (messageId: string, readMessageStatus: boolean) => {
-    setMessageStatusMap((prevMap) => {
-      const newMap = new Map(prevMap);
-      newMap.set(messageId, { readMessageStatus });
-      return newMap;
-    });
-  };
 
   const subscribeSubChannel = (subChannel: Amity.SubChannel) =>
     disposers.push(subscribeTopic(getSubChannelTopic(subChannel)));
@@ -210,51 +215,6 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
     }
   }, [subChannelData]);
 
-  const getReadStatusForMessage = async (
-    messageId: string
-  ): Promise<boolean | undefined> => {
-    return await new Promise(async (resolve, reject) => {
-      try {
-        const { data: users } = await MessageRepository.getReadUsers({
-          messageId,
-          memberships: ['member', 'banned', 'muted', 'non-member', 'deleted'],
-        });
-        if (users) {
-          let isMessageReadByReceiver = false;
-          const messageSeenUserIds = users.map((user) => user.userId);
-
-          if (chatReceiver) {
-            //if one to one chat, check if reciever id exist in list of users who has seen this message.
-            isMessageReadByReceiver = messageSeenUserIds.includes(
-              chatReceiver?.userId
-            );
-          } else if (
-            isGroupChat &&
-            groupChat?.users &&
-            groupChat.users.length > 0
-          ) {
-            let haveAllUsersSeenMessage = true;
-
-            for (let i = 0; i < groupChat?.users.length; i++) {
-              const eachUser = groupChat?.users[i];
-              if (eachUser && !messageSeenUserIds.includes(eachUser.userId)) {
-                //if even one user from group chat haven't seen the message, just mark read status as false
-                haveAllUsersSeenMessage = false;
-                break; // Exit the loop
-              }
-            }
-
-            isMessageReadByReceiver = haveAllUsersSeenMessage;
-          }
-          setMessageStatus(messageId, isMessageReadByReceiver);
-          resolve(true);
-        }
-      } catch (error) {
-        reject(new Error('Unable to create channel ' + error));
-      }
-    });
-  };
-
   useEffect(() => {
     (async () => {
       //if messages are changed, get the latest read status of them.
@@ -270,71 +230,108 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
           eachMessage.creatorId === (client as Amity.Client).userId;
         if (isUserChat) {
           //get read status only for the logged in user's own chats
-          await getReadStatusForMessage(eachMessage.messageId);
+          await getReadStatusForMessage(eachMessage.messageId, chatReceiver, groupChat, isGroupChat);
         }
       }
     })();
-  }, [messagesArr, isGroupChat, chatReceiver]);
+  }, [messagesArr, isGroupChat, chatReceiver, groupChat]);
 
   useEffect(() => {
-    if (messagesArr.length > 0) {
-      const formattedMessages = messagesArr.map((item) => {
-        const targetIndex: number | undefined =
-          groupChat &&
-          groupChat.users?.findIndex(
-            (groupChatItem) => item.creatorId === groupChatItem.userId
-          );
-        let avatarUrl = '';
-        if (
-          groupChat &&
-          targetIndex &&
-          (groupChat?.users as any)[targetIndex as number]?.avatarFileId
-        ) {
-          avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${
-            (groupChat?.users as any)[targetIndex as number]
+    (() => {
+      if (messagesArr.length > 0) {
+        let formattedMessages: IMessage[] = [];
+        for (const item of messagesArr) {
+          const targetIndex: number | undefined =
+            groupChat &&
+            groupChat.users?.findIndex(
+              (groupChatItem) => item.creatorId === groupChatItem.userId
+            );
+          let avatarUrl = '';
+          if (
+            groupChat &&
+            targetIndex &&
+            (groupChat?.users as any)[targetIndex as number]?.avatarFileId
+          ) {
+            avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${(groupChat?.users as any)[targetIndex as number]
               ?.avatarFileId as any
-          }/download`;
-        } else if (chatReceiver && chatReceiver.avatarFileId) {
-          avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver.avatarFileId}/download`;
-        }
-
-        let commonObj = {
-          _id: item.messageId,
-          createdAt: item.createdAt as string,
-          editedAt: item.updatedAt as string,
-          user: {
-            _id: item.creatorId ?? '',
-            name:
-              chatReceiver?.displayName ??
-              groupChat?.users?.find((user) => user.userId === item.creatorId)
-                ?.displayName ??
-              '',
-            avatar: avatarUrl,
-          },
-          messageType: item.dataType,
-          isDeleted: item.isDeleted as boolean,
-        };
-        if ((item?.data as Record<string, any>)?.fileId) {
-          //if file present
-          return {
-            text: '',
-            image:
-              `https://api.${apiRegion}.amity.co/api/v3/files/${
-                (item?.data as Record<string, any>).fileId
-              }/download` ?? undefined,
-            ...commonObj,
+              }/download`;
+          } else if (chatReceiver && chatReceiver.avatarFileId) {
+            avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver.avatarFileId}/download`;
+          }
+          let commonObj = {
+            _id: item.messageId,
+            createdAt: item.createdAt as string,
+            editedAt: item.updatedAt as string,
+            user: {
+              _id: item.creatorId ?? '',
+              name:
+                chatReceiver?.displayName ??
+                groupChat?.users?.find((user) => user.userId === item.creatorId)
+                  ?.displayName ??
+                '',
+              avatar: avatarUrl,
+            },
+            messageType: item.dataType,
+            isDeleted: item.isDeleted as boolean,
+            // @ts-ignore
+            customData: {
+              type: '',
+              text: '',
+              imageIds: [],
+              id: '',
+              extraData: {
+                postCreator: null
+              }
+            } as TCustomData
           };
-        } else {
-          //if file doesnt present
-          return {
-            text:
-              ((item?.data as Record<string, string>)?.text as string) ?? '',
-            ...commonObj,
-          };
+          // @ts-ignore
+          if (item.dataType === 'custom' && item?.data?.type === ECustomData.post && item?.data?.id) {
+            //if datatype is custom and data is post from social feed
+            //TODO: Handle post image data and UI also
+            // @ts-ignore
+            PostRepository.getPost(item.data?.id, ({ data }) => {
+              console.log("data for post", data)
+              if (data) {
+                //let imageUrls = []
+                if (data.children?.length > 0) {
+                  commonObj.customData.imageIds = [...data.children]
+                }
+                if (data?.creator && Object.keys(data.creator).length > 0) {
+                  commonObj.customData.extraData.postCreator = data?.creator
+                }
+                commonObj.customData.type = ECustomData.post
+                commonObj.customData.id = data._id;
+                commonObj.customData.text = data?.data?.text;
+              }
+            });
+            // @ts-ignore
+          } else if (item.dataType === 'custom' && item?.data?.type === ECustomData.announcement) {
+            commonObj.customData.type = ECustomData.announcement
+            commonObj.customData.text = (item?.data as Record<string, string>)?.text as string;
+          }
+          if ((item?.data as Record<string, any>)?.fileId) {
+            //if file present
+            // @ts-ignore
+            formattedMessages.push({
+              text: '',
+              image:
+                `https://api.${apiRegion}.amity.co/api/v3/files/${(item?.data as Record<string, any>).fileId
+                }/download` ?? undefined,
+              ...commonObj,
+            })
+          } else {
+            //if file doesnt present
+            // @ts-ignore
+            formattedMessages.push({
+              text:
+                ((item?.data as Record<string, string>)?.text as string) ?? '',
+              ...commonObj,
+            })
+          }
         }
-      });
-      setMessages(formattedMessages);
-    }
+        setMessages(formattedMessages);
+      }
+    })()
   }, [messagesArr]);
 
   const handleSend = async () => {
@@ -391,254 +388,6 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
     const reOrderArr = sortedMessagesData;
     setSortedMessages([...reOrderArr]);
   }, [messages]);
-
-  const openFullImage = (image: string, messageType: string) => {
-    if (messageType === 'image' || messageType === 'file') {
-      const fullSizeImage: string = image + '?size=full';
-      setFullImage(fullSizeImage);
-      setIsVisibleFullImage(true);
-    }
-  };
-
-  const renderTimeDivider = (date: string) => {
-    const currentDate = date;
-    const formattedDate = moment(currentDate).format('MMMM DD, YYYY');
-    const today = moment().startOf('day');
-
-    let displayText = formattedDate;
-
-    if (moment(currentDate).isSame(today, 'day')) {
-      displayText = 'Today';
-    }
-
-    return (
-      <View style={styles.bubbleDivider}>
-        <View style={styles.textDivider}>
-          <Text style={styles.dateText}>{displayText}</Text>
-        </View>
-      </View>
-    );
-  };
-
-  const deleteMessage = async (messageId: string) => {
-    const message = await MessageRepository.softDeleteMessage(messageId);
-    return message;
-  };
-
-  const reportMessage = async (messageId: string) => {
-    const isFlagged = await MessageRepository.flagMessage(messageId);
-    if (isFlagged) {
-      Alert.alert('Report sent ✅');
-    }
-  };
-
-  const renderChatMessages = (message: IMessage, index: number) => {
-    const isUserChat: boolean =
-      message?.user?._id === (client as Amity.Client).userId;
-    //isUserChat - is chat of the the user who is logged in?
-
-    let isRenderDivider = false;
-    const messageDate = moment(message.createdAt);
-
-    const previousMessageDate = moment(sortedMessages[index + 1]?.createdAt);
-    const isSameDay = messageDate.isSame(previousMessageDate, 'day');
-
-    if (!isSameDay || index === sortedMessages.length - 1) {
-      isRenderDivider = true;
-    }
-
-    //as message is apprearing on feed, mark it as delivered
-    const isDelivered = true;
-    const isRead = messageStatusMap.get(message._id)?.readMessageStatus;
-
-    return (
-      <View>
-        {isRenderDivider && renderTimeDivider(message.createdAt)}
-        <View
-          style={!isUserChat ? styles.leftMessageWrap : styles.rightMessageWrap}
-        >
-          {!isUserChat &&
-            (message.user.avatar ? (
-              <Image
-                source={{ uri: message.user.avatar }}
-                style={styles.avatarImage}
-              />
-            ) : (
-              <View style={styles.avatarImage}>
-                <AvatarIcon />
-              </View>
-            ))}
-
-          <View>
-            {!isUserChat && isGroupChat ? (
-              <Text
-                style={isUserChat ? styles.chatUserText : styles.chatFriendText}
-              >
-                {message.user.name}
-              </Text>
-            ) : null}
-            {message.isDeleted ? (
-              <View
-                style={[
-                  styles.deletedMessageContainer,
-                  isUserChat
-                    ? styles.userMessageDelete
-                    : styles.friendMessageDelete,
-                ]}
-              >
-                <View style={styles.deletedMessageRow}>
-                  <SvgXml xml={deletedIcon} width={20} height={20} />
-                  <Text style={styles.deletedMessage}>Message Deleted</Text>
-                </View>
-              </View>
-            ) : (
-              <Menu>
-                <MenuTrigger
-                  onAlternativeAction={() =>
-                    openFullImage(message.image as string, message.messageType)
-                  }
-                  customStyles={{
-                    triggerTouchable: { underlayColor: 'transparent' },
-                  }}
-                  triggerOnLongPress
-                >
-                  {message.messageType === 'text' ? (
-                    <View
-                      key={message._id}
-                      style={[
-                        styles.textChatBubble,
-                        isUserChat ? styles.userBubble : styles.friendBubble,
-                        isGroupChat
-                          ? { marginVertical: 5 }
-                          : { marginBottom: 5 },
-                      ]}
-                    >
-                      <Text
-                        style={
-                          isUserChat
-                            ? styles.chatUserText
-                            : styles.chatFriendText
-                        }
-                      >
-                        {message.text}
-                      </Text>
-                    </View>
-                  ) : (
-                    <View
-                      style={[
-                        styles.imageChatBubble,
-                        isUserChat
-                          ? styles.userImageBubble
-                          : styles.friendBubble,
-                      ]}
-                    >
-                      <Image
-                        style={styles.imageMessage}
-                        source={{
-                          uri: message.image + '?size=medium',
-                        }}
-                      />
-                    </View>
-                  )}
-                </MenuTrigger>
-                <MenuOptions
-                  customStyles={{
-                    optionsContainer: {
-                      ...styles.optionsContainer,
-                      marginLeft: isUserChat
-                        ? 240 +
-                          (message.text && message.text.length < 5
-                            ? message.text.length * 10
-                            : 10)
-                        : 0,
-                    },
-                  }}
-                >
-                  {isUserChat ? (
-                    <MenuOption
-                      onSelect={() =>
-                        Alert.alert(
-                          'Delete this message?',
-                          `Message will be also be permanently removed from your friend's devices.`,
-                          [
-                            { text: 'Cancel', style: 'cancel' },
-                            {
-                              text: 'Delete',
-                              style: 'destructive',
-                              onPress: () => deleteMessage(message._id),
-                            },
-                          ]
-                        )
-                      }
-                      text="Delete"
-                    />
-                  ) : (
-                    <MenuOption
-                      onSelect={() => reportMessage(message._id)}
-                      text="Report"
-                    />
-                  )}
-                  {message.messageType === 'text' && isUserChat && (
-                    <MenuOption
-                      onSelect={() => {
-                        return openEditMessageModal(
-                          message._id,
-                          message.text as string
-                        );
-                      }}
-                      text="Edit"
-                    />
-                  )}
-                </MenuOptions>
-              </Menu>
-            )}
-            <View
-              style={{
-                flexDirection: 'row',
-                alignSelf: isUserChat ? 'flex-end' : 'flex-start',
-              }}
-            >
-              <Text
-                style={[
-                  styles.chatTimestamp,
-                  {
-                    alignSelf: isUserChat ? 'flex-end' : 'flex-start',
-                  },
-                ]}
-              >
-                {message.createdAt != message.editedAt ? 'Edited ·' : ''}{' '}
-                {moment(message.createdAt).format('hh:mm A')}
-              </Text>
-              {isUserChat && isDelivered ? (
-                <View style={{ marginLeft: 5, flexDirection: 'row' }}>
-                  <CheckIcon
-                    height={20}
-                    width={20}
-                    color={
-                      isRead
-                        ? theme.colors.chatBubbles?.userBubble
-                        : theme.colors.baseShade2
-                    }
-                  />
-                  <View style={{ marginLeft: -10 }}>
-                    <CheckIcon
-                      height={20}
-                      width={20}
-                      color={
-                        isRead
-                          ? theme.colors.chatBubbles?.userBubble
-                          : theme.colors.baseShade2
-                      }
-                    />
-                  </View>
-                </View>
-              ) : null}
-            </View>
-          </View>
-        </View>
-      </View>
-    );
-  };
 
   const handlePress = () => {
     Keyboard.dismiss();
@@ -757,17 +506,25 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
     );
   }, [displayImages, handleOnFinishImage]);
 
-  const openEditMessageModal = (messageId: string, text: string) => {
+  const openEditMessageModal = useCallback((messageId: string, text: string) => {
     setEditMessageId(messageId);
     setEditMessageModal(true);
     setEditMessageText(text);
-  };
+  }, []);
 
   const closeEditMessageModal = () => {
     setEditMessageId('');
     setEditMessageText('');
     setEditMessageModal(false);
   };
+
+  const openFullImage = useCallback((image: string, messageType: string) => {
+    if (messageType === 'image' || messageType === 'file') {
+      const fullSizeImage: string = image + '?size=full';
+      setFullImage(fullSizeImage);
+      setIsVisibleFullImage(true);
+    }
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -796,7 +553,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
             />
           ) : (
             <View style={styles.icon}>
-              <CommunityChatIcon />
+              <Avatar avatars={avatarArray} />
             </View>
           )}
           <View>
@@ -828,7 +585,16 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       <View style={styles.chatContainer}>
         <FlatList
           data={sortedMessages}
-          renderItem={({ item, index }) => renderChatMessages(item, index)}
+          renderItem={({ item, index }) => (
+            <EachChatMessage
+              isGroupChat={isGroupChat}
+              index={index}
+              message={item}
+              sortedMessages={sortedMessages}
+              openEditMessageModal={openEditMessageModal}
+              openFullImage={openFullImage}
+            />
+          )}
           keyExtractor={(item) => item._id}
           onEndReached={loadNextMessages}
           onEndReachedThreshold={0.5}
