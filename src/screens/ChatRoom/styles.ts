@@ -244,7 +244,26 @@ export const useStyles = () => {
       width: 80, // Set the width of the options container
       marginTop: -50, // Adjust the top margin as needed
     },
-
+    bodySection: {
+      paddingVertical: 10,
+      marginVertical: 10,
+      minHeight: 300,
+      width: Dimensions.get("window").width * 0.7,
+      backgroundColor: theme.colors.border,
+      borderRadius: 20,
+    },
+    postCreatorContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 15
+    },
+    postCaption: {
+      fontSize: 13,
+      fontWeight: '400',
+      paddingHorizontal: 15,
+      paddingVertical: 10
+    }
   });
 
   return styles;

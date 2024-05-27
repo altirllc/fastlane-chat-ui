@@ -1,7 +1,7 @@
 
 import { StyleSheet } from 'react-native';
 
-export const AVATAR_SIZE = 55
+export const AVATAR_SIZE = 48
 
 export const useAvatarStyles = () => {
     const styles = StyleSheet.create({
@@ -22,11 +22,11 @@ export const useAvatarStyles = () => {
             height: '100%',
         },
         initials: {
-            fontSize: 10,
+            fontSize: AVATAR_SIZE / 6,
             color: '#6E768A',
         },
         membersLeftCount: {
-            fontSize: 10,
+            fontSize: AVATAR_SIZE / 6,
             color: '#6E768A',
         },
     });
