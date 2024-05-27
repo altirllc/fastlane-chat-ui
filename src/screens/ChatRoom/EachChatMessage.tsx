@@ -22,13 +22,13 @@ import { deletedIcon, personXml } from '../../svg/svg-xml-list';
 import { AvatarIcon } from '../../svg/AvatarIcon';
 // import { MenuIcon } from '../../svg/MenuIcon';
 // import { PlusIcon } from '../../svg/PlusIcon';
-import MediaSection from 'amity-react-native-social-ui-kit/src/components/MediaSection';
-import { ECustomData, IMessage } from '@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/ChatRoom';
+import { ECustomData, IMessage } from './ChatRoom';
 import useAuth from '@amityco/react-native-cli-chat-ui-kit/src/hooks/useAuth';
 import { useStyles } from './styles';
 import { MessageRepository } from '@amityco/ts-sdk-react-native';
 // @ts-ignore
 import { useReadStatus } from '@amityco/react-native-cli-chat-ui-kit/src/hooks/useReadStatus';
+import MediaSection from '../../components/MediaSection/index'
 
 export type TEachChatMessage = {
     message: IMessage;

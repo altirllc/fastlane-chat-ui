@@ -68,6 +68,7 @@ import { AuthContext } from '../../store/context';
 import { useReadStatus } from '../../hooks/useReadStatus';
 import { useAvatarArray } from '../../../src/hooks/useAvatarArray';
 import { Avatar } from '../../../src/components/Avatar/Avatar';
+// @ts-ignore
 import { EachChatMessage } from '@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/EachChatMessage';
 
 type ChatRoomScreenComponentType = React.FC<{}>;
@@ -160,7 +161,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const [editMessageText, setEditMessageText] = useState<string>('');
   const disposers: Amity.Unsubscriber[] = [];
 
-  const { getReadStatusForMessage, isDelivered, getReadComponent, messageStatusMap } = useReadStatus()
+  const { getReadStatusForMessage, messageStatusMap } = useReadStatus()
 
   const [isSendLoading, setIsSendLoading] = useState(false);
   // const [postDetailsMap, setPostDetailsMap] = useState<TPostDetailsMap>(new Map())
