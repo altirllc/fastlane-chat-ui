@@ -48,7 +48,7 @@ export const EditChatRoomDetail: React.FC<EditChatDetailProps> = ({
   const { channelId, groupChat } = route.params;
 
   const [displayName, setDisplayName] = useState<string | undefined>(groupChat?.displayName);
-  const [characterCount, setCharacterCount] = useState(0);
+  const [characterCount, setCharacterCount] = useState(groupChat?.displayName?.length ?? 0);
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
   const [imageMultipleUri, setImageMultipleUri] = useState<string[]>([]);
   const [uploadedFileId, setUploadedFileId] = useState<string>()
