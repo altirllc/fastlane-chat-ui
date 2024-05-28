@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import { useTheme } from "react-native-paper";
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
-import { SCREEN_PADDING } from "@amityco/react-native-cli-chat-ui-kit/src/theme";
+import { SCREEN_PADDING } from "../../theme/index";
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const useStyles = () => {

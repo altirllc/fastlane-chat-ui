@@ -11,15 +11,15 @@ import { ArrowRightIcon } from '../../svg/ArrowRightIcon';
 import { GroupMembersIcon } from '../../svg/GroupMembersIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
-import BackButton from '@amityco/react-native-cli-chat-ui-kit/src/components/BackButton';
-import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/components/LoadingOverlay';
+import BackButton from '../../../src/components/BackButton';
+import { LoadingOverlay } from '../../../src/components/LoadingOverlay';
 import { AuthContext } from '../../store/context';
 import { CommonActions } from '@react-navigation/native';
 import { MessageContentType, MessageRepository } from '@amityco/ts-sdk-react-native';
 // @ts-ignore
 import { ECustomData } from '@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/ChatRoom';
-import { IGroupChatObject } from '@amityco/react-native-cli-chat-ui-kit/src/components/ChatList';
-import useAuth from '@amityco/react-native-cli-chat-ui-kit/src/hooks/useAuth';
+import { IGroupChatObject } from '../../../src/components/ChatList';
+import useAuth from '../../../src/hooks/useAuth';
 
 interface ChatDetailProps {
   navigation: any;

@@ -18,7 +18,7 @@ import { SearchIcon } from '../../svg/SearchIcon';
 import { CircleCloseIcon } from '../../svg/CircleCloseIcon';
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
-import BackButton from '@amityco/react-native-cli-chat-ui-kit/src/components/BackButton';
+import BackButton from '../../../src/components/BackButton';
 import { useNavigation } from '@react-navigation/native';
 import useAuth from '../../hooks/useAuth';
 import { IGroupChatObject } from '../../components/ChatList';

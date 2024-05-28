@@ -23,7 +23,7 @@ import { AvatarIcon } from '../../svg/AvatarIcon';
 // import { MenuIcon } from '../../svg/MenuIcon';
 // import { PlusIcon } from '../../svg/PlusIcon';
 import { ECustomData, IMessage } from './ChatRoom';
-import useAuth from '@amityco/react-native-cli-chat-ui-kit/src/hooks/useAuth';
+import useAuth from '../../../src/hooks/useAuth';
 import { useStyles } from './styles';
 import { MessageRepository } from '@amityco/ts-sdk-react-native';
 // @ts-ignore
