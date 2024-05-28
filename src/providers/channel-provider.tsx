@@ -23,6 +23,9 @@ export async function createAmityChannel(
     const { userObject } = await getAmityUser(currentUserID);
     let displayName = userObject.data.displayName! + ', ';
     displayName += users.map((user) => user.displayName).join(', ');
+    if (displayName.length > 100) {
+      displayName = displayName.substring(0, 97) + '...';
+    }
     userIds.push(...users.map((user) => user.userId));
     const param = {
       displayName: displayName,

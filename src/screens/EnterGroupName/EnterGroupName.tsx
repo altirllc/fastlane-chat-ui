@@ -12,15 +12,15 @@ import { useEnterGroupNameStyles } from './styles'
 import { useTheme } from 'react-native-paper';
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import { CommonActions, useNavigation, useRoute } from '@react-navigation/native';
-import { CircleCloseIcon } from '@amityco/react-native-cli-chat-ui-kit/src/svg/CircleCloseIcon';
-import { UserInterface } from '@amityco/react-native-cli-chat-ui-kit/src/types/user.interface';
-import UserItem from '@amityco/react-native-cli-chat-ui-kit/src/components/UserItem';
+import { CircleCloseIcon } from '../../../src/svg/CircleCloseIcon';
+import { UserInterface } from '../../../src/types/user.interface';
+import UserItem from '../../../src/components/UserItem';
 import { createAmityChannel } from '../../providers/channel-provider';
 import useAuth from '../../hooks/useAuth';
 import { type IGroupChatObject } from '../../components/ChatList/index';
 import { updateAmityChannel } from '../../providers/channel-provider';
-import { LoadingOverlay } from '@amityco/react-native-cli-chat-ui-kit/src/components/LoadingOverlay';
-import { BackIcon } from '@amityco/react-native-cli-chat-ui-kit/src/svg/BackIcon';
+import { LoadingOverlay } from '../../../src/components/LoadingOverlay';
+import { BackIcon } from '../../../src/svg/BackIcon';
 
 export const EnterGroupName = () => {
     const theme = useTheme() as MyMD3Theme;
