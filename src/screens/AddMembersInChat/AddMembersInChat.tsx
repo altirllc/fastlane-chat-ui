@@ -109,7 +109,7 @@ const AddMembersInChat = ({
     | undefined;
 
   //recent member ids
-  const [recentMembersIdsSet, setRecentMemberIdsSet] = useState(new Set());
+  const [recentMembersIdsSet, setRecentMemberIdsSet] = useState<Set<string>>(new Set());
 
   //all users for filtering the recent members
   const [allUsersObject, setAllUsersObject] =
@@ -165,11 +165,12 @@ const AddMembersInChat = ({
   useEffect(() => {
     if (recentMembersIdsSet.size > 0) {
       //once we got the recent member ids, fetch all members available max limit 60 for now.
-      UserRepository.getUsers({ displayName: '', limit: 60 }, (data) => {
+      UserRepository.getUserByIds([...recentMembersIdsSet]).then((data) => {
         if (data && data.data.length > 0) {
+          // @ts-ignore
           setAllUsersObject(data);
         }
-      });
+      })
     }
   }, [recentMembersIdsSet]);
 
@@ -225,10 +226,11 @@ const AddMembersInChat = ({
       });
       //set recent members
       setRecentMemberIdsSet(
+        // @ts-ignore
         (prevMemberIds) => new Set([...prevMemberIds, ...ids])
       );
     }
-  }, [recentChatIds, sectionedUserList]);
+  }, [client, recentChatIds, sectionedUserList]);
 
   const handleOnFinish = async (users: UserInterface[]) => {
     setLoading(true);

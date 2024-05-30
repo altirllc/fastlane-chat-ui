@@ -30,6 +30,8 @@ export interface IChatListProps {
   messageDate: string;
   channelType: 'conversation' | 'broadcast' | 'live' | 'community' | '';
   avatarFileId: string | undefined;
+  //userIdForChat: string;
+  //setUserIdForChat: React.Dispatch<React.SetStateAction<string>>
 }
 
 export interface IGroupChatObject {
@@ -48,6 +50,8 @@ const ChatList = ({
   messageDate,
   channelType,
   avatarFileId,
+  //userIdForChat,
+  //setUserIdForChat
 }: IChatListProps) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { client, apiRegion } = useAuth();
@@ -166,6 +170,19 @@ const ChatList = ({
       });
     }
   };
+
+  //Need to uncomment after app review submit
+  // useEffect(() => {
+  //   console.log("userIdForChat", userIdForChat, chatReceiver?.userId)
+  //   //'e2fe4805-fee8-4718-972a-8b91172f2669'
+  //   if (chatReceiver && chatReceiver.userId === userIdForChat) {
+  //     //setUserIdForChat('');
+  //     navigation.navigate('ChatRoom', {
+  //       channelId: chatId,
+  //       chatReceiver: chatReceiver,
+  //     });
+  //   }
+  // }, [chatReceiver, userIdForChat])
 
   useEffect(() => {
     if (chatMemberNumber === 2 && usersArr) {

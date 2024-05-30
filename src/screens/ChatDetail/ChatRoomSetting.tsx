@@ -88,6 +88,11 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({
 
   const onLeaveChat = async () => {
     try {
+      if (groupChat?.channelModerator?.userId === (client as Amity.Client).userId) {
+        //if admin is trying to leave the group, don't allow.
+        Alert.alert('Admin cannot leave the group.', '', []);
+        return;
+      }
       setLoading(true)
       //now create new message along with some data to put in the channel;
       const userName = groupChat?.users?.find((eachUser) => eachUser.userId === (client as Amity.Client).userId)?.displayName || ''
