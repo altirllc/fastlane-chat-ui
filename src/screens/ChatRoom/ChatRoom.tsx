@@ -136,6 +136,8 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const [editMessageModal, setEditMessageModal] = useState<boolean>(false);
   const [editMessageId, setEditMessageId] = useState<string>('');
   const [editMessageText, setEditMessageText] = useState<string>('');
+  const [showTextInput, setShowTextInput] = useState(true)
+  const [channelTypeBox, setChannelTypeBox] = useState<string>('')
   const disposers: Amity.Unsubscriber[] = [];
 
   const { getReadStatusForMessage, messageStatusMap } = useReadStatus()
@@ -220,6 +222,13 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       if (messagesArr.length > 0) {
         let formattedMessages: IMessage[] = [];
         for (const item of messagesArr) {
+          if (item.channelType === 'broadcast') {
+            setShowTextInput(false)
+            setChannelTypeBox('broadcast')
+          } else {
+            setShowTextInput(true)
+            setChannelTypeBox('')
+          }
           const targetIndex: number | undefined =
             groupChat &&
             groupChat.users?.findIndex(
@@ -243,17 +252,20 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
             editedAt: item.updatedAt as string,
             user: {
               _id: item.creatorId ?? '',
-              name:
-                chatReceiver?.displayName ??
-                groupChat?.users?.find((user) => user.userId === item.creatorId)
-                  ?.displayName ??
-                '',
+              name: item.channelType === 'broadcast'
+                ? 'Announcement'
+                : (
+                  chatReceiver?.displayName ??
+                  groupChat?.users?.find((user) => user.userId === item.creatorId)?.displayName ??
+                  ''
+                ),
               avatar: avatarUrl,
             },
             messageType: item.dataType,
             isDeleted: item.isDeleted as boolean,
             // @ts-ignore
             customData: {
+              channelType: item.channelType,
               type: '',
               text: '',
               imageIds: [],
@@ -513,6 +525,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
         handleBack={handleBack}
         groupChat={groupChat}
         channelId={channelId}
+        channelType={channelTypeBox}
       />
       <View style={styles.chatContainer}>
         <FlatList
@@ -537,7 +550,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
           ListHeaderComponent={renderLoadingImages}
         />
       </View>
-      <ChatRoomTextInput
+      {showTextInput ? <ChatRoomTextInput
         inputMessage={inputMessage}
         isSendLoading={isSendLoading}
         isExpanded={isExpanded}
@@ -547,7 +560,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
         handlePress={handlePress}
         pickCamera={pickCamera}
         pickImage={pickImage}
-      />
+      /> : null}
       <ImageView
         images={[{ uri: fullImage }]}
         imageIndex={0}

@@ -23,9 +23,10 @@ export type TTopBar = {
     handleBack: () => void
     groupChat: IGroupChatObject | undefined
     channelId: string
+    channelType: string
 }
 
-export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId }: TTopBar) => {
+export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId, channelType }: TTopBar) => {
     const navigation = useNavigation<any>();
     const styles = useStyles();
     const theme = useTheme() as MyMD3Theme;
@@ -76,7 +77,7 @@ export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId }: 
                     )}
                 </View>
             </View>
-            <TouchableOpacity
+            {channelType === 'broadcast' ? null : <TouchableOpacity
                 onPress={() => {
                     navigation.navigate('ChatDetail', {
                         channelId: channelId,
@@ -87,7 +88,7 @@ export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId }: 
                 }}
             >
                 <AlertIcon color={theme.colors.base} />
-            </TouchableOpacity>
+            </TouchableOpacity>}
         </View>
     )
 })

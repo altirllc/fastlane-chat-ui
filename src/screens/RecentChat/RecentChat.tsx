@@ -161,7 +161,16 @@ export default function RecentChat({ chatNavigation, avatarUrl, userIdForChatPro
           };
         }
       );
-      setChannelObjects([...formattedChannelObjects]);
+      const sortedChannelObjects = formattedChannelObjects.sort((a, b) => {
+        if (a.channelType === 'broadcast' && b.channelType !== 'broadcast') {
+          return -1;
+        }
+        if (a.channelType !== 'broadcast' && b.channelType === 'broadcast') {
+          return 1;
+        }
+        return 0;
+      });
+      setChannelObjects([...sortedChannelObjects]);
       setLoadChannel(false);
     }
   }, [channelData, channels]);

@@ -272,9 +272,9 @@ const ChatList = ({
             {
               lastMessageCreatorId ?
                 isLoggedInUser ?
-                  'You: ' :
-                  (lastMessageCreatorDisplayName ?
-                    `${lastMessageCreatorDisplayName}: ` : '') :
+                  'You: ' : channelType === 'broadcast' ? 'Announcement: ' :
+                    (lastMessageCreatorDisplayName ?
+                      `${lastMessageCreatorDisplayName}: ` : '') :
                 ''
             }
             {
