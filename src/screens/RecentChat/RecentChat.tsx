@@ -40,15 +40,18 @@ import { AuthContext } from '../../store/context';
 export type TRecentChat = {
   chatNavigation: any;
   avatarUrl: string;
+  userIdForChatProp: string
 };
 
-export default function RecentChat({ chatNavigation, avatarUrl }: TRecentChat) {
+export default function RecentChat({ chatNavigation, avatarUrl, userIdForChatProp }: TRecentChat) {
   const { isConnected } = useAuth();
   const [channelObjects, setChannelObjects] = useState<IChatListProps[]>([]);
   const [loadChannel, setLoadChannel] = useState<boolean>(false);
   const styles = useStyles();
   const { setIsTabBarVisible } = useContext(AuthContext);
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
+  //const [userIdForChat, setUserIdForChat] = useState('');
 
   const flatListRef = useRef(null);
   const { colors } = useCustomTheme();
@@ -88,6 +91,12 @@ export default function RecentChat({ chatNavigation, avatarUrl }: TRecentChat) {
       }
     }, 500);
   }, [isFocused]);
+
+  useEffect(() => {
+    if (isFocused && userIdForChatProp) {
+      //setUserIdForChat(userIdForChatProp)
+    }
+  }, [isFocused, userIdForChatProp])
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -155,7 +164,7 @@ export default function RecentChat({ chatNavigation, avatarUrl }: TRecentChat) {
       setChannelObjects([...formattedChannelObjects]);
       setLoadChannel(false);
     }
-  }, [channelData]);
+  }, [channelData, channels]);
 
   const handleLoadMore = () => {
     if (hasNextPage && onNextPage) {
@@ -197,6 +206,8 @@ export default function RecentChat({ chatNavigation, avatarUrl }: TRecentChat) {
         messageDate={item.messageDate}
         channelType={item.channelType}
         avatarFileId={item.avatarFileId}
+      // userIdForChat={userIdForChat}
+      //setUserIdForChat={setUserIdForChat}
       />
     );
   };
