@@ -32,9 +32,9 @@ import { getShadowProps } from '../../theme/helpers';
 import { LoadingOverlay } from '../../components/LoadingOverlay';
 import { SideBarIcon } from '../../svg/Sidebar';
 // @ts-ignore
-import { Avatar } from '../../../../../../src/components/Avatar/Avatar';
+import { Avatar } from '../../../../src/components/Avatar/Avatar';
 // @ts-ignore
-import { screens } from '../../../../../../src/constants/screens';
+import { screens } from '../../../../src/constants/screens';
 import { AuthContext } from '../../store/context';
 
 export type TRecentChat = {
@@ -107,7 +107,10 @@ export default function RecentChat({ chatNavigation, avatarUrl }: TRecentChat) {
       (value) => {
         setChannelData(value);
         subscribeChannels(channels);
-        if (value.data.length > 0 || (value.data.length === 0 && !value.hasNextPage && !value.loading)) {
+        if (
+          value.data.length > 0 ||
+          (value.data.length === 0 && !value.hasNextPage && !value.loading)
+        ) {
           setTimeout(() => {
             setLoadChannel(false);
             setShowFabIcon(true);
