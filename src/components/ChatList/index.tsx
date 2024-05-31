@@ -15,12 +15,11 @@ import type { UserInterface } from '../../types/user.interface';
 import { PrivateChatIcon } from '../../svg/PrivateChatIcon';
 import { EUserRoles } from '../../enum/sessionState';
 import { useMessagePreview } from '../../hooks/useMessagePreview';
-import { ImageIcon } from '../../svg/ImageIcon';
 import { useReadStatus } from '../../hooks/useReadStatus';
 import { Avatar } from '../../../src/components/Avatar/Avatar';
 import { useAvatarArray } from '../../../src/hooks/useAvatarArray';
 // @ts-ignore
-import { ECustomData } from '@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/ChatRoom';
+import { MessagePreviewComponent } from '../../../src/screens/RecentChat/components';
 
 export interface IChatListProps {
   chatId: string;
@@ -30,6 +29,7 @@ export interface IChatListProps {
   messageDate: string;
   channelType: 'conversation' | 'broadcast' | 'live' | 'community' | '';
   avatarFileId: string | undefined;
+  markChannelAsRead: (chatId: string) => {};
   //userIdForChat: string;
   //setUserIdForChat: React.Dispatch<React.SetStateAction<string>>
 }
@@ -50,6 +50,7 @@ const ChatList = ({
   messageDate,
   channelType,
   avatarFileId,
+  markChannelAsRead,
   //userIdForChat,
   //setUserIdForChat
 }: IChatListProps) => {
@@ -157,6 +158,7 @@ const ChatList = ({
   const handlePress = () => {
     if (oneOnOneChatObject && oneOnOneChatObject.length > 0 && chatReceiver) {
       if (chatReceiver.userId) {
+        markChannelAsRead(chatId)
         navigation.navigate('ChatRoom', {
           channelId: chatId,
           chatReceiver: chatReceiver,
@@ -164,6 +166,7 @@ const ChatList = ({
       }
     }
     if (groupChatObject && groupChatObject?.length > 0 && groupChat) {
+      markChannelAsRead(chatId)
       navigation.navigate('ChatRoom', {
         channelId: chatId,
         groupChat: groupChat,
@@ -220,81 +223,6 @@ const ChatList = ({
     })();
   }, [messagePreview, isUserLoggedInPreviewChat]);
 
-  const getMessagePreview = () => {
-    const dataType = messagePreview?.dataType;
-    const isPost = dataType === "custom" && messagePreview?.data.type === ECustomData.post;
-    const isAnnouncement = dataType === "custom" && messagePreview?.data.type === ECustomData.announcement
-    const previewText = messagePreview?.data?.text;
-    const lastMessageCreatorDisplayName = messagePreview?.user?.displayName
-    const lastMessageCreatorId = messagePreview?.user?.userId;
-    const isLoggedInUser = lastMessageCreatorId === (client as Amity.Client).userId;
-    const text = dataType === "text" || isAnnouncement ? (previewText ? previewText : '') : dataType === "image" ? 'Photo' : isPost ? 'Post' : ''
-
-
-    if (chatMemberNumber === 2) {
-      //add read status if isLoggedInUser is true
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 7, width: '100%', }}>
-          {
-            isUserLoggedInPreviewChat &&
-              isDelivered &&
-              messagePreview?.messagePreviewId ?
-              getReadComponent(messagePreview?.messagePreviewId) :
-              null
-          }
-          {
-            dataType === "image" || isPost ? (
-              <View style={{ marginRight: 5 }}>
-                <ImageIcon height={16} width={16} />
-              </View>
-            ) : null
-          }
-          <CustomText numberOfLines={1} style={styles.messagePreview}>
-            {text}
-          </CustomText>
-        </View>
-      )
-    }
-    if (chatMemberNumber > 2) {
-      //add read status if isLoggedInUser is true
-      return (
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 7, width: '100%', }}>
-          <CustomText numberOfLines={1} style={styles.messagePreview}>
-            {
-              isUserLoggedInPreviewChat &&
-                isDelivered &&
-                messagePreview?.messagePreviewId &&
-                !isAnnouncement
-                ?
-                getReadComponent(messagePreview?.messagePreviewId) :
-                null
-            }
-            {
-              lastMessageCreatorId ?
-                isLoggedInUser ?
-                  'You: ' :
-                  (lastMessageCreatorDisplayName ?
-                    `${lastMessageCreatorDisplayName}: ` : '') :
-                ''
-            }
-            {
-              dataType === "image" || isPost ? (
-                <View style={{ marginRight: 5 }}>
-                  <ImageIcon height={16} width={16} />
-                </View>
-              ) : null
-            }
-            {text}
-            {/* <CustomText numberOfLines={1} style={styles.messagePreview}>
-              {text}
-            </CustomText> */}
-          </CustomText>
-        </View>
-      )
-    }
-    return <></>
-  }
-
   return (
     <TouchableHighlight onPress={() => handlePress()}>
       <View style={styles.chatCard}>
@@ -329,7 +257,13 @@ const ChatList = ({
                 </CustomText>
               ) : null}
             </View>
-            {getMessagePreview()}
+            <MessagePreviewComponent
+              messagePreview={messagePreview}
+              chatMemberNumber={chatMemberNumber}
+              isDelivered={isDelivered}
+              isUserLoggedInPreviewChat={isUserLoggedInPreviewChat}
+              getReadComponent={getReadComponent}
+            />
           </View>
           <View style={styles.chatTimeWrap}>
             <CustomText style={styles.chatLightText}>{messageDate}</CustomText>

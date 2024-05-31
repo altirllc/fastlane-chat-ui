@@ -42,7 +42,6 @@ import ImagePicker, {
   type Asset,
   launchCamera,
 } from 'react-native-image-picker';
-import LoadingImage from '../../components/LoadingImage';
 import EditMessageModal from '../../components/EditMessageModal';
 import { AuthContext } from '../../store/context';
 import { useReadStatus } from '../../hooks/useReadStatus';
@@ -50,6 +49,7 @@ import { useReadStatus } from '../../hooks/useReadStatus';
 import { EachChatMessage } from './EachChatMessage';
 import { TopBar } from './TopBar';
 import { ChatRoomTextInput } from './ChatRoomTextInput';
+import { RenderLoadingImages } from './components';
 
 type ChatRoomScreenComponentType = React.FC<{}>;
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
@@ -92,14 +92,6 @@ export interface IDisplayImage {
   isUploaded: boolean;
   thumbNail?: string;
 }
-
-//type TPostDetailsMap = Map<string, TPostDetail>;
-
-// type TPostDetail = {
-//   postImage: string;
-//   postId: string;
-//   postText: string;
-// }
 
 const ChatRoom: ChatRoomScreenComponentType = () => {
   const styles = useStyles();
@@ -464,27 +456,6 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       setImageMultipleUri(totalImages);
     }
   };
-  const renderLoadingImages = useMemo(() => {
-    return (
-      <View style={styles.loadingImage}>
-        <FlatList
-          keyExtractor={(item, index) => item.fileName + index}
-          data={displayImages}
-          renderItem={({ item, index }) => (
-            <LoadingImage
-              source={item.url}
-              index={index}
-              onLoadFinish={handleOnFinishImage}
-              isUploaded={item.isUploaded}
-              fileId={item.fileId}
-            />
-          )}
-          scrollEnabled={false}
-          numColumns={1}
-        />
-      </View>
-    );
-  }, [displayImages, handleOnFinishImage]);
 
   const openEditMessageModal = useCallback((messageId: string, text: string) => {
     setEditMessageId(messageId);
@@ -534,7 +505,12 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
           extraData={messageStatusMap}
           showsVerticalScrollIndicator={false}
           ref={flatListRef}
-          ListHeaderComponent={renderLoadingImages}
+          ListHeaderComponent={() => (
+            <RenderLoadingImages
+              displayImages={displayImages}
+              handleOnFinishImage={handleOnFinishImage}
+            />)
+          }
         />
       </View>
       <ChatRoomTextInput
