@@ -47,7 +47,7 @@ export const useStyles = () => {
     },
     chatLightText: {
       fontWeight: '400',
-      fontSize: 13,
+      fontSize: 12,
       marginHorizontal: 4,
       marginVertical: 2,
       color: theme.colors.baseShade1

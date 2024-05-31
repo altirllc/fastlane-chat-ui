@@ -12,7 +12,8 @@ export interface IAmityUIkitProvider {
   children: any;
   theme?: CustomColors
   darkMode?: boolean
-  authToken?: string
+  authToken?: string;
+  setChatUnreadCount: React.Dispatch<React.SetStateAction<number>>
 }
 
 interface CustomColors {
@@ -42,7 +43,8 @@ export default function AmityUiKitProvider({
   children,
   theme,
   authToken,
-  darkMode = false
+  darkMode = false,
+  setChatUnreadCount
 }: IAmityUIkitProvider) {
 
 
@@ -104,6 +106,7 @@ export default function AmityUiKitProvider({
       apiRegion={apiRegion}
       apiEndpoint={apiEndpoint}
       authToken={authToken}
+      setChatUnreadCount={setChatUnreadCount}
     >
       <PaperProvider theme={darkMode ? defaultDarkTheme : customizedTheme}>
         <MenuProvider>

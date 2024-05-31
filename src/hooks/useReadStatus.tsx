@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { MessageRepository } from '@amityco/ts-sdk-react-native';
 import { UserInterface } from '../types/user.interface';
 import { useState } from 'react';
@@ -21,9 +21,10 @@ export const useReadStatus = () => {
   const theme = useTheme() as MyMD3Theme;
 
   const isDelivered = true;
-  const isRead = (messageId: string) => {
+
+  const isRead = useCallback((messageId: string) => {
     return messageStatusMap.get(messageId)?.readMessageStatus;
-  };
+  }, [messageStatusMap]);
 
   const setMessageStatus = (messageId: string, readMessageStatus: boolean) => {
     setMessageStatusMap((prevMap) => {
@@ -80,7 +81,7 @@ export const useReadStatus = () => {
     });
   };
 
-  const getReadComponent = (messageId: string) => {
+  const getReadComponent = useCallback((messageId: string) => {
     return (
       <View style={{ flexDirection: 'row' }}>
         <CheckIcon
@@ -105,7 +106,7 @@ export const useReadStatus = () => {
         </View>
       </View>
     );
-  };
+  }, [isRead, theme.colors.baseShade2, theme.colors.chatBubbles?.userBubble]);
 
   return {
     getReadStatusForMessage,

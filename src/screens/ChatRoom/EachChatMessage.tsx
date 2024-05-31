@@ -1,34 +1,32 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
-import React, { } from 'react';
+import React, { memo } from 'react';
 import {
     View,
-    Image,
     Text,
     Alert,
 } from 'react-native';
 import moment from 'moment';
 
-// import { SafeAreaView } from 'react-native-safe-area-context';
 import {
     Menu,
     MenuOptions,
     MenuOption,
     MenuTrigger,
 } from 'react-native-popup-menu';
-import { SvgXml } from 'react-native-svg';
-import { deletedIcon, personXml } from '../../svg/svg-xml-list';
-// import { GroupChatIcon } from '../../svg/GroupChatIcon';
-import { AvatarIcon } from '../../svg/AvatarIcon';
-// import { MenuIcon } from '../../svg/MenuIcon';
-// import { PlusIcon } from '../../svg/PlusIcon';
 import { ECustomData, IMessage } from './ChatRoom';
 import useAuth from '../../../src/hooks/useAuth';
 import { useStyles } from './styles';
 import { MessageRepository } from '@amityco/ts-sdk-react-native';
-// @ts-ignore
-import { useReadStatus } from '@amityco/react-native-cli-chat-ui-kit/src/hooks/useReadStatus';
-import MediaSection from '../../components/MediaSection/index'
+import {
+    AvatarComponent,
+    ImageComponent,
+    MessageDeletedComponent,
+    RenderTimeDivider,
+    SocialPostComponent,
+    TextComponent,
+    TimeAndReadStatusComponent
+} from '../../../src/screens/ChatRoom/components';
 
 export type TEachChatMessage = {
     message: IMessage;
@@ -39,7 +37,7 @@ export type TEachChatMessage = {
     openFullImage: (image: string, messageType: string) => void;
 }
 
-export const EachChatMessage = ({
+export const EachChatMessage = memo(({
     message,
     index,
     sortedMessages,
@@ -47,26 +45,6 @@ export const EachChatMessage = ({
     openEditMessageModal,
     openFullImage
 }: TEachChatMessage) => {
-
-    const renderTimeDivider = (date: string) => {
-        const currentDate = date;
-        const formattedDate = moment(currentDate).format('MMMM DD, YYYY');
-        const today = moment().startOf('day');
-
-        let displayText = formattedDate;
-
-        if (moment(currentDate).isSame(today, 'day')) {
-            displayText = 'Today';
-        }
-
-        return (
-            <View style={styles.bubbleDivider}>
-                <View style={styles.textDivider}>
-                    <Text style={styles.dateText}>{displayText}</Text>
-                </View>
-            </View>
-        );
-    };
 
     const deleteMessage = async (messageId: string) => {
         const message = await MessageRepository.softDeleteMessage(messageId);
@@ -80,7 +58,21 @@ export const EachChatMessage = ({
         }
     };
 
-    const { client, apiRegion } = useAuth();
+    const onMessageDeletePress = () => {
+        Alert.alert(
+            'Delete this message?',
+            `Message will be also be permanently removed from your friend's devices.`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => deleteMessage(message._id),
+                },
+            ]
+        )
+    }
+    const { client } = useAuth();
     const styles = useStyles();
 
     const isUserChat: boolean =
@@ -97,9 +89,6 @@ export const EachChatMessage = ({
         isRenderDivider = true;
     }
 
-    const { isDelivered, getReadComponent } = useReadStatus()
-
-
     const isNormalText = message.messageType === 'text';
     const isImage = message.messageType === 'image';
     const isAnnouncement = message?.messageType === "custom" && message.customData?.type === ECustomData.announcement
@@ -109,22 +98,11 @@ export const EachChatMessage = ({
 
     return (
         <View>
-            {isRenderDivider && renderTimeDivider(message.createdAt)}
+            {isRenderDivider ? <RenderTimeDivider date={message.createdAt} /> : null}
             <View
                 style={!isUserChat ? isAnnouncement ? styles.leftMessageWrap : [styles.leftMessageWrap, { flexDirection: 'row' }] : styles.rightMessageWrap}
             >
-                {!isUserChat && !isAnnouncement &&
-                    (message.user.avatar ? (
-                        <Image
-                            source={{ uri: message.user.avatar }}
-                            style={styles.avatarImage}
-                        />
-                    ) : (
-                        <View style={styles.avatarImage}>
-                            <AvatarIcon />
-                        </View>
-                    ))}
-
+                <AvatarComponent isUserChat={isUserChat} isAnnouncement={isAnnouncement} avatar={message?.user?.avatar || ''} />
                 <View>
                     {!isUserChat && isGroupChat && !isAnnouncement ? (
                         <Text
@@ -139,19 +117,7 @@ export const EachChatMessage = ({
                         </Text>
                     ) : null}
                     {message.isDeleted ? (
-                        <View
-                            style={[
-                                styles.deletedMessageContainer,
-                                isUserChat
-                                    ? styles.userMessageDelete
-                                    : styles.friendMessageDelete,
-                            ]}
-                        >
-                            <View style={styles.deletedMessageRow}>
-                                <SvgXml xml={deletedIcon} width={20} height={20} />
-                                <Text style={styles.deletedMessage}>Message Deleted</Text>
-                            </View>
-                        </View>
+                        <MessageDeletedComponent isUserChat={isUserChat} />
                     ) : (
                         <Menu>
                             <MenuTrigger
@@ -164,97 +130,15 @@ export const EachChatMessage = ({
                                 triggerOnLongPress
                             >
                                 {isNormalText ? (
-                                    <View
-                                        key={message._id}
-                                        style={[
-                                            styles.textChatBubble,
-                                            isUserChat ? styles.userBubble : styles.friendBubble,
-                                            isGroupChat
-                                                ? { marginVertical: 5 }
-                                                : { marginBottom: 5 },
-                                        ]}
-                                    >
-                                        <Text
-                                            style={
-                                                isUserChat
-                                                    ? styles.chatUserText
-                                                    : styles.chatFriendText
-                                            }
-                                        >
-                                            {message.text}
-                                        </Text>
-                                    </View>
+                                    <TextComponent
+                                        id={message._id}
+                                        text={message.text || ''}
+                                        isUserChat={isUserChat}
+                                        isGroupChat={isGroupChat} />
                                 ) : isImage ? (
-                                    <View
-                                        style={[
-                                            styles.imageChatBubble,
-                                            isUserChat
-                                                ? styles.userImageBubble
-                                                : styles.friendBubble,
-                                        ]}
-                                    >
-                                        <Image
-                                            style={styles.imageMessage}
-                                            source={{
-                                                uri: message.image + '?size=medium',
-                                            }}
-                                        />
-                                    </View>
+                                    <ImageComponent imageStr={message.image} isUserChat={isUserChat} />
                                 ) : isSocialPost ? (
-                                    <>
-                                        <View style={[
-                                            styles.bodySection,
-                                            isUserChat ? { alignSelf: 'flex-end' } : { alignSelf: 'flex-start' }
-                                        ]}>
-                                            {
-                                                postCreator ? (
-                                                    <View style={styles.postCreatorContainer}>
-                                                        <View style={{ width: '15%' }}>
-                                                            {postCreator?.avatarFileId ? (
-                                                                <Image
-                                                                    style={{
-                                                                        width: 35,
-                                                                        height: 35,
-                                                                        borderRadius: 35 / 2
-                                                                    }}
-                                                                    source={{
-                                                                        uri: `https://api.${apiRegion}.amity.co/api/v3/files/${postCreator?.avatarFileId}/download`,
-                                                                    }}
-                                                                />
-                                                            ) : (
-                                                                <View style={{
-                                                                    width: 35,
-                                                                    height: 35,
-                                                                    borderRadius: 35 / 2
-                                                                }}>
-                                                                    <SvgXml xml={personXml} width="20" height="16" />
-                                                                </View>
-                                                            )}
-                                                        </View>
-                                                        {
-                                                            postCreator.displayName ? (
-                                                                <View style={{ width: '85%', paddingLeft: 15 }}>
-                                                                    <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: '600' }}>{postCreator.displayName}</Text>
-                                                                </View>
-                                                            ) : null
-                                                        }
-                                                    </View>
-                                                ) : null
-                                            }
-                                            {imageIds && imageIds?.length > 0 && (
-                                                <MediaSection borderRadius={false} childrenPosts={imageIds} />
-                                            )}
-                                            {message.customData?.text ? (
-                                                <Text
-                                                    style={
-                                                        styles.postCaption
-                                                    }
-                                                >
-                                                    {message.customData?.text}
-                                                </Text>
-                                            ) : null}
-                                        </View>
-                                    </>
+                                    <SocialPostComponent customDataText={message.customData?.text} isUserChat={isUserChat} postCreator={postCreator} imageIds={imageIds} />
                                 ) : null}
                             </MenuTrigger>
                             <MenuOptions
@@ -272,20 +156,7 @@ export const EachChatMessage = ({
                             >
                                 {isUserChat ? (
                                     <MenuOption
-                                        onSelect={() =>
-                                            Alert.alert(
-                                                'Delete this message?',
-                                                `Message will be also be permanently removed from your friend's devices.`,
-                                                [
-                                                    { text: 'Cancel', style: 'cancel' },
-                                                    {
-                                                        text: 'Delete',
-                                                        style: 'destructive',
-                                                        onPress: () => deleteMessage(message._id),
-                                                    },
-                                                ]
-                                            )
-                                        }
+                                        onSelect={onMessageDeletePress}
                                         text="Delete"
                                     />
                                 ) : (
@@ -308,34 +179,16 @@ export const EachChatMessage = ({
                             </MenuOptions>
                         </Menu>
                     )}
-                    {
-                        !isAnnouncement ? (
-                            <View
-                                style={{
-                                    flexDirection: 'row',
-                                    alignSelf: isUserChat ? 'flex-end' : 'flex-start',
-                                }}
-                            >
-                                <Text
-                                    style={[
-                                        styles.chatTimestamp,
-                                        {
-                                            alignSelf: isUserChat ? 'flex-end' : 'flex-start',
-                                        },
-                                    ]}
-                                >
-                                    {message.createdAt != message.editedAt ? 'Edited ·' : ''}{' '}
-                                    {moment(message.createdAt).format('hh:mm A')}
-                                </Text>
-                                {isUserChat && isDelivered ?
-                                    getReadComponent(message._id)
-                                    : null}
-                            </View>
-                        ) : null
-                    }
+                    <TimeAndReadStatusComponent
+                        isAnnouncement={isAnnouncement}
+                        createdAt={message.createdAt}
+                        editedAt={message.editedAt}
+                        id={message._id}
+                        isUserChat={isUserChat}
+                    />
                 </View>
             </View>
         </View>
     );
 
-}
+});

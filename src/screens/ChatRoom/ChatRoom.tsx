@@ -42,7 +42,6 @@ import ImagePicker, {
   type Asset,
   launchCamera,
 } from 'react-native-image-picker';
-import LoadingImage from '../../components/LoadingImage';
 import EditMessageModal from '../../components/EditMessageModal';
 import { AuthContext } from '../../store/context';
 import { useReadStatus } from '../../hooks/useReadStatus';
@@ -50,6 +49,7 @@ import { useReadStatus } from '../../hooks/useReadStatus';
 import { EachChatMessage } from './EachChatMessage';
 import { TopBar } from './TopBar';
 import { ChatRoomTextInput } from './ChatRoomTextInput';
+import { RenderLoadingImages } from './components';
 
 type ChatRoomScreenComponentType = React.FC<{}>;
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
@@ -93,14 +93,6 @@ export interface IDisplayImage {
   thumbNail?: string;
 }
 
-//type TPostDetailsMap = Map<string, TPostDetail>;
-
-// type TPostDetail = {
-//   postImage: string;
-//   postId: string;
-//   postText: string;
-// }
-
 const ChatRoom: ChatRoomScreenComponentType = () => {
   const styles = useStyles();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -137,6 +129,9 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const [editMessageId, setEditMessageId] = useState<string>('');
   const [editMessageText, setEditMessageText] = useState<string>('');
   const disposers: Amity.Unsubscriber[] = [];
+
+  const [showTextInput, setShowTextInput] = useState(true)
+  const [channelTypeBox, setChannelTypeBox] = useState<string>('')
 
   const { getReadStatusForMessage, messageStatusMap } = useReadStatus()
 
@@ -220,6 +215,13 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       if (messagesArr.length > 0) {
         let formattedMessages: IMessage[] = [];
         for (const item of messagesArr) {
+          if (item.channelType === 'broadcast') {
+            setShowTextInput(false)
+            setChannelTypeBox('broadcast')
+          } else {
+            setShowTextInput(true)
+            setChannelTypeBox('')
+          }
           const targetIndex: number | undefined =
             groupChat &&
             groupChat.users?.findIndex(
@@ -243,11 +245,13 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
             editedAt: item.updatedAt as string,
             user: {
               _id: item.creatorId ?? '',
-              name:
-                chatReceiver?.displayName ??
-                groupChat?.users?.find((user) => user.userId === item.creatorId)
-                  ?.displayName ??
-                '',
+              name: item.channelType === 'broadcast'
+                ? 'Announcement'
+                : (
+                  chatReceiver?.displayName ??
+                  groupChat?.users?.find((user) => user.userId === item.creatorId)?.displayName ??
+                  ''
+                ),
               avatar: avatarUrl,
             },
             messageType: item.dataType,
@@ -464,27 +468,6 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       setImageMultipleUri(totalImages);
     }
   };
-  const renderLoadingImages = useMemo(() => {
-    return (
-      <View style={styles.loadingImage}>
-        <FlatList
-          keyExtractor={(item, index) => item.fileName + index}
-          data={displayImages}
-          renderItem={({ item, index }) => (
-            <LoadingImage
-              source={item.url}
-              index={index}
-              onLoadFinish={handleOnFinishImage}
-              isUploaded={item.isUploaded}
-              fileId={item.fileId}
-            />
-          )}
-          scrollEnabled={false}
-          numColumns={1}
-        />
-      </View>
-    );
-  }, [displayImages, handleOnFinishImage]);
 
   const openEditMessageModal = useCallback((messageId: string, text: string) => {
     setEditMessageId(messageId);
@@ -513,6 +496,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
         handleBack={handleBack}
         groupChat={groupChat}
         channelId={channelId}
+        channelType={channelTypeBox}
       />
       <View style={styles.chatContainer}>
         <FlatList
@@ -534,20 +518,30 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
           extraData={messageStatusMap}
           showsVerticalScrollIndicator={false}
           ref={flatListRef}
-          ListHeaderComponent={renderLoadingImages}
+          ListHeaderComponent={() => (
+            <RenderLoadingImages
+              displayImages={displayImages}
+              handleOnFinishImage={handleOnFinishImage}
+            />)
+          }
         />
       </View>
-      <ChatRoomTextInput
-        inputMessage={inputMessage}
-        isSendLoading={isSendLoading}
-        isExpanded={isExpanded}
-        setInputMessage={setInputMessage}
-        handleOnFocus={handleOnFocus}
-        handleSend={handleSend}
-        handlePress={handlePress}
-        pickCamera={pickCamera}
-        pickImage={pickImage}
-      />
+      {
+        showTextInput ? (
+          <ChatRoomTextInput
+            inputMessage={inputMessage}
+            isSendLoading={isSendLoading}
+            isExpanded={isExpanded}
+            setInputMessage={setInputMessage}
+            handleOnFocus={handleOnFocus}
+            handleSend={handleSend}
+            handlePress={handlePress}
+            pickCamera={pickCamera}
+            pickImage={pickImage}
+          />
+        ) : null
+      }
+
       <ImageView
         images={[{ uri: fullImage }]}
         imageIndex={0}

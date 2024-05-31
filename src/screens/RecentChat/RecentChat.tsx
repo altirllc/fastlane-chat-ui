@@ -4,6 +4,7 @@ import React, {
   useRef,
   useContext,
   useLayoutEffect,
+  useCallback,
 } from 'react';
 
 import { View, FlatList, TouchableOpacity, Text } from 'react-native';
@@ -43,7 +44,11 @@ export type TRecentChat = {
   userIdForChatProp: string
 };
 
-export default function RecentChat({ chatNavigation, avatarUrl, userIdForChatProp }: TRecentChat) {
+export default function RecentChat({
+  chatNavigation,
+  avatarUrl,
+  userIdForChatProp,
+}: TRecentChat) {
   const { isConnected } = useAuth();
   const [channelObjects, setChannelObjects] = useState<IChatListProps[]>([]);
   const [loadChannel, setLoadChannel] = useState<boolean>(false);
@@ -137,6 +142,7 @@ export default function RecentChat({ chatNavigation, avatarUrl, userIdForChatPro
 
   useEffect(() => {
     if (channels.length > 0) {
+      // @ts-ignore
       const formattedChannelObjects: IChatListProps[] = channels.map(
         (item: Amity.Channel<any>) => {
           const lastActivityDate: string = moment(item.lastActivity).format(
@@ -154,17 +160,26 @@ export default function RecentChat({ chatNavigation, avatarUrl, userIdForChatPro
             chatId: item.channelId ?? '',
             chatName: item.displayName ?? '',
             chatMemberNumber: item.memberCount ?? 0,
-            unReadMessage: item.unreadCount ?? 0,
+            unReadMessage: item.subChannelsUnreadCount ?? 0,
             messageDate: dateDisplay ?? '',
             channelType: item.type ?? '',
             avatarFileId: item.avatarFileId,
           };
         }
       );
-      setChannelObjects([...formattedChannelObjects]);
+      const sortedChannelObjects = formattedChannelObjects.sort((a, b) => {
+        if (a.channelType === 'broadcast' && b.channelType !== 'broadcast') {
+          return -1;
+        }
+        if (a.channelType !== 'broadcast' && b.channelType === 'broadcast') {
+          return 1;
+        }
+        return 0;
+      });
+      setChannelObjects([...sortedChannelObjects]);
       setLoadChannel(false);
     }
-  }, [channelData, channels]);
+  }, [channels]);
 
   const handleLoadMore = () => {
     if (hasNextPage && onNextPage) {
@@ -195,6 +210,11 @@ export default function RecentChat({ chatNavigation, avatarUrl, userIdForChatPro
     ) : null;
   }, [loadChannel, channelObjects, handleLoadMore]);
 
+  const markChannelAsRead = useCallback(async (channelId: string) => {
+    const resultantChannel = channels.find((eachChannel) => eachChannel.channelId === channelId);
+    if (resultantChannel) await resultantChannel.markAsRead();
+  }, [channels])
+
   const renderChatList = (item: IChatListProps): ReactElement => {
     return (
       <ChatList
@@ -206,6 +226,7 @@ export default function RecentChat({ chatNavigation, avatarUrl, userIdForChatPro
         messageDate={item.messageDate}
         channelType={item.channelType}
         avatarFileId={item.avatarFileId}
+        markChannelAsRead={markChannelAsRead}
       // userIdForChat={userIdForChat}
       //setUserIdForChat={setUserIdForChat}
       />
