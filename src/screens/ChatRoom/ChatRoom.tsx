@@ -130,6 +130,9 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const [editMessageText, setEditMessageText] = useState<string>('');
   const disposers: Amity.Unsubscriber[] = [];
 
+  const [showTextInput, setShowTextInput] = useState(true)
+  const [channelTypeBox, setChannelTypeBox] = useState<string>('')
+
   const { getReadStatusForMessage, messageStatusMap } = useReadStatus()
 
   const [isSendLoading, setIsSendLoading] = useState(false);
@@ -212,6 +215,13 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       if (messagesArr.length > 0) {
         let formattedMessages: IMessage[] = [];
         for (const item of messagesArr) {
+          if (item.channelType === 'broadcast') {
+            setShowTextInput(false)
+            setChannelTypeBox('broadcast')
+          } else {
+            setShowTextInput(true)
+            setChannelTypeBox('')
+          }
           const targetIndex: number | undefined =
             groupChat &&
             groupChat.users?.findIndex(
@@ -235,11 +245,13 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
             editedAt: item.updatedAt as string,
             user: {
               _id: item.creatorId ?? '',
-              name:
-                chatReceiver?.displayName ??
-                groupChat?.users?.find((user) => user.userId === item.creatorId)
-                  ?.displayName ??
-                '',
+              name: item.channelType === 'broadcast'
+                ? 'Announcement'
+                : (
+                  chatReceiver?.displayName ??
+                  groupChat?.users?.find((user) => user.userId === item.creatorId)?.displayName ??
+                  ''
+                ),
               avatar: avatarUrl,
             },
             messageType: item.dataType,
@@ -484,6 +496,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
         handleBack={handleBack}
         groupChat={groupChat}
         channelId={channelId}
+        channelType={channelTypeBox}
       />
       <View style={styles.chatContainer}>
         <FlatList
@@ -513,17 +526,22 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
           }
         />
       </View>
-      <ChatRoomTextInput
-        inputMessage={inputMessage}
-        isSendLoading={isSendLoading}
-        isExpanded={isExpanded}
-        setInputMessage={setInputMessage}
-        handleOnFocus={handleOnFocus}
-        handleSend={handleSend}
-        handlePress={handlePress}
-        pickCamera={pickCamera}
-        pickImage={pickImage}
-      />
+      {
+        showTextInput ? (
+          <ChatRoomTextInput
+            inputMessage={inputMessage}
+            isSendLoading={isSendLoading}
+            isExpanded={isExpanded}
+            setInputMessage={setInputMessage}
+            handleOnFocus={handleOnFocus}
+            handleSend={handleSend}
+            handlePress={handlePress}
+            pickCamera={pickCamera}
+            pickImage={pickImage}
+          />
+        ) : null
+      }
+
       <ImageView
         images={[{ uri: fullImage }]}
         imageIndex={0}

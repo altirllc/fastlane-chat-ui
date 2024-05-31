@@ -13,6 +13,7 @@ export type TMessagePreviewComponent = {
     isDelivered: boolean;
     isUserLoggedInPreviewChat: boolean;
     getReadComponent: (messageId: string) => React.JSX.Element
+    channelType: 'conversation' | 'broadcast' | 'live' | 'community' | '';
 }
 
 export const MessagePreviewComponent = memo(({
@@ -20,7 +21,8 @@ export const MessagePreviewComponent = memo(({
     chatMemberNumber,
     isDelivered,
     isUserLoggedInPreviewChat,
-    getReadComponent
+    getReadComponent,
+    channelType
 }: TMessagePreviewComponent) => {
 
     const styles = useStyles();
@@ -77,9 +79,9 @@ export const MessagePreviewComponent = memo(({
                     {
                         lastMessageCreatorId ?
                             isLoggedInUser ?
-                                'You: ' :
-                                (lastMessageCreatorDisplayName ?
-                                    `${lastMessageCreatorDisplayName}: ` : '') :
+                                'You: ' : channelType === 'broadcast' ? 'Announcement: ' :
+                                    (lastMessageCreatorDisplayName ?
+                                        `${lastMessageCreatorDisplayName}: ` : '') :
                             ''
                     }
                     {

@@ -263,6 +263,7 @@ const ChatList = ({
               isDelivered={isDelivered}
               isUserLoggedInPreviewChat={isUserLoggedInPreviewChat}
               getReadComponent={getReadComponent}
+              channelType={channelType}
             />
           </View>
           <View style={styles.chatTimeWrap}>

@@ -22,10 +22,11 @@ export type TTopBar = {
     chatReceiver: UserInterface | undefined
     handleBack: () => void
     groupChat: IGroupChatObject | undefined
-    channelId: string
+    channelId: string;
+    channelType: string;
 }
 
-export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId }: TTopBar) => {
+export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId, channelType }: TTopBar) => {
     const navigation = useNavigation<any>();
     const styles = useStyles();
     const theme = useTheme() as MyMD3Theme;
@@ -76,18 +77,23 @@ export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId }: 
                     )}
                 </View>
             </View>
-            <TouchableOpacity
-                onPress={() => {
-                    navigation.navigate('ChatDetail', {
-                        channelId: channelId,
-                        channelType: chatReceiver ? 'conversation' : 'community',
-                        chatReceiver: chatReceiver ?? undefined,
-                        groupChat: groupChat ?? undefined,
-                    });
-                }}
-            >
-                <AlertIcon color={theme.colors.base} />
-            </TouchableOpacity>
+            {
+                channelType === 'broadcast' ? null : (
+                    <TouchableOpacity
+                        onPress={() => {
+                            navigation.navigate('ChatDetail', {
+                                channelId: channelId,
+                                channelType: chatReceiver ? 'conversation' : 'community',
+                                chatReceiver: chatReceiver ?? undefined,
+                                groupChat: groupChat ?? undefined,
+                            });
+                        }}
+                    >
+                        <AlertIcon color={theme.colors.base} />
+                    </TouchableOpacity>
+                )
+            }
+
         </View>
     )
 })
