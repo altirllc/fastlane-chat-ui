@@ -7,7 +7,6 @@ import moment from 'moment';
 import { AvatarIcon } from "../../../src/svg/AvatarIcon";
 import { deletedIcon, personXml } from '../../svg/svg-xml-list';
 import { SvgXml } from "react-native-svg";
-import { useReadStatus } from "../../../src/hooks/useReadStatus";
 import MediaSection from "../../../src/components/MediaSection";
 import useAuth from "../../../src/hooks/useAuth";
 
@@ -110,11 +109,12 @@ export type TTimeAndReadStatusComponent = {
     editedAt: string
     id: string;
     isUserChat: boolean;
+    getReadComponent: (messageId: string) => React.JSX.Element;
+    isDelivered: boolean
 }
 
-export const TimeAndReadStatusComponent = ({ isAnnouncement, isUserChat, createdAt, editedAt, id }: TTimeAndReadStatusComponent) => {
+export const TimeAndReadStatusComponent = ({ isAnnouncement, isUserChat, createdAt, editedAt, id, getReadComponent, isDelivered }: TTimeAndReadStatusComponent) => {
     const styles = useStyles();
-    const { isDelivered, getReadComponent } = useReadStatus()
 
     return !isAnnouncement ? (
         <View
