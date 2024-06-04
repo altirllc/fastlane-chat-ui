@@ -45,7 +45,7 @@ import { TopBar } from './TopBar';
 import { ChatRoomTextInput } from './ChatRoomTextInput';
 import { RenderLoadingImages } from './components';
 import { useImageHook } from './useImageHook';
-import { getFormattedMessages } from '@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/helpers';
+import { getFormattedMessages } from './helpers';
 
 type ChatRoomScreenComponentType = React.FC<{}>;
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
@@ -222,7 +222,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       });
       try {
         // Wait for all promises to be resolved
-        const results = await Promise.all(promises);
+        await Promise.all(promises);
       } catch (e) {
         console.log('e', e);
       }

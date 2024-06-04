@@ -41,7 +41,6 @@ import { screens } from '../../../../../../src/constants/screens';
 import { AuthContext } from '../../store/context';
 import { createAmityChannel } from '../../../src/providers/channel-provider';
 import { UserInterface } from '../../../src/types/user.interface';
-import { ToastMessageService } from '@/services/ToastMessageService/ToastMessageService';
 
 export type TRecentChat = {
   chatNavigation: any;
@@ -161,7 +160,7 @@ export default function RecentChat({
         const result = await UserRepository.getUserByIds([userIdForChat]);
         const user = result && result.data && result.data[0]
         if (!user) {
-          ToastMessageService.showError({ text: 'User not found' })
+          // ToastMessageService.showError({ text: 'User not found' })
           return;
         }
         users.push({

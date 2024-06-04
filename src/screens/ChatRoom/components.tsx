@@ -7,7 +7,6 @@ import moment from 'moment';
 import { AvatarIcon } from "../../../src/svg/AvatarIcon";
 import { deletedIcon, personXml } from '../../svg/svg-xml-list';
 import { SvgXml } from "react-native-svg";
-import { useReadStatus } from "../../../src/hooks/useReadStatus";
 import MediaSection from "../../../src/components/MediaSection";
 import useAuth from "../../../src/hooks/useAuth";
 

@@ -1,4 +1,4 @@
-import { IDisplayImage } from "@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/ChatRoom";
+import { IDisplayImage } from "./ChatRoom";
 import { MessageContentType, MessageRepository } from "@amityco/ts-sdk-react-native";
 import { useCallback, useEffect, useState } from "react";
 import ImagePicker, {
