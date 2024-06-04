@@ -110,11 +110,12 @@ export type TTimeAndReadStatusComponent = {
     editedAt: string
     id: string;
     isUserChat: boolean;
+    getReadComponent: (messageId: string) => React.JSX.Element;
+    isDelivered: boolean
 }
 
-export const TimeAndReadStatusComponent = ({ isAnnouncement, isUserChat, createdAt, editedAt, id }: TTimeAndReadStatusComponent) => {
+export const TimeAndReadStatusComponent = ({ isAnnouncement, isUserChat, createdAt, editedAt, id, getReadComponent, isDelivered }: TTimeAndReadStatusComponent) => {
     const styles = useStyles();
-    const { isDelivered, getReadComponent } = useReadStatus()
 
     return !isAnnouncement ? (
         <View

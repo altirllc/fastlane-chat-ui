@@ -8,7 +8,8 @@ export type RootStackParamList = {
     channelId: string;
     chatReceiver?: UserInterface;
     groupChat?: IGroupChatObject;
-    from: 'AddMembersFlow'
+    from: 'AddMembersFlow';
+    channelType: 'conversation' | 'broadcast' | 'live' | 'community' | '';
   };
   RecentChat: undefined;
   ChatDetail: {
@@ -25,5 +26,8 @@ export type RootStackParamList = {
   EnterGroupName: {
     selectedUserList: UserInterface[];
   };
-  AddMembersInChat: undefined;
+  AddMembersInChat: {
+    recentChatIds: string[];
+    channelType: 'conversation' | 'broadcast' | 'live' | 'community' | '';
+  };
 };

@@ -30,18 +30,12 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   MessageContentType,
   MessageRepository,
-  PostRepository,
   SubChannelRepository,
   getSubChannelTopic,
   subscribeTopic,
 } from '@amityco/ts-sdk-react-native';
 import useAuth from '../../hooks/useAuth';
 
-import ImagePicker, {
-  launchImageLibrary,
-  type Asset,
-  launchCamera,
-} from 'react-native-image-picker';
 import EditMessageModal from '../../components/EditMessageModal';
 import { AuthContext } from '../../store/context';
 import { useReadStatus } from '../../hooks/useReadStatus';
@@ -50,6 +44,8 @@ import { EachChatMessage } from './EachChatMessage';
 import { TopBar } from './TopBar';
 import { ChatRoomTextInput } from './ChatRoomTextInput';
 import { RenderLoadingImages } from './components';
+import { useImageHook } from './useImageHook';
+import { getFormattedMessages } from '@amityco/react-native-cli-chat-ui-kit/src/screens/ChatRoom/helpers';
 
 type ChatRoomScreenComponentType = React.FC<{}>;
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
@@ -98,7 +94,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const route = useRoute<RouteProp<RootStackParamList, 'ChatRoom'>>();
-  const { chatReceiver, groupChat, channelId, from } = route.params;
+  const { chatReceiver, groupChat, channelId, from, channelType } = route.params;
 
   const isGroupChat = useMemo(() => {
     return groupChat !== undefined;
@@ -109,7 +105,6 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [messagesData, setMessagesData] =
     useState<Amity.LiveCollection<Amity.Message>>();
-  const [imageMultipleUri, setImageMultipleUri] = useState<string[]>([]);
 
   const {
     data: messagesArr = [],
@@ -121,10 +116,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const [sortedMessages, setSortedMessages] = useState<IMessage[]>([]);
   const flatListRef = useRef(null);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const [visibleFullImage, setIsVisibleFullImage] = useState<boolean>(false);
-  const [fullImage, setFullImage] = useState<string>('');
   const [subChannelData, setSubChannelData] = useState<Amity.SubChannel>();
-  const [displayImages, setDisplayImages] = useState<IDisplayImage[]>([]);
   const [editMessageModal, setEditMessageModal] = useState<boolean>(false);
   const [editMessageId, setEditMessageId] = useState<string>('');
   const [editMessageText, setEditMessageText] = useState<string>('');
@@ -133,10 +125,20 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   const [showTextInput, setShowTextInput] = useState(true)
   const [channelTypeBox, setChannelTypeBox] = useState<string>('')
 
-  const { getReadStatusForMessage, messageStatusMap } = useReadStatus()
+  const { getReadStatusForMessage, messageStatusMap, getReadComponent, isDelivered } = useReadStatus()
 
   const [isSendLoading, setIsSendLoading] = useState(false);
-  // const [postDetailsMap, setPostDetailsMap] = useState<TPostDetailsMap>(new Map())
+
+  const {
+    openFullImage,
+    pickImage,
+    handleOnFinishImage,
+    pickCamera,
+    displayImages,
+    fullImage,
+    visibleFullImage,
+    setIsVisibleFullImage
+  } = useImageHook(channelId)
 
   const isFocused = useIsFocused();
 
@@ -167,11 +169,11 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   }, [channelId]);
 
   const startRead = async () => {
-    await SubChannelRepository.startReading(channelId);
+    await SubChannelRepository.startMessageReceiptSync(channelId);
   };
 
   const stopRead = useCallback(async () => {
-    await SubChannelRepository.stopReading(channelId);
+    await SubChannelRepository.stopMessageReceiptSync(channelId);
   }, [channelId]);
 
   useEffect(() => {
@@ -180,6 +182,16 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
       const unsubscribe = MessageRepository.getMessages(
         { subChannelId: channelId, limit: 10, includeDeleted: true },
         (value) => {
+          const messages = value.data;
+          //mark the last message as read
+          if (messages.length > 0) {
+            messages.forEach((eachMessage) => {
+              if (eachMessage.creatorId !== (client as Amity.Client).userId) {
+                //if friend's message, mark message as read
+                eachMessage.markRead();
+              }
+            })
+          }
           setMessagesData(value);
           //subsribe to the subchannel so that we recieve automatic updates of subchannel from server.
           subscribeSubChannel(subChannelData as Amity.SubChannel);
@@ -196,16 +208,23 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
         //get the read statuses only if there is a group chat or one to one chat.
         return;
       }
-      for (const eachMessage of messagesArr) {
+      const promises = messagesArr.map((eachMessage) => {
         //for each message, get the status
-
         //first check if creator id is same as the logged in user.
         const isUserChat =
           eachMessage.creatorId === (client as Amity.Client).userId;
         if (isUserChat) {
           //get read status only for the logged in user's own chats
-          await getReadStatusForMessage(eachMessage.messageId, chatReceiver, groupChat, isGroupChat);
+          return getReadStatusForMessage(eachMessage.messageId, chatReceiver, groupChat, isGroupChat);
         }
+        // Return a resolved promise for unselected channels to keep the array length consistent
+        return Promise.resolve(null);
+      });
+      try {
+        // Wait for all promises to be resolved
+        const results = await Promise.all(promises);
+      } catch (e) {
+        console.log('e', e);
       }
     })();
   }, [messagesArr, isGroupChat, chatReceiver, groupChat]);
@@ -213,109 +232,21 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
   useEffect(() => {
     (() => {
       if (messagesArr.length > 0) {
-        let formattedMessages: IMessage[] = [];
-        for (const item of messagesArr) {
-          if (item.channelType === 'broadcast') {
-            setShowTextInput(false)
-            setChannelTypeBox('broadcast')
-          } else {
-            setShowTextInput(true)
-            setChannelTypeBox('')
-          }
-          const targetIndex: number | undefined =
-            groupChat &&
-            groupChat.users?.findIndex(
-              (groupChatItem) => item.creatorId === groupChatItem.userId
-            );
-          let avatarUrl = '';
-          if (
-            groupChat &&
-            targetIndex &&
-            (groupChat?.users as any)[targetIndex as number]?.avatarFileId
-          ) {
-            avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${(groupChat?.users as any)[targetIndex as number]
-              ?.avatarFileId as any
-              }/download`;
-          } else if (chatReceiver && chatReceiver.avatarFileId) {
-            avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver.avatarFileId}/download`;
-          }
-          let commonObj = {
-            _id: item.messageId,
-            createdAt: item.createdAt as string,
-            editedAt: item.updatedAt as string,
-            user: {
-              _id: item.creatorId ?? '',
-              name: item.channelType === 'broadcast'
-                ? 'Announcement'
-                : (
-                  chatReceiver?.displayName ??
-                  groupChat?.users?.find((user) => user.userId === item.creatorId)?.displayName ??
-                  ''
-                ),
-              avatar: avatarUrl,
-            },
-            messageType: item.dataType,
-            isDeleted: item.isDeleted as boolean,
-            // @ts-ignore
-            customData: {
-              type: '',
-              text: '',
-              imageIds: [],
-              id: '',
-              extraData: {
-                postCreator: null
-              }
-            } as TCustomData
-          };
-          // @ts-ignore
-          if (item.dataType === 'custom' && item?.data?.type === ECustomData.post && item?.data?.id) {
-            //if datatype is custom and data is post from social feed
-            //TODO: Handle post image data and UI also
-            // @ts-ignore
-            PostRepository.getPost(item.data?.id, ({ data }) => {
-              console.log("data for post", data)
-              if (data) {
-                //let imageUrls = []
-                if (data.children?.length > 0) {
-                  commonObj.customData.imageIds = [...data.children]
-                }
-                if (data?.creator && Object.keys(data.creator).length > 0) {
-                  commonObj.customData.extraData.postCreator = data?.creator
-                }
-                commonObj.customData.type = ECustomData.post
-                commonObj.customData.id = data._id;
-                commonObj.customData.text = data?.data?.text;
-              }
-            });
-            // @ts-ignore
-          } else if (item.dataType === 'custom' && item?.data?.type === ECustomData.announcement) {
-            commonObj.customData.type = ECustomData.announcement
-            commonObj.customData.text = (item?.data as Record<string, string>)?.text as string;
-          }
-          if ((item?.data as Record<string, any>)?.fileId) {
-            //if file present
-            // @ts-ignore
-            formattedMessages.push({
-              text: '',
-              image:
-                `https://api.${apiRegion}.amity.co/api/v3/files/${(item?.data as Record<string, any>).fileId
-                }/download` ?? undefined,
-              ...commonObj,
-            })
-          } else {
-            //if file doesnt present
-            // @ts-ignore
-            formattedMessages.push({
-              text:
-                ((item?.data as Record<string, string>)?.text as string) ?? '',
-              ...commonObj,
-            })
-          }
-        }
-        setMessages(formattedMessages);
+        const resultantArray = getFormattedMessages(messagesArr, groupChat, apiRegion, chatReceiver)
+        setMessages(resultantArray);
       }
     })()
   }, [messagesArr]);
+
+  useEffect(() => {
+    if (channelType && channelType === 'broadcast') {
+      setShowTextInput(false)
+      setChannelTypeBox('broadcast')
+    } else {
+      setShowTextInput(true)
+      setChannelTypeBox('')
+    }
+  }, [channelType])
 
   const handleSend = useCallback(async () => {
     setIsSendLoading(true);
@@ -390,85 +321,6 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
     setIsExpanded(false);
   }, []);
 
-  const pickCamera = async () => {
-    const result: ImagePicker.ImagePickerResponse = await launchCamera({
-      mediaType: 'photo',
-      quality: 1,
-    });
-    if (
-      result.assets &&
-      result.assets.length > 0 &&
-      result.assets[0] !== null &&
-      result.assets[0]
-    ) {
-      const imagesArr: string[] = [...imageMultipleUri];
-      imagesArr.push(result.assets[0].uri as string);
-      setImageMultipleUri(imagesArr);
-    }
-  };
-
-  const createImageMessage = async (fileId: string) => {
-    if (fileId) {
-      const imageMessage = {
-        subChannelId: channelId,
-        dataType: MessageContentType.IMAGE,
-        fileId: fileId,
-      };
-      await MessageRepository.createMessage(imageMessage);
-    }
-  };
-
-  const handleOnFinishImage = async (fileId: string, originalPath: string) => {
-    createImageMessage(fileId);
-    setTimeout(() => {
-      setDisplayImages((prevData) => {
-        const newData: IDisplayImage[] = prevData.filter(
-          (item: IDisplayImage) => item.url !== originalPath
-        ); // Filter out objects containing the desired value
-        return newData; // Update the state with the filtered array
-      });
-      setImageMultipleUri((prevData) => {
-        const newData = prevData.filter((url: string) => url !== originalPath); // Filter out objects containing the desired value
-        return newData; // Update the state with the filtered array
-      });
-    }, 0);
-  };
-
-  useEffect(() => {
-    if (imageMultipleUri.length > 0 && displayImages.length === 0) {
-      const imagesObject: IDisplayImage[] = imageMultipleUri.map(
-        (url: string) => {
-          const fileName: string = url.substring(url.lastIndexOf('/') + 1);
-
-          return {
-            url: url,
-            fileName: fileName,
-            fileId: '',
-            isUploaded: false,
-          };
-        }
-      );
-      setDisplayImages([imagesObject[0]] as IDisplayImage[]);
-    }
-  }, [imageMultipleUri]);
-
-  const pickImage = async () => {
-    const result: ImagePicker.ImagePickerResponse = await launchImageLibrary({
-      mediaType: 'photo',
-      quality: 1,
-      selectionLimit: 10,
-    });
-    if (!result.didCancel && result.assets && result.assets.length > 0) {
-      const selectedImages: Asset[] = result.assets;
-      const imageUriArr: string[] = selectedImages.map(
-        (item: Asset) => item.uri
-      ) as string[];
-      const imagesArr = [...imageMultipleUri];
-      const totalImages = imagesArr.concat(imageUriArr);
-      setImageMultipleUri(totalImages);
-    }
-  };
-
   const openEditMessageModal = useCallback((messageId: string, text: string) => {
     setEditMessageId(messageId);
     setEditMessageModal(true);
@@ -480,14 +332,6 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
     setEditMessageText('');
     setEditMessageModal(false);
   };
-
-  const openFullImage = useCallback((image: string, messageType: string) => {
-    if (messageType === 'image' || messageType === 'file') {
-      const fullSizeImage: string = image + '?size=full';
-      setFullImage(fullSizeImage);
-      setIsVisibleFullImage(true);
-    }
-  }, []);
 
   return (
     <View style={styles.container}>
@@ -509,6 +353,8 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
               sortedMessages={sortedMessages}
               openEditMessageModal={openEditMessageModal}
               openFullImage={openFullImage}
+              getReadComponent={getReadComponent}
+              isDelivered={isDelivered}
             />
           )}
           keyExtractor={(item) => item._id}

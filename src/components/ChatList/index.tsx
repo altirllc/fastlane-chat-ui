@@ -30,8 +30,6 @@ export interface IChatListProps {
   channelType: 'conversation' | 'broadcast' | 'live' | 'community' | '';
   avatarFileId: string | undefined;
   markChannelAsRead: (chatId: string) => {};
-  //userIdForChat: string;
-  //setUserIdForChat: React.Dispatch<React.SetStateAction<string>>
 }
 
 export interface IGroupChatObject {
@@ -51,8 +49,6 @@ const ChatList = ({
   channelType,
   avatarFileId,
   markChannelAsRead,
-  //userIdForChat,
-  //setUserIdForChat
 }: IChatListProps) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { client, apiRegion } = useAuth();
@@ -162,6 +158,7 @@ const ChatList = ({
         navigation.navigate('ChatRoom', {
           channelId: chatId,
           chatReceiver: chatReceiver,
+          channelType,
         });
       }
     }
@@ -170,22 +167,10 @@ const ChatList = ({
       navigation.navigate('ChatRoom', {
         channelId: chatId,
         groupChat: groupChat,
+        channelType
       });
     }
   };
-
-  //Need to uncomment after app review submit
-  // useEffect(() => {
-  //   console.log("userIdForChat", userIdForChat, chatReceiver?.userId)
-  //   //'e2fe4805-fee8-4718-972a-8b91172f2669'
-  //   if (chatReceiver && chatReceiver.userId === userIdForChat) {
-  //     //setUserIdForChat('');
-  //     navigation.navigate('ChatRoom', {
-  //       channelId: chatId,
-  //       chatReceiver: chatReceiver,
-  //     });
-  //   }
-  // }, [chatReceiver, userIdForChat])
 
   useEffect(() => {
     if (chatMemberNumber === 2 && usersArr) {

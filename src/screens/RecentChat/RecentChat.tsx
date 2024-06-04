@@ -11,6 +11,7 @@ import { View, FlatList, TouchableOpacity, Text } from 'react-native';
 
 import {
   ChannelRepository,
+  UserRepository,
   getChannelTopic,
   subscribeTopic,
 } from '@amityco/ts-sdk-react-native';
@@ -23,6 +24,7 @@ import { PlusIcon } from '../../svg/PlusIcon';
 import { useStyles } from './styles';
 import {
   DrawerActions,
+  useFocusEffect,
   useIsFocused,
   useNavigation,
 } from '@react-navigation/native';
@@ -37,6 +39,9 @@ import { Avatar } from '../../../../../../src/components/Avatar/Avatar';
 // @ts-ignore
 import { screens } from '../../../../../../src/constants/screens';
 import { AuthContext } from '../../store/context';
+import { createAmityChannel } from '../../../src/providers/channel-provider';
+import { UserInterface } from '../../../src/types/user.interface';
+import { ToastMessageService } from '@/services/ToastMessageService/ToastMessageService';
 
 export type TRecentChat = {
   chatNavigation: any;
@@ -49,14 +54,17 @@ export default function RecentChat({
   avatarUrl,
   userIdForChatProp,
 }: TRecentChat) {
-  const { isConnected } = useAuth();
+  const { isConnected, client } = useAuth();
   const [channelObjects, setChannelObjects] = useState<IChatListProps[]>([]);
   const [loadChannel, setLoadChannel] = useState<boolean>(false);
   const styles = useStyles();
   const { setIsTabBarVisible } = useContext(AuthContext);
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const [userIdForChat, setUserIdForChat] = useState('');
 
-  //const [userIdForChat, setUserIdForChat] = useState('');
+  useEffect(() => {
+    setUserIdForChat(userIdForChatProp)
+  }, [userIdForChatProp])
 
   const flatListRef = useRef(null);
   const { colors } = useCustomTheme();
@@ -97,12 +105,6 @@ export default function RecentChat({
     }, 500);
   }, [isFocused]);
 
-  useEffect(() => {
-    if (isFocused && userIdForChatProp) {
-      //setUserIdForChat(userIdForChatProp)
-    }
-  }, [isFocused, userIdForChatProp])
-
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
@@ -133,12 +135,71 @@ export default function RecentChat({
   };
 
   useEffect(() => {
-    onQueryChannel();
-    return () => {
-      console.log(disposers);
-      disposers.forEach((fn) => fn());
-    };
-  }, [isConnected]);
+    (async () => {
+      if (!userIdForChat) onQueryChannel()
+      return () => {
+        console.log(disposers);
+        disposers.forEach((fn) => fn());
+      };
+    })()
+  }, [isConnected, userIdForChat]);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => setUserIdForChat('');
+    }, [])
+  );
+
+  useEffect(() => {
+    (async () => {
+      if (!userIdForChat || channels.length === 0) return;
+      try {
+        //if we have userId from route, that means we need to create new chat with that user
+        setLoadChannel(true);
+        const users: UserInterface[] = [];
+        //first fetch that user's information
+        const result = await UserRepository.getUserByIds([userIdForChat]);
+        const user = result && result.data && result.data[0]
+        if (!user) {
+          ToastMessageService.showError({ text: 'User not found' })
+          return;
+        }
+        users.push({
+          displayName: user.displayName || '',
+          avatarFileId: user.avatarFileId || '',
+          userId: user.userId || ''
+        })
+        //now create new channel with that user
+        const channel = await createAmityChannel(
+          (client as Amity.Client).userId as string,
+          users
+        );
+        if (channel) {
+          try {
+            if (users.length === 1 && users[0]) {
+              const oneOnOneChatObject: UserInterface = {
+                userId: users[0].userId,
+                displayName: users[0].displayName as string,
+                avatarFileId: users[0].avatarFileId as string,
+              };
+              navigation.navigate('ChatRoom', {
+                channelId: channel.channelId,
+                chatReceiver: oneOnOneChatObject,
+              })
+            }
+          } catch (error) {
+            console.log('create chat error ' + JSON.stringify(error));
+            console.error(error);
+          }
+        }
+      } catch (e) {
+        console.log("error", e)
+      } finally {
+        setLoadChannel(false);
+      }
+    })()
+  }, [userIdForChat, channels])
+
 
   useEffect(() => {
     if (channels.length > 0) {
@@ -188,26 +249,24 @@ export default function RecentChat({
   };
 
   const renderRecentChat = useMemo(() => {
-    return !loadChannel ? (
-      channelObjects.length > 0 ? (
-        <FlatList
-          data={channelObjects}
-          renderItem={({ item }) => renderChatList(item)}
-          keyExtractor={(item) => item.chatId.toString()}
-          onEndReached={handleLoadMore}
-          showsVerticalScrollIndicator={false}
-          onEndReachedThreshold={0.4}
-          ref={flatListRef}
-        />
-      ) : (
-        <View style={styles.noMessageContainer}>
-          <Text style={styles.noMessageText}>No Messages, yet.</Text>
-          <Text style={styles.noMessageDesc}>
-            No messages in your inbox, yet!
-          </Text>
-        </View>
-      )
-    ) : null;
+    return channelObjects.length > 0 ? (
+      <FlatList
+        data={channelObjects}
+        renderItem={({ item }) => renderChatList(item)}
+        keyExtractor={(item) => item.chatId.toString()}
+        onEndReached={handleLoadMore}
+        showsVerticalScrollIndicator={false}
+        onEndReachedThreshold={0.4}
+        ref={flatListRef}
+      />
+    ) : !loadChannel ? (
+      <View style={styles.noMessageContainer}>
+        <Text style={styles.noMessageText}>No Messages, yet.</Text>
+        <Text style={styles.noMessageDesc}>
+          No messages in your inbox, yet!
+        </Text>
+      </View>
+    ) : null
   }, [loadChannel, channelObjects, handleLoadMore]);
 
   const markChannelAsRead = useCallback(async (channelId: string) => {
@@ -227,8 +286,6 @@ export default function RecentChat({
         channelType={item.channelType}
         avatarFileId={item.avatarFileId}
         markChannelAsRead={markChannelAsRead}
-      // userIdForChat={userIdForChat}
-      //setUserIdForChat={setUserIdForChat}
       />
     );
   };

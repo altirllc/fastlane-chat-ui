@@ -35,6 +35,8 @@ export type TEachChatMessage = {
     isGroupChat: boolean;
     openEditMessageModal: (messageId: string, text: string) => void;
     openFullImage: (image: string, messageType: string) => void;
+    getReadComponent: (messageId: string) => React.JSX.Element;
+    isDelivered: boolean;
 }
 
 export const EachChatMessage = memo(({
@@ -43,7 +45,9 @@ export const EachChatMessage = memo(({
     sortedMessages,
     isGroupChat,
     openEditMessageModal,
-    openFullImage
+    openFullImage,
+    getReadComponent,
+    isDelivered
 }: TEachChatMessage) => {
 
     const deleteMessage = async (messageId: string) => {
@@ -185,6 +189,8 @@ export const EachChatMessage = memo(({
                         editedAt={message.editedAt}
                         id={message._id}
                         isUserChat={isUserChat}
+                        getReadComponent={getReadComponent}
+                        isDelivered={isDelivered}
                     />
                 </View>
             </View>
