@@ -200,20 +200,30 @@ export default function RecentChat({
   }, [userIdForChat, channels])
 
 
+  const getDaysDiff = (date: Date) => {
+    //.startOf('day') sets time at 00:00:00 before performing diff
+    let todaysDate = moment().startOf('day');
+    let date1 = moment(date).startOf('day');
+    return Math.abs(todaysDate.diff(date1, 'days'));
+  };
+
   useEffect(() => {
     if (channels.length > 0) {
       // @ts-ignore
       const formattedChannelObjects: IChatListProps[] = channels.map(
         (item: Amity.Channel<any>) => {
           const lastActivityDate: string = moment(item.lastActivity).format(
-            'DD/MM/YYYY'
+            'MM/DD/YY'
           );
-          const todayDate = moment(Date.now()).format('DD/MM/YYYY');
+          const todayDate = moment(Date.now()).format('MM/DD/YY');
+          const daysDiff = getDaysDiff(moment(item.lastActivity).toDate());
           let dateDisplay;
-          if (lastActivityDate === todayDate) {
+          if (daysDiff === 0 && lastActivityDate === todayDate) {
             dateDisplay = moment(item.lastActivity).format('hh:mm A');
+          } else if (daysDiff === 1) {
+            dateDisplay = 'Yesterday'
           } else {
-            dateDisplay = moment(item.lastActivity).format('DD/MM/YYYY');
+            dateDisplay = moment(item.lastActivity).format('MM/DD/YY');
           }
 
           return {
