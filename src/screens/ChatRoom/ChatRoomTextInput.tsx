@@ -58,6 +58,7 @@ export const ChatRoomTextInput = memo(({
                     placeholder="Type a message..."
                     placeholderTextColor={theme.colors.baseShade3}
                     onFocus={handleOnFocus}
+                    multiline
                 />
 
                 {inputMessage.length > 0 ? (

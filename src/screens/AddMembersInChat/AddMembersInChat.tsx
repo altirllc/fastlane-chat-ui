@@ -1,5 +1,6 @@
 import { MessageContentType, MessageRepository, UserRepository } from '@amityco/ts-sdk-react-native';
 import React, {
+  memo,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -93,7 +94,6 @@ const AddMembersInChat = ({
     useState<UserInterface[]>(initUserList);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const isShowSectionHeader = false;
   const navigation = useNavigation<any>();
   const [loading, setLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -175,19 +175,18 @@ const AddMembersInChat = ({
   }, [recentMembersIdsSet]);
 
   useEffect(() => {
-    if (sectionedUserList.length > 0)
-      setFinalUserList((prevUserList) => {
-        const updatedList = prevUserList.map((item) => {
-          if (item.title === 'All Members') {
-            return {
-              ...item,
-              data: sectionedUserList,
-            };
-          }
-          return item;
-        });
-        return updatedList;
+    setFinalUserList((prevUserList) => {
+      const updatedList = prevUserList.map((item) => {
+        if (item.title === 'All Members') {
+          return {
+            ...item,
+            data: sectionedUserList.length > 0 ? sectionedUserList : [],
+          };
+        }
+        return item;
       });
+      return updatedList;
+    });
   }, [sectionedUserList]);
 
   useEffect(() => {
@@ -326,8 +325,8 @@ const AddMembersInChat = ({
     }
   };
 
-  const renderItem = ({ item, index }: ListRenderItemInfo<UserInterface>) => {
-    let isrenderheader = true;
+  const RenderItem = memo(({ item, index }: ListRenderItemInfo<UserInterface>) => {
+    let isrenderheader: boolean = true;
     const isAlphabet = /^[A-Z]$/i.test(item.displayName[0] as string);
     const currentLetter = isAlphabet
       ? (item.displayName as string).charAt(0).toUpperCase()
@@ -371,7 +370,7 @@ const AddMembersInChat = ({
         </View>
       </View>
     );
-  };
+  });
 
   const flatListRef = useRef(null);
 
@@ -554,7 +553,8 @@ const AddMembersInChat = ({
         <SectionList
           sections={filteredUserList}
           keyExtractor={(item, index) => item.userId + index}
-          renderItem={renderItem}
+          // @ts-ignore
+          renderItem={({ item, index }) => <RenderItem item={item} index={index} />}
           showsVerticalScrollIndicator={false}
           ref={flatListRef}
           renderSectionHeader={({ section }) => (
@@ -568,9 +568,9 @@ const AddMembersInChat = ({
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           stickySectionHeadersEnabled={false}
-          ListHeaderComponent={
-            isShowSectionHeader ? <SectionHeader title={''} /> : <View />
-          }
+        // ListHeaderComponent={
+        //   isShowSectionHeader ? <SectionHeader title={''} /> : <View />
+        // }
         />
       </View>
       {loading ? <LoadingOverlay /> : null}
