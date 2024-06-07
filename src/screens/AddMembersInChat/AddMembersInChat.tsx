@@ -94,7 +94,6 @@ const AddMembersInChat = ({
     useState<UserInterface[]>(initUserList);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const isShowSectionHeader = false;
   const navigation = useNavigation<any>();
   const [loading, setLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -554,7 +553,8 @@ const AddMembersInChat = ({
         <SectionList
           sections={filteredUserList}
           keyExtractor={(item, index) => item.userId + index}
-          renderItem={({ item, index, section }) => <RenderItem item={item} index={index} section={section} />}
+          // @ts-ignore
+          renderItem={({ item, index }) => <RenderItem item={item} index={index} />}
           showsVerticalScrollIndicator={false}
           ref={flatListRef}
           renderSectionHeader={({ section }) => (
