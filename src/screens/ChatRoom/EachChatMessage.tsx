@@ -5,6 +5,7 @@ import {
     View,
     Text,
     Alert,
+    TouchableOpacity,
 } from 'react-native';
 import moment from 'moment';
 
@@ -37,6 +38,7 @@ export type TEachChatMessage = {
     openFullImage: (image: string, messageType: string) => void;
     getReadComponent: (messageId: string) => React.JSX.Element;
     isDelivered: boolean;
+    onMemberClick: (memberId: string, displayName: string) => void;
 }
 
 export const EachChatMessage = memo(({
@@ -47,7 +49,8 @@ export const EachChatMessage = memo(({
     openEditMessageModal,
     openFullImage,
     getReadComponent,
-    isDelivered
+    isDelivered,
+    onMemberClick
 }: TEachChatMessage) => {
 
     const deleteMessage = async (messageId: string) => {
@@ -98,7 +101,13 @@ export const EachChatMessage = memo(({
     const isAnnouncement = message?.messageType === "custom" && message.customData?.type === ECustomData.announcement
     const isSocialPost = message?.messageType === "custom" && message.customData?.type === ECustomData.post;
     const imageIds = message?.messageType === "custom" && message.customData?.imageIds;
-    const postCreator = message?.customData?.extraData?.postCreator
+    const postCreator = message?.customData?.extraData?.postCreator;
+
+
+    const onFriendPress = () => {
+        if (!message) return;
+        onMemberClick?.(message.user._id, message.user.name)
+    }
 
     return (
         <View>
@@ -106,14 +115,19 @@ export const EachChatMessage = memo(({
             <View
                 style={!isUserChat ? isAnnouncement ? styles.leftMessageWrap : [styles.leftMessageWrap, { flexDirection: 'row' }] : styles.rightMessageWrap}
             >
-                <AvatarComponent isUserChat={isUserChat} isAnnouncement={isAnnouncement} avatar={message?.user?.avatar || ''} />
+                <TouchableOpacity onPress={onFriendPress}>
+                    <AvatarComponent isUserChat={isUserChat} isAnnouncement={isAnnouncement} avatar={message?.user?.avatar || ''} />
+                </TouchableOpacity>
                 <View>
                     {!isUserChat && isGroupChat && !isAnnouncement ? (
-                        <Text
-                            style={isUserChat ? styles.chatUserText : styles.chatFriendText}
-                        >
-                            {message.user.name}
-                        </Text>
+                        <TouchableOpacity onPress={onFriendPress}>
+                            <Text
+                                style={isUserChat ? styles.chatUserText : styles.chatFriendText}
+                            >
+                                {message.user.name}
+                            </Text>
+                        </TouchableOpacity>
+
                     ) : null}
                     {isAnnouncement && message.customData?.text ? (
                         <Text style={{ color: '#6E768A', fontSize: 12, fontWeight: '400', marginHorizontal: 20, lineHeight: 17, alignSelf: 'center' }}>

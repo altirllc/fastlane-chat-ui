@@ -29,6 +29,7 @@ type TChatNavigator = {
   };
   userIdForChat: string;
   setIsTabBarVisible: (value: boolean) => void;
+  onMemberClick: (memberId: string, displayName: string) => void;
 };
 
 export default function ChatNavigator({
@@ -38,6 +39,7 @@ export default function ChatNavigator({
   userData,
   userIdForChat,
   setIsTabBarVisible,
+  onMemberClick
 }: TChatNavigator) {
   const Stack = createNativeStackNavigator<RootStackParamList>();
   const { isConnected } = useAuth();
@@ -78,7 +80,7 @@ export default function ChatNavigator({
               {() => <EnterGroupName />}
             </Stack.Screen>
 
-            <Stack.Screen name="ChatRoom">{() => <ChatRoom />}</Stack.Screen>
+            <Stack.Screen name="ChatRoom">{() => <ChatRoom onMemberClick={onMemberClick} />}</Stack.Screen>
 
             <Stack.Screen name="ChatDetail" component={ChatRoomSetting} />
             <Stack.Screen name="MemberDetail" component={MemberDetail} />
