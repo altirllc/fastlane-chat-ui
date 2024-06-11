@@ -24,34 +24,44 @@ export type TTopBar = {
     groupChat: IGroupChatObject | undefined
     channelId: string;
     channelType: string;
+    onMemberClick: (memberId: string, displayName: string) => void;
 }
 
-export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId, channelType }: TTopBar) => {
+export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId, channelType, onMemberClick }: TTopBar) => {
     const navigation = useNavigation<any>();
     const styles = useStyles();
     const theme = useTheme() as MyMD3Theme;
     const { apiRegion } = useAuth();
 
-    const { avatarArray } = useAvatarArray(groupChat)
+    const { avatarArray } = useAvatarArray(groupChat);
 
+    const onChatProfilePress = () => {
+        if (!chatReceiver) return;
+        onMemberClick?.(chatReceiver.userId, chatReceiver.displayName)
+    }
 
     return (
         <View style={styles.topBar}>
             <View style={styles.chatTitleWrap}>
                 <BackButton styles={styles.backButton} onPress={handleBack} />
                 {chatReceiver ? (
-                    chatReceiver?.avatarFileId ? (
-                        <Image
-                            style={styles.avatar}
-                            source={{
-                                uri: `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver?.avatarFileId}/download`,
-                            }}
-                        />
-                    ) : (
-                        <View style={styles.avatar}>
-                            <AvatarIcon />
-                        </View>
-                    )
+                    <TouchableOpacity onPress={onChatProfilePress}>
+                        {
+                            chatReceiver?.avatarFileId ? (
+                                <Image
+                                    style={styles.avatar}
+                                    source={{
+                                        uri: `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver?.avatarFileId}/download`,
+                                    }}
+                                />
+                            ) : (
+                                <View style={styles.avatar}>
+                                    <AvatarIcon />
+                                </View>
+                            )
+                        }
+                    </TouchableOpacity>
+
                 ) : groupChat?.avatarFileId ? (
                     <Image
                         style={styles.avatar}
@@ -64,7 +74,7 @@ export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId, ch
                         <Avatar avatars={avatarArray} />
                     </View>
                 )}
-                <View>
+                <TouchableOpacity disabled={!!groupChat} onPress={onChatProfilePress}>
                     <CustomText style={styles.chatName} numberOfLines={1}>
                         {chatReceiver
                             ? chatReceiver?.displayName
@@ -75,7 +85,7 @@ export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId, ch
                             {groupChat?.memberCount} members
                         </CustomText>
                     )}
-                </View>
+                </TouchableOpacity>
             </View>
             {
                 channelType === 'broadcast' ? null : (

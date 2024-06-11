@@ -47,7 +47,9 @@ import { RenderLoadingImages } from './components';
 import { useImageHook } from './useImageHook';
 import { getFormattedMessages } from './helpers';
 
-type ChatRoomScreenComponentType = React.FC<{}>;
+type ChatRoomScreenComponentType = {
+  onMemberClick: (memberId: string, displayName: string) => void;
+};
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();
 
@@ -89,7 +91,7 @@ export interface IDisplayImage {
   thumbNail?: string;
 }
 
-const ChatRoom: ChatRoomScreenComponentType = () => {
+const ChatRoom = ({ onMemberClick }: ChatRoomScreenComponentType) => {
   const styles = useStyles();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
@@ -341,6 +343,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
         groupChat={groupChat}
         channelId={channelId}
         channelType={channelTypeBox}
+        onMemberClick={onMemberClick}
       />
       <View style={styles.chatContainer}>
         <FlatList
@@ -355,6 +358,7 @@ const ChatRoom: ChatRoomScreenComponentType = () => {
               openFullImage={openFullImage}
               getReadComponent={getReadComponent}
               isDelivered={isDelivered}
+              onMemberClick={onMemberClick}
             />
           )}
           keyExtractor={(item) => item._id}

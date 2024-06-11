@@ -183,7 +183,7 @@ const ChatList = ({
 
   useEffect(() => {
     ChannelRepository.Membership.getMembers(
-      { channelId: chatId, limit: 99 },
+      { channelId: chatId, limit: 90 },
       (data) => {
         setUsersObject(data);
       }
