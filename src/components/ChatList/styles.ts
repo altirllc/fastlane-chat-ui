@@ -1,7 +1,6 @@
-
 import { StyleSheet } from 'react-native';
-import { useTheme } from "react-native-paper";
-import type { MyMD3Theme } from "../../providers/amity-ui-kit-provider";
+import { useTheme } from 'react-native-paper';
+import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import { AVATAR_SIZE } from '../../../src/components/Avatar/Avatar.styles';
 
 export const useStyles = () => {
@@ -50,7 +49,7 @@ export const useStyles = () => {
       fontSize: 12,
       marginHorizontal: 4,
       marginVertical: 2,
-      color: theme.colors.baseShade1
+      color: theme.colors.baseShade1,
     },
     messagePreview: {
       fontWeight: '400',
@@ -73,9 +72,10 @@ export const useStyles = () => {
       minWidth: 20,
     },
     chatTimeWrap: {
-      width: '25%',
+      width: '30%',
       flexDirection: 'column',
       alignItems: 'flex-end',
+      paddingRight: 6,
     },
     avatar: {
       width: 40,
@@ -85,6 +85,5 @@ export const useStyles = () => {
       marginLeft: 10,
     },
   });
-  return styles
-}
-
+  return styles;
+};
