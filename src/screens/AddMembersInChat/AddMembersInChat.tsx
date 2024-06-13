@@ -104,6 +104,7 @@ const AddMembersInChat = ({
   const groupChat = route?.params?.groupChat as IGroupChatObject;
   const from = route?.params?.from as 'MembersScreen' | undefined;
   const channelID = route?.params?.channelID as 'string' | undefined;
+  const channelType = route?.params?.channelID as 'string' | undefined;
   const memberIdsToSkip = route?.params?.memberIdsToSkip as
     | string[]
     | undefined;
@@ -441,7 +442,19 @@ const AddMembersInChat = ({
             navigation.dispatch(
               CommonActions.reset({
                 index: 0,
-                routes: [{ name: 'RecentChat' }],
+                routes: [{
+                  name: 'ChatRoom',
+                  params: {
+                    channelId: channelID,
+                    groupChat: {
+                      ...groupChat,
+                      memberCount: groupChat.memberCount + selectedUserList.length,
+                      users: [...groupChat.users, ...selectedUserList]
+                    },
+                    channelType,
+                    from: 'AddMembersFlow'
+                  }
+                }],
               })
             );
           }

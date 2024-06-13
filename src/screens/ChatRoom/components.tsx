@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { FlatList, View, Text, Image } from "react-native";
+import { FlatList, View, Text, Image, TouchableOpacity } from "react-native";
 import LoadingImage from "../../../src/components/LoadingImage";
 import { useStyles } from "./styles";
 import { IDisplayImage } from "./ChatRoom";
@@ -9,7 +9,6 @@ import { deletedIcon, personXml } from '../../svg/svg-xml-list';
 import { SvgXml } from "react-native-svg";
 import MediaSection from "../../../src/components/MediaSection";
 import useAuth from "../../../src/hooks/useAuth";
-
 
 export type TRenderLoadingImages = {
     displayImages: IDisplayImage[];
@@ -197,23 +196,35 @@ export const ImageComponent = memo(({ imageStr, isUserChat }: { imageStr: string
 })
 
 export type TSocialPostComponent = {
+    postId: string;
     isUserChat: boolean;
     postCreator: Amity.User | undefined
     imageIds: false | string[] | undefined
     customDataText: string | undefined
 }
 
-export const SocialPostComponent = ({ isUserChat, postCreator, imageIds, customDataText }: TSocialPostComponent) => {
+export const SocialPostComponent = (
+    {
+        //postId,
+        isUserChat,
+        postCreator,
+        imageIds,
+        customDataText
+    }: TSocialPostComponent
+) => {
     const styles = useStyles();
     const { apiRegion } = useAuth();
-
+    //const { onChatPostClick } = useContext(AuthContext)
 
     return (
         <>
-            <View style={[
-                styles.bodySection,
-                isUserChat ? { alignSelf: 'flex-end' } : { alignSelf: 'flex-start' }
-            ]}>
+            <TouchableOpacity
+                style={[
+                    styles.bodySection,
+                    isUserChat ? { alignSelf: 'flex-end' } : { alignSelf: 'flex-start' }
+                ]}
+            //onPress={() => onChatPostClick(postId)}
+            >
                 {
                     postCreator ? (
                         <View style={styles.postCreatorContainer}>
@@ -257,7 +268,7 @@ export const SocialPostComponent = ({ isUserChat, postCreator, imageIds, customD
                         {customDataText}
                     </Text>
                 ) : null}
-            </View>
+            </TouchableOpacity>
         </>
     )
 }

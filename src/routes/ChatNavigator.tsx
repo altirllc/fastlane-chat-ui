@@ -30,6 +30,7 @@ type TChatNavigator = {
   userIdForChat: string;
   setIsTabBarVisible: (value: boolean) => void;
   onMemberClick: (memberId: string, displayName: string) => void;
+  onChatPostClick: (postId: string) => void;
 };
 
 export default function ChatNavigator({
@@ -39,13 +40,14 @@ export default function ChatNavigator({
   userData,
   userIdForChat,
   setIsTabBarVisible,
-  onMemberClick
+  onMemberClick,
+  onChatPostClick
 }: TChatNavigator) {
   const Stack = createNativeStackNavigator<RootStackParamList>();
   const { isConnected } = useAuth();
   return (
     <NavigationContainer independent={true}>
-      <AuthContext.Provider value={{ amityAccessToken, setIsTabBarVisible }}>
+      <AuthContext.Provider value={{ amityAccessToken, setIsTabBarVisible, onChatPostClick }}>
         {isConnected && (
           <Stack.Navigator
             screenOptions={{

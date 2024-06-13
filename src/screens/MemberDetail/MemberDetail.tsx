@@ -32,6 +32,7 @@ export default function MemberDetail({ route }: any) {
   const styles = useStyles();
   const { channelID } = route.params;
   const groupChat = route?.params?.groupChat as IGroupChatObject;
+  const channelType = route?.params?.channelType as string;
   const [sectionedUserList, setSectionedUserList] = useState<UserInterface[]>(
     []
   );
@@ -136,7 +137,8 @@ export default function MemberDetail({ route }: any) {
       from: 'MembersScreen',
       channelID,
       memberIdsToSkip: sectionedUserList.map((eachUser) => eachUser.userId),
-      groupChat
+      groupChat,
+      channelType
     });
   };
 
