@@ -156,7 +156,7 @@ export const EachChatMessage = memo(({
                                 ) : isImage ? (
                                     <ImageComponent imageStr={message.image} isUserChat={isUserChat} />
                                 ) : isSocialPost ? (
-                                    <SocialPostComponent customDataText={message.customData?.text} isUserChat={isUserChat} postCreator={postCreator} imageIds={imageIds} />
+                                    <SocialPostComponent postId={message.customData?.id || ''} customDataText={message.customData?.text} isUserChat={isUserChat} postCreator={postCreator} imageIds={imageIds} />
                                 ) : null}
                             </MenuTrigger>
                             <MenuOptions

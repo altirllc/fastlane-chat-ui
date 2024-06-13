@@ -210,7 +210,7 @@ export default function RecentChat({
   useEffect(() => {
     if (channels.length > 0) {
       // @ts-ignore
-      const formattedChannelObjects: IChatListProps[] = channels.map(
+      const formattedChannelObjects: IChatListProps[] = channels.filter((eachChannel) => !eachChannel.isDeleted).map(
         (item: Amity.Channel<any>) => {
           const lastActivityDate: string = moment(item.lastActivity).format(
             'MM/DD/YY'

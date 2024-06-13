@@ -34,6 +34,8 @@ export const Avatar = ({ avatars, heightProp = DEFAULT_HEIGHT, widthProp = DEFAU
                     <View style={[styles.avatarCircle, {
                         width: width,
                         height: height,
+                        alignItems: 'center',
+                        justifyContent: 'center'
                     }]} key={index}>
                         <View style={{ margin: 5 }}>
                             <Text style={styles.initials}>{avatar.value}</Text>
@@ -58,7 +60,32 @@ export const Avatar = ({ avatars, heightProp = DEFAULT_HEIGHT, widthProp = DEFAU
     return (
         <View style={styles.avatarContainer}>
             {
-                avatars && avatars.length === 3 ? (
+                avatars && avatars.length === 1 ? (
+                    <View style={{ width: '100%', height: '100%' }}>
+                        {
+                        /* TODO: Replace harcoded "us" with apiregion  
+                        */}
+                        {
+                            // @ts-ignore
+                            <Image resizeMode='cover' source={{ uri: `https://api.${'us'}.amity.co/api/v3/files/${avatars[0]?.value}/download?size=small` }} style={styles.avatarImage} />
+                        }
+                    </View>
+                ) : avatars && avatars.length === 2 ? (
+                    <View style={{ flexDirection: 'row' }}>
+                        <View style={{ width: '50%', borderRightWidth: 0.5, borderColor: '#fff', }}>
+                            {
+                                // @ts-ignore
+                                renderAvatar(avatars[0], 0, heightProp, widthProp / 2)
+                            }
+                        </View>
+                        <View style={{ width: '50%', borderRightWidth: 0.5, borderColor: '#fff' }}>
+                            {
+                                // @ts-ignore
+                                renderAvatar(avatars[1], 0, heightProp, widthProp / 2)
+                            }
+                        </View>
+                    </View>
+                ) : avatars && avatars.length === 3 ? (
                     <View style={{ flexDirection: 'row' }}>
                         <View style={{ width: '50%', borderRightWidth: 0.5, borderColor: '#fff', }}>
                             {
@@ -75,12 +102,14 @@ export const Avatar = ({ avatars, heightProp = DEFAULT_HEIGHT, widthProp = DEFAU
                             />
                         </View>
                     </View>
-                ) : <FlatList
-                    data={avatars}
-                    numColumns={2}
-                    renderItem={({ item, index }) => renderAvatar(item, index, heightProp / 2, widthProp / 2)}
-                    keyExtractor={(item) => item.value.toString()}
-                />
+                ) : (
+                    <FlatList
+                        data={avatars}
+                        numColumns={2}
+                        renderItem={({ item, index }) => renderAvatar(item, index, heightProp / 2, widthProp / 2)}
+                        keyExtractor={(item) => item.value.toString()}
+                    />
+                )
             }
 
         </View>

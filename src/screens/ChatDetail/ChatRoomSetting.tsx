@@ -54,6 +54,7 @@ export const ChatRoomSetting: React.FC<ChatDetailProps> = ({
       navigation,
       channelID: channelId,
       groupChat: groupChat,
+      channelType: channelType
     });
   };
 

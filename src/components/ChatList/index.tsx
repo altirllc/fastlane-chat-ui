@@ -173,7 +173,7 @@ const ChatList = ({
   };
 
   useEffect(() => {
-    if (chatMemberNumber === 2 && usersArr) {
+    if (channelType === 'conversation' && usersArr) {
       setOneOnOneChatObject(usersArr);
     } else if (usersArr) {
       setGroupChatObject(usersArr);
@@ -236,7 +236,7 @@ const ChatList = ({
               <CustomText style={styles.chatName} numberOfLines={1}>
                 {chatDisplayName}
               </CustomText>
-              {chatMemberNumber > 2 ? (
+              {channelType === 'community' || channelType === 'broadcast' ? (
                 <CustomText style={styles.chatLightText}>
                   ({chatMemberNumber})
                 </CustomText>

@@ -82,7 +82,7 @@ export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId, ch
                     </CustomText>
                     {groupChat && (
                         <CustomText style={styles.chatMember}>
-                            {groupChat?.memberCount} members
+                            {groupChat?.memberCount} {groupChat.memberCount === 1 ? 'member' : 'members'}
                         </CustomText>
                     )}
                 </TouchableOpacity>
