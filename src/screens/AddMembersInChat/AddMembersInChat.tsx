@@ -12,11 +12,11 @@ import {
   TouchableOpacity,
   View,
   Text,
-  type ListRenderItemInfo,
   TextInput,
   SectionList,
   Alert,
   LayoutAnimation,
+  SectionListRenderItemInfo,
 } from 'react-native';
 import { useStyles } from './styles';
 import type { UserInterface } from '../../types/user.interface';
@@ -159,7 +159,15 @@ const AddMembersInChat = ({
     return [
       ...createSectionGroup(allUserArr).filter((eachUser) =>
         recentMembersIdsSet.has(eachUser.userId)
-      ),
+      ).sort((a, b) => {
+        if (a.displayName.toLowerCase() < b.displayName.toLowerCase()) {
+          return -1;
+        }
+        if (a.displayName.toLowerCase() > b.displayName.toLowerCase()) {
+          return 1;
+        }
+        return 0;
+      }),
     ];
   }, [allUserArr]);
 
@@ -326,7 +334,7 @@ const AddMembersInChat = ({
     }
   };
 
-  const RenderItem = memo(({ item, index }: ListRenderItemInfo<UserInterface>) => {
+  const RenderItem = memo(({ item, index, section }: SectionListRenderItemInfo<UserInterface>) => {
     let isrenderheader: boolean = true;
     const isAlphabet = /^[A-Z]$/i.test(item.displayName[0] as string);
     const currentLetter = isAlphabet
@@ -342,12 +350,14 @@ const AddMembersInChat = ({
       chapterName: item.chapterName,
     };
 
-    if (index > 0 && sectionedUserList.length > 0) {
+    if (index === 0 && section?.data?.length > 0) {
+      isrenderheader = true;
+    } else if (index > 0 && section?.data?.length > 0) {
       const isPreviousletterAlphabet = /^[A-Z]$/i.test(
-        (sectionedUserList[index - 1] as any)?.displayName[0]
+        (section?.data[index - 1] as any)?.displayName[0]
       );
       const previousLetter = isPreviousletterAlphabet
-        ? (sectionedUserList[index - 1] as any)?.displayName
+        ? (section?.data[index - 1] as any)?.displayName
           .charAt(0)
           .toUpperCase()
         : '#';
@@ -567,7 +577,7 @@ const AddMembersInChat = ({
           sections={filteredUserList}
           keyExtractor={(item, index) => item.userId + index}
           // @ts-ignore
-          renderItem={({ item, index }) => <RenderItem item={item} index={index} />}
+          renderItem={({ item, index, section }) => <RenderItem item={item} index={index} section={section} />}
           showsVerticalScrollIndicator={false}
           ref={flatListRef}
           renderSectionHeader={({ section }) => (
