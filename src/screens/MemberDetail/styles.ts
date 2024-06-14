@@ -92,7 +92,7 @@ export const useStyles = () => {
       alignItems: 'center',
       paddingHorizontal: 10,
       paddingVertical: 10,
-      borderWidth: 1
+      borderWidth: 1,
     },
     input: { flex: 1, marginHorizontal: 6 },
     cancelBtn: {
@@ -108,7 +108,7 @@ export const useStyles = () => {
     disabledDone: {
       opacity: 0.5,
     },
-    membersContainer: { paddingHorizontal: 22 },
+    membersContainer: { paddingHorizontal: 22, marginBottom: 80 },
     addContainer: { width: '15%', paddingVertical: 12, alignItems: 'flex-end' },
   });
 
