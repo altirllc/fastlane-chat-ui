@@ -22,7 +22,6 @@ export const useAvatarStyles = () => {
             height: '100%',
         },
         initials: {
-            fontSize: AVATAR_SIZE / 6,
             color: '#6E768A',
         },
         membersLeftCount: {

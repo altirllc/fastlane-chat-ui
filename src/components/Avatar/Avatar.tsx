@@ -15,7 +15,7 @@ const DEFAULT_HEIGHT = AVATAR_SIZE;
 
 export const Avatar = ({ avatars, heightProp = DEFAULT_HEIGHT, widthProp = DEFAULT_WIDTH }: TAvatar) => {
     const styles = useAvatarStyles();
-    const renderAvatar = (avatar: TAvatarArray, index: number, height: number, width: number) => {
+    const renderAvatar = (avatar: TAvatarArray, index: number, height: number, width: number, initialsFontSize: number = AVATAR_SIZE / 6) => {
         switch (avatar.type) {
             case 'avatar':
                 return (
@@ -38,7 +38,7 @@ export const Avatar = ({ avatars, heightProp = DEFAULT_HEIGHT, widthProp = DEFAU
                         justifyContent: 'center'
                     }]} key={index}>
                         <View style={{ margin: 5 }}>
-                            <Text style={styles.initials}>{avatar.value}</Text>
+                            <Text style={[styles.initials, { fontSize: initialsFontSize }]}>{avatar.value}</Text>
                         </View>
                     </View>
                 );
@@ -67,7 +67,8 @@ export const Avatar = ({ avatars, heightProp = DEFAULT_HEIGHT, widthProp = DEFAU
                         */}
                         {
                             // @ts-ignore
-                            <Image resizeMode='cover' source={{ uri: `https://api.${'us'}.amity.co/api/v3/files/${avatars[0]?.value}/download?size=small` }} style={styles.avatarImage} />
+                            renderAvatar(avatars[0], 0, heightProp, widthProp, AVATAR_SIZE / 3.5)
+                            // <Image resizeMode='cover' source={{ uri: `https://api.${'us'}.amity.co/api/v3/files/${avatars[0]?.value}/download?size=small` }} style={styles.avatarImage} />
                         }
                     </View>
                 ) : avatars && avatars.length === 2 ? (
