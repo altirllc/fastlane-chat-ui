@@ -12,7 +12,6 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import useAuth from '../../hooks/useAuth';
 import { useEffect, useMemo, useState } from 'react';
 import type { UserInterface } from '../../types/user.interface';
-import { PrivateChatIcon } from '../../svg/PrivateChatIcon';
 import { EUserRoles } from '../../enum/sessionState';
 import { useMessagePreview } from '../../hooks/useMessagePreview';
 import { useReadStatus } from '../../hooks/useReadStatus';
@@ -108,7 +107,7 @@ const ChatList = ({
     return undefined
   }, [groupChatObject, chatName, avatarFileId, chatMemberNumber])
 
-  const { avatarArray } = useAvatarArray(groupChat)
+  const { avatarArray } = useAvatarArray(groupChat, chatReceiver)
 
   const isGroupChat = useMemo(() => {
     return groupChat !== undefined;
@@ -178,7 +177,7 @@ const ChatList = ({
     } else if (usersArr) {
       setGroupChatObject(usersArr);
     }
-  }, [usersArr]);
+  }, [usersArr, channelType]);
 
 
   useEffect(() => {
@@ -221,11 +220,7 @@ const ChatList = ({
             />
           ) : (
             <View style={styles.icon}>
-              {channelType === 'community' ? (
-                <Avatar avatars={avatarArray} />
-              ) : (
-                <PrivateChatIcon />
-              )}
+              <Avatar avatars={avatarArray} />
             </View>
           )}
         </View>

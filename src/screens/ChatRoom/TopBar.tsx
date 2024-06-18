@@ -6,7 +6,6 @@ import {
 } from 'react-native';
 import CustomText from '../../components/CustomText';
 import BackButton from '../../components/BackButton';
-import { AvatarIcon } from '../../svg/AvatarIcon';
 import { AlertIcon } from '../../svg/AlertIcon';
 import { Avatar } from '../../../src/components/Avatar/Avatar';
 import { useStyles } from './styles'
@@ -33,7 +32,7 @@ export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId, ch
     const theme = useTheme() as MyMD3Theme;
     const { apiRegion } = useAuth();
 
-    const { avatarArray } = useAvatarArray(groupChat);
+    const { avatarArray } = useAvatarArray(groupChat, chatReceiver);
 
     const onChatProfilePress = () => {
         if (!chatReceiver) return;
@@ -44,22 +43,14 @@ export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId, ch
         <View style={styles.topBar}>
             <View style={styles.chatTitleWrap}>
                 <BackButton styles={styles.backButton} onPress={handleBack} />
-                {chatReceiver ? (
+                {chatReceiver?.avatarFileId ? (
                     <TouchableOpacity onPress={onChatProfilePress}>
-                        {
-                            chatReceiver?.avatarFileId ? (
-                                <Image
-                                    style={styles.avatar}
-                                    source={{
-                                        uri: `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver?.avatarFileId}/download`,
-                                    }}
-                                />
-                            ) : (
-                                <View style={styles.avatar}>
-                                    <AvatarIcon />
-                                </View>
-                            )
-                        }
+                        <Image
+                            style={styles.avatar}
+                            source={{
+                                uri: `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver?.avatarFileId}/download`,
+                            }}
+                        />
                     </TouchableOpacity>
 
                 ) : groupChat?.avatarFileId ? (
