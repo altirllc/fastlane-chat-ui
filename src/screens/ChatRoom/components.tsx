@@ -4,11 +4,13 @@ import LoadingImage from "../../../src/components/LoadingImage";
 import { useStyles } from "./styles";
 import { IDisplayImage } from "./ChatRoom";
 import moment from 'moment';
-import { AvatarIcon } from "../../../src/svg/AvatarIcon";
 import { deletedIcon, personXml } from '../../svg/svg-xml-list';
 import { SvgXml } from "react-native-svg";
 import MediaSection from "../../../src/components/MediaSection";
 import useAuth from "../../../src/hooks/useAuth";
+import { useAvatarArray } from "../../../src/hooks/useAvatarArray";
+import { UserInterface } from "../../types/user.interface";
+import { Avatar } from "../../components/Avatar/Avatar";
 
 export type TRenderLoadingImages = {
     displayImages: IDisplayImage[];
@@ -63,23 +65,15 @@ export const RenderTimeDivider = memo(({ date }: { date: string }) => {
 export type TAvatarComponent = {
     isUserChat: boolean;
     isAnnouncement: boolean;
-    avatar: string;
+    chatReceiver: UserInterface;
 }
-export const AvatarComponent = memo(({ isUserChat, isAnnouncement, avatar, }: TAvatarComponent) => {
+export const AvatarComponent = memo(({ isUserChat, isAnnouncement, chatReceiver }: TAvatarComponent) => {
     const styles = useStyles();
-
+    const { avatarArray } = useAvatarArray(undefined, chatReceiver);
     return !isUserChat && !isAnnouncement ?
-        avatar ? (
-            <Image
-                source={{ uri: avatar }}
-                style={styles.avatarImage}
-            />
-        ) : (
-            <View style={styles.avatarImage}>
-                <AvatarIcon />
-            </View>
-        ) : null
-
+        <View style={styles.icon}>
+            <Avatar heightProp={40} widthProp={40} avatars={avatarArray} />
+        </View> : null
 })
 
 

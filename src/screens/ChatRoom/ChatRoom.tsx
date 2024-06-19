@@ -76,6 +76,7 @@ export interface IMessage {
     _id: string;
     name: string;
     avatar: string;
+    avatarFileId: string;
   };
   image?: string;
   messageType: string;
@@ -359,6 +360,8 @@ const ChatRoom = ({ onMemberClick }: ChatRoomScreenComponentType) => {
               getReadComponent={getReadComponent}
               isDelivered={isDelivered}
               onMemberClick={onMemberClick}
+              channelType={channelType}
+              groupChat={groupChat}
             />
           )}
           keyExtractor={(item) => item._id}

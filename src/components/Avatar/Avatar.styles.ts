@@ -6,9 +6,6 @@ export const AVATAR_SIZE = 48
 export const useAvatarStyles = () => {
     const styles = StyleSheet.create({
         avatarContainer: {
-            width: AVATAR_SIZE,
-            height: AVATAR_SIZE,
-            borderRadius: (AVATAR_SIZE / 2),
             backgroundColor: 'white',
             overflow: 'hidden',
         },

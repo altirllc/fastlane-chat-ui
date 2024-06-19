@@ -57,8 +57,15 @@ export const Avatar = ({ avatars, heightProp = DEFAULT_HEIGHT, widthProp = DEFAU
                 return null;
         }
     };
+
     return (
-        <View style={styles.avatarContainer}>
+        <View
+            style={[styles.avatarContainer, {
+                width: heightProp,
+                height: widthProp,
+                borderRadius: (widthProp / 2),
+            }]}
+        >
             {
                 avatars && avatars.length === 1 ? (
                     <View style={{ width: '100%', height: '100%' }}>
@@ -67,7 +74,7 @@ export const Avatar = ({ avatars, heightProp = DEFAULT_HEIGHT, widthProp = DEFAU
                         */}
                         {
                             // @ts-ignore
-                            renderAvatar(avatars[0], 0, heightProp, widthProp, AVATAR_SIZE / 3.5)
+                            renderAvatar(avatars[0], 0, heightProp, widthProp, heightProp / 3.5)
                             // <Image resizeMode='cover' source={{ uri: `https://api.${'us'}.amity.co/api/v3/files/${avatars[0]?.value}/download?size=small` }} style={styles.avatarImage} />
                         }
                     </View>

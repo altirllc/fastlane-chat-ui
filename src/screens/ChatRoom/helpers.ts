@@ -17,16 +17,20 @@ export const getFormattedMessages = (
                 (groupChatItem) => item.creatorId === groupChatItem.userId
             );
         let avatarUrl = '';
+        let avatarFileId = '';
         if (
             groupChat &&
-            targetIndex &&
+            targetIndex !== undefined &&
+            targetIndex >= 0 &&
             (groupChat?.users as any)[targetIndex as number]?.avatarFileId
         ) {
             avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${(groupChat?.users as any)[targetIndex as number]
                 ?.avatarFileId as any
                 }/download`;
+            avatarFileId = (groupChat?.users as any)[targetIndex as number]?.avatarFileId as any
         } else if (chatReceiver && chatReceiver.avatarFileId) {
             avatarUrl = `https://api.${apiRegion}.amity.co/api/v3/files/${chatReceiver.avatarFileId}/download`;
+            avatarFileId = chatReceiver.avatarFileId;
         }
         let commonObj = {
             _id: item.messageId,
@@ -42,6 +46,7 @@ export const getFormattedMessages = (
                         ''
                     ),
                 avatar: avatarUrl,
+                avatarFileId: avatarFileId
             },
             messageType: item.dataType,
             isDeleted: item.isDeleted as boolean,

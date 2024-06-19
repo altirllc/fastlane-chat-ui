@@ -35,7 +35,7 @@ export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId, ch
     const { avatarArray } = useAvatarArray(groupChat, chatReceiver);
 
     const onChatProfilePress = () => {
-        if (!chatReceiver) return;
+        if (!chatReceiver || channelType === 'broadcast') return;
         onMemberClick?.(chatReceiver.userId, chatReceiver.displayName)
     }
 
@@ -62,7 +62,7 @@ export const TopBar = memo(({ chatReceiver, handleBack, groupChat, channelId, ch
                     />
                 ) : (
                     <View style={styles.icon}>
-                        <Avatar avatars={avatarArray} />
+                        <Avatar avatars={avatarArray} heightProp={40} widthProp={40} />
                     </View>
                 )}
                 <TouchableOpacity disabled={!!groupChat} onPress={onChatProfilePress}>

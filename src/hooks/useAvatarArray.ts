@@ -55,10 +55,18 @@ export const useAvatarArray = (groupChat: IGroupChatObject | undefined, chatRece
             } else return sortByAvatarArr //in case of 2, 3 or 4 members loop them and directly show in UI.
         } else if (chatReceiver && Object.keys(chatReceiver).length > 0 && chatReceiver.displayName && chatReceiver.userId) {
             const avatarArray: TAvatarArray[] = [];
-            avatarArray.push({
-                type: 'nameInitials',
-                value: getInitials(chatReceiver.displayName)
-            })
+            if (chatReceiver.avatarFileId) {
+                avatarArray.push({
+                    type: 'avatar',
+                    value: chatReceiver.avatarFileId
+                })
+            } else {
+                avatarArray.push({
+                    type: 'nameInitials',
+                    value: getInitials(chatReceiver.displayName)
+                })
+            }
+
             return avatarArray;
         } else return []
     }, [groupChat, chatReceiver])
