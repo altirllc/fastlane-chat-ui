@@ -171,7 +171,7 @@
     ]
   },
   "dependencies": {
-    "@amityco/ts-sdk-react-native": "^6.19.0",
+    "@amityco/ts-sdk-react-native": "^6.24.1",
     "i18next": "22.4.10",
     "moment": "2.29.4",
     "react-i18next": "12.1.5",

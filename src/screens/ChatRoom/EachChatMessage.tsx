@@ -28,6 +28,7 @@ import {
     TextComponent,
     TimeAndReadStatusComponent
 } from '../../../src/screens/ChatRoom/components';
+import { IGroupChatObject } from '../../components/ChatList';
 
 export type TEachChatMessage = {
     message: IMessage;
@@ -39,6 +40,8 @@ export type TEachChatMessage = {
     getReadComponent: (messageId: string) => React.JSX.Element;
     isDelivered: boolean;
     onMemberClick: (memberId: string, displayName: string) => void;
+    channelType: 'conversation' | 'broadcast' | 'live' | 'community' | '';
+    groupChat: IGroupChatObject | undefined;
 }
 
 export const EachChatMessage = memo(({
@@ -50,7 +53,9 @@ export const EachChatMessage = memo(({
     openFullImage,
     getReadComponent,
     isDelivered,
-    onMemberClick
+    onMemberClick,
+    channelType,
+    groupChat
 }: TEachChatMessage) => {
 
     const deleteMessage = async (messageId: string) => {
@@ -105,10 +110,15 @@ export const EachChatMessage = memo(({
 
 
     const onFriendPress = () => {
-        if (!message) return;
+        if (!message || channelType === 'broadcast') return;
         onMemberClick?.(message.user._id, message.user.name)
     }
 
+    let chatReceiver = {
+        userId: message.user._id,
+        displayName: message.user.name,
+        avatarFileId: channelType === 'broadcast' && groupChat && groupChat.avatarFileId ? groupChat.avatarFileId : message.user.avatarFileId,
+    }
     return (
         <View>
             {isRenderDivider ? <RenderTimeDivider date={message.createdAt} /> : null}
@@ -116,7 +126,7 @@ export const EachChatMessage = memo(({
                 style={!isUserChat ? isAnnouncement ? styles.leftMessageWrap : [styles.leftMessageWrap, { flexDirection: 'row' }] : styles.rightMessageWrap}
             >
                 <TouchableOpacity onPress={onFriendPress}>
-                    <AvatarComponent isUserChat={isUserChat} isAnnouncement={isAnnouncement} avatar={message?.user?.avatar || ''} />
+                    <AvatarComponent isUserChat={isUserChat} isAnnouncement={isAnnouncement} chatReceiver={chatReceiver} />
                 </TouchableOpacity>
                 <View>
                     {!isUserChat && isGroupChat && !isAnnouncement ? (
