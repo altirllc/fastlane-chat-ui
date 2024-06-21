@@ -2,15 +2,15 @@
 import React, { useEffect, useState, type FC } from 'react';
 import { Client } from '@amityco/ts-sdk-react-native';
 import type { AuthContextInterface } from '../types/auth.interface';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import type { IAmityUIkitProvider } from './amity-ui-kit-provider';
 
 export const AuthContext = React.createContext<AuthContextInterface>({
   client: {},
   isConnecting: false,
   error: '',
-  login: () => { },
-  logout: () => { },
+  login: () => {},
+  logout: () => {},
   isConnected: false,
   sessionState: '',
   apiRegion: 'sg',
@@ -25,7 +25,8 @@ export const AuthContextProvider: FC<IAmityUIkitProvider> = ({
   apiEndpoint,
   children,
   authToken,
-  setChatUnreadCount
+  setChatUnreadCount,
+  pushNotificationToken,
 }: IAmityUIkitProvider) => {
   const [error, setError] = useState('');
   const [isConnecting, setLoading] = useState(false);
@@ -49,24 +50,37 @@ export const AuthContextProvider: FC<IAmityUIkitProvider> = ({
   }, []);
 
   // handleLiveObject will be triggered every time unread count is updated.
-  const handleLiveObject = (liveObject: Amity.LiveObject<Amity.UserUnread | undefined>) => {
+  const handleLiveObject = (
+    liveObject: Amity.LiveObject<Amity.UserUnread | undefined>
+  ) => {
     if (liveObject.data) {
       const { unreadCount } = liveObject.data;
       // An example of a reading unread count is in the line below.
-      setChatUnreadCount(unreadCount)
+      setChatUnreadCount(unreadCount);
     }
   };
 
   const startSync = () => {
     Client.enableUnreadCount();
-    Client.getUserUnread(handleLiveObject)
-  }
+    Client.getUserUnread(handleLiveObject);
+  };
+
+  const generateUUID = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0;
+        const v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
+  };
 
   useEffect(() => {
     if (isConnected) {
       startSync();
     }
-  }, [isConnected])
+  }, [isConnected]);
 
   useEffect(() => {
     if (sessionState === 'established') {
@@ -86,8 +100,27 @@ export const AuthContextProvider: FC<IAmityUIkitProvider> = ({
     }
     const response = await Client.login(loginParam, sessionHandler);
 
-    if (response) {
-      console.log('response:', response);
+    if (response && pushNotificationToken) {
+      try {
+        fetch(`${apiEndpoint}/v1/notification`, {
+          method: 'POST',
+          headers: {
+            'X-API-KEY': apiKey,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            deviceId: generateUUID(),
+            platform: Platform.OS,
+            userId: userId,
+            token: pushNotificationToken,
+          }),
+        })
+          .then((res) => console.log('v1/notification success', res))
+          .catch((err) => console.error('v1/notification error', err));
+      } catch (err) {
+        console.error('v1/notification error', err);
+      }
     }
   };
 
@@ -107,8 +140,10 @@ export const AuthContextProvider: FC<IAmityUIkitProvider> = ({
     }
   };
   useEffect(() => {
-    login();
-  }, [userId]);
+    if (pushNotificationToken) {
+      login();
+    }
+  }, [userId, pushNotificationToken]);
 
   // TODO
 
