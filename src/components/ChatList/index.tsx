@@ -7,10 +7,10 @@ import { View, TouchableHighlight, Image } from 'react-native';
 import { ChannelRepository } from '@amityco/ts-sdk-react-native';
 import CustomText from '../CustomText';
 import { useStyles } from './styles';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import useAuth from '../../hooks/useAuth';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { UserInterface } from '../../types/user.interface';
 import { EUserRoles } from '../../enum/sessionState';
 import { useMessagePreview } from '../../hooks/useMessagePreview';
@@ -189,23 +189,25 @@ const ChatList = ({
     );
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      //get the message read status
-      if (!messagePreview?.messagePreviewId) return;
-      if (!isGroupChat && !chatReceiver) {
-        //get the read statuses only if there is a group chat or one to one chat.
-        return;
-      }
-      if (isUserLoggedInPreviewChat) {
-        await getReadStatusForMessage(messagePreview?.messagePreviewId,
-          chatReceiver,
-          groupChat,
-          isGroupChat
-        );
-      }
-    })();
-  }, [messagePreview, isUserLoggedInPreviewChat]);
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        //get the message read status
+        if (!messagePreview?.messagePreviewId) return;
+        if (!isGroupChat && !chatReceiver) {
+          //get the read statuses only if there is a group chat or one to one chat.
+          return;
+        }
+        if (isUserLoggedInPreviewChat) {
+          await getReadStatusForMessage(messagePreview?.messagePreviewId,
+            chatReceiver,
+            groupChat,
+            isGroupChat
+          );
+        }
+      })();
+    }, [messagePreview, isUserLoggedInPreviewChat, isGroupChat, chatReceiver, groupChat])
+  )
 
   return (
     <TouchableHighlight onPress={() => handlePress()}>

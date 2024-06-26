@@ -126,7 +126,11 @@ export const EachChatMessage = memo(({
                 style={!isUserChat ? isAnnouncement ? styles.leftMessageWrap : [styles.leftMessageWrap, { flexDirection: 'row' }] : styles.rightMessageWrap}
             >
                 <TouchableOpacity onPress={onFriendPress}>
-                    <AvatarComponent isUserChat={isUserChat} isAnnouncement={isAnnouncement} chatReceiver={chatReceiver} />
+                    <AvatarComponent
+                        isUserChat={isUserChat}
+                        isAnnouncement={isAnnouncement}
+                        chatReceiver={chatReceiver}
+                    />
                 </TouchableOpacity>
                 <View>
                     {!isUserChat && isGroupChat && !isAnnouncement ? (
@@ -166,7 +170,12 @@ export const EachChatMessage = memo(({
                                 ) : isImage ? (
                                     <ImageComponent imageStr={message.image} isUserChat={isUserChat} />
                                 ) : isSocialPost ? (
-                                    <SocialPostComponent postId={message.customData?.id || ''} customDataText={message.customData?.text} isUserChat={isUserChat} postCreator={postCreator} imageIds={imageIds} />
+                                    <SocialPostComponent
+                                        postId={message.customData?.id || ''}
+                                        customDataText={message.customData?.text}
+                                        isUserChat={isUserChat}
+                                        postCreator={postCreator}
+                                        imageIds={imageIds} />
                                 ) : null}
                             </MenuTrigger>
                             <MenuOptions

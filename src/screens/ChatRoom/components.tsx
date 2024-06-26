@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useContext } from "react";
 import { FlatList, View, Text, Image, TouchableOpacity } from "react-native";
 import LoadingImage from "../../../src/components/LoadingImage";
 import { useStyles } from "./styles";
@@ -11,6 +11,7 @@ import useAuth from "../../../src/hooks/useAuth";
 import { useAvatarArray } from "../../../src/hooks/useAvatarArray";
 import { UserInterface } from "../../types/user.interface";
 import { Avatar } from "../../components/Avatar/Avatar";
+import { AuthContext } from "../../../src/store/context";
 
 export type TRenderLoadingImages = {
     displayImages: IDisplayImage[];
@@ -199,7 +200,7 @@ export type TSocialPostComponent = {
 
 export const SocialPostComponent = (
     {
-        //postId,
+        postId,
         isUserChat,
         postCreator,
         imageIds,
@@ -208,7 +209,7 @@ export const SocialPostComponent = (
 ) => {
     const styles = useStyles();
     const { apiRegion } = useAuth();
-    //const { onChatPostClick } = useContext(AuthContext)
+    const { onChatPostClick } = useContext(AuthContext)
 
     return (
         <>
@@ -217,7 +218,7 @@ export const SocialPostComponent = (
                     styles.bodySection,
                     isUserChat ? { alignSelf: 'flex-end' } : { alignSelf: 'flex-start' }
                 ]}
-            //onPress={() => onChatPostClick(postId)}
+                onPress={() => onChatPostClick(postId)}
             >
                 {
                     postCreator ? (

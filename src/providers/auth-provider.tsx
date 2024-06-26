@@ -9,8 +9,8 @@ export const AuthContext = React.createContext<AuthContextInterface>({
   client: {},
   isConnecting: false,
   error: '',
-  login: () => {},
-  logout: () => {},
+  login: () => { },
+  logout: () => { },
   isConnected: false,
   sessionState: '',
   apiRegion: 'sg',
@@ -26,7 +26,7 @@ export const AuthContextProvider: FC<IAmityUIkitProvider> = ({
   children,
   authToken,
   setChatUnreadCount,
-  pushNotificationToken,
+  pushNotificationToken
 }: IAmityUIkitProvider) => {
   const [error, setError] = useState('');
   const [isConnecting, setLoading] = useState(false);
@@ -50,20 +50,18 @@ export const AuthContextProvider: FC<IAmityUIkitProvider> = ({
   }, []);
 
   // handleLiveObject will be triggered every time unread count is updated.
-  const handleLiveObject = (
-    liveObject: Amity.LiveObject<Amity.UserUnread | undefined>
-  ) => {
+  const handleLiveObject = (liveObject: Amity.LiveObject<Amity.UserUnread | undefined>) => {
     if (liveObject.data) {
       const { unreadCount } = liveObject.data;
       // An example of a reading unread count is in the line below.
-      setChatUnreadCount(unreadCount);
+      setChatUnreadCount(unreadCount)
     }
   };
 
   const startSync = () => {
     Client.enableUnreadCount();
-    Client.getUserUnread(handleLiveObject);
-  };
+    Client.getUserUnread(handleLiveObject)
+  }
 
   const generateUUID = () => {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
@@ -80,7 +78,7 @@ export const AuthContextProvider: FC<IAmityUIkitProvider> = ({
     if (isConnected) {
       startSync();
     }
-  }, [isConnected]);
+  }, [isConnected])
 
   useEffect(() => {
     if (sessionState === 'established') {
@@ -116,10 +114,10 @@ export const AuthContextProvider: FC<IAmityUIkitProvider> = ({
             token: pushNotificationToken,
           }),
         })
-          .then((res) => console.log('v1/notification success', res))
-          .catch((err) => console.error('v1/notification error', err));
+          .then((res) => console.log("CHAT: Passed FCM Token to backend success", res))
+          .catch((err) => console.error("CHAT: Passed FCM Token to backend error", err));
       } catch (err) {
-        console.error('v1/notification error', err);
+        console.error("CHAT: Passed FCM Token to backend error", err)
       }
     }
   };
