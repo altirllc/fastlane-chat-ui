@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import { useTheme } from "react-native-paper";
 import type { MyMD3Theme } from "../../providers/amity-ui-kit-provider";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -56,13 +56,13 @@ export const useEnterGroupNameStyles = () => {
         },
         inputWrap: {
             backgroundColor: theme.colors.secondary,
-            borderRadius: 10,
+            borderRadius: 30,
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
             paddingHorizontal: 16,
             marginVertical: 10,
-            paddingVertical: 15,
+            paddingVertical: Platform.OS === "ios" ? 15 : 0,
         },
     });
     return styles;

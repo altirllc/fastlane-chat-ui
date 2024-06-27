@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import { useTheme } from "react-native-paper";
 import type { MyMD3Theme } from '../../providers/amity-ui-kit-provider';
 import { SCREEN_PADDING } from "../../theme/index";
@@ -70,7 +70,7 @@ export const useStyles = () => {
             alignItems: 'center',
             paddingHorizontal: 10,
             marginVertical: 10,
-            paddingVertical: 10,
+            paddingVertical: Platform.OS === "ios" ? 10 : 0,
             borderWidth: 1,
         },
         memberText: {

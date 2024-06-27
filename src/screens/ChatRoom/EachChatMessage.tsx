@@ -107,6 +107,7 @@ export const EachChatMessage = memo(({
     const isSocialPost = message?.messageType === "custom" && message.customData?.type === ECustomData.post;
     const imageIds = message?.messageType === "custom" && message.customData?.imageIds;
     const postCreator = message?.customData?.extraData?.postCreator;
+    const targetCommunityId = message?.customData?.extraData?.targetCommunityId || ''
 
 
     const onFriendPress = () => {
@@ -175,7 +176,9 @@ export const EachChatMessage = memo(({
                                         customDataText={message.customData?.text}
                                         isUserChat={isUserChat}
                                         postCreator={postCreator}
-                                        imageIds={imageIds} />
+                                        imageIds={imageIds}
+                                        targetCommunityId={targetCommunityId}
+                                    />
                                 ) : null}
                             </MenuTrigger>
                             <MenuOptions

@@ -4,7 +4,7 @@ import LoadingImage from "../../../src/components/LoadingImage";
 import { useStyles } from "./styles";
 import { IDisplayImage } from "./ChatRoom";
 import moment from 'moment';
-import { deletedIcon, personXml } from '../../svg/svg-xml-list';
+import { deletedIcon } from '../../svg/svg-xml-list';
 import { SvgXml } from "react-native-svg";
 import MediaSection from "../../../src/components/MediaSection";
 import useAuth from "../../../src/hooks/useAuth";
@@ -12,6 +12,8 @@ import { useAvatarArray } from "../../../src/hooks/useAvatarArray";
 import { UserInterface } from "../../types/user.interface";
 import { Avatar } from "../../components/Avatar/Avatar";
 import { AuthContext } from "../../../src/store/context";
+import { PrivateChatIcon } from "../../svg/PrivateChatIcon";
+import { useNavigation } from "@react-navigation/native";
 
 export type TRenderLoadingImages = {
     displayImages: IDisplayImage[];
@@ -196,6 +198,7 @@ export type TSocialPostComponent = {
     postCreator: Amity.User | undefined
     imageIds: false | string[] | undefined
     customDataText: string | undefined
+    targetCommunityId: string;
 }
 
 export const SocialPostComponent = (
@@ -204,11 +207,13 @@ export const SocialPostComponent = (
         isUserChat,
         postCreator,
         imageIds,
-        customDataText
+        customDataText,
+        targetCommunityId
     }: TSocialPostComponent
 ) => {
     const styles = useStyles();
     const { apiRegion } = useAuth();
+    const navigation = useNavigation<any>();
     const { onChatPostClick } = useContext(AuthContext)
 
     return (
@@ -218,7 +223,12 @@ export const SocialPostComponent = (
                     styles.bodySection,
                     isUserChat ? { alignSelf: 'flex-end' } : { alignSelf: 'flex-start' }
                 ]}
-                onPress={() => onChatPostClick(postId)}
+                disabled={!postCreator}
+                activeOpacity={0.7}
+                onPress={() => {
+                    navigation.goBack();
+                    onChatPostClick(postId, targetCommunityId);
+                }}
             >
                 {
                     postCreator ? (
@@ -239,9 +249,10 @@ export const SocialPostComponent = (
                                     <View style={{
                                         width: 35,
                                         height: 35,
-                                        borderRadius: 35 / 2
+                                        borderRadius: 35 / 2,
+                                        backgroundColor: '#C8CED9'
                                     }}>
-                                        <SvgXml xml={personXml} width="20" height="16" />
+                                        <PrivateChatIcon height={35} width={35} />
                                     </View>
                                 )}
                             </View>

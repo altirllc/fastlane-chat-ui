@@ -247,7 +247,6 @@ export const useStyles = () => {
     bodySection: {
       paddingVertical: 10,
       marginVertical: 10,
-      minHeight: 300,
       width: Dimensions.get("window").width * 0.7,
       backgroundColor: theme.colors.border,
       borderRadius: 20,
@@ -263,6 +262,13 @@ export const useStyles = () => {
       fontWeight: '400',
       paddingHorizontal: 15,
       paddingVertical: 10
+    },
+    postDeleted: {
+      fontSize: 15,
+      fontWeight: 'bold',
+      paddingHorizontal: 15,
+      paddingVertical: 10,
+      fontStyle: 'italic'
     }
   });
 

@@ -64,7 +64,8 @@ export type TCustomData = {
   imageIds?: string[];
   id?: string;
   extraData: {
-    postCreator: Amity.User
+    postCreator: Amity.User;
+    targetCommunityId: string;
   }
 }
 export interface IMessage {

@@ -7,7 +7,7 @@ import React, {
   useCallback,
 } from 'react';
 
-import { View, FlatList, TouchableOpacity, Text } from 'react-native';
+import { View, FlatList, TouchableOpacity, Text, StatusBar } from 'react-native';
 
 import {
   ChannelRepository,
@@ -301,6 +301,7 @@ export default function RecentChat({
 
   return (
     <View style={{ position: 'relative', height: '100%', width: '100%' }}>
+      <StatusBar barStyle='dark-content' backgroundColor={'white'} />
       <View style={styles.chatContainer}>
         <View
           style={[

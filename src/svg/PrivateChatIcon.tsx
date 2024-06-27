@@ -4,8 +4,8 @@ import React from 'react';
 import { Svg, Path } from 'react-native-svg';
 
 
-export const PrivateChatIcon = ({ color = "#D9E5FC" }: { color?: string }) => (
-    <Svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+export const PrivateChatIcon = ({ color = "#D9E5FC", width = 48, height = 48 }: { color?: string, width?: number, height?: number }) => (
+    <Svg width={width} height={height} viewBox="0 0 48 48" fill="none">
         <Path
             d="M19.25 18C19.25 15.3766 21.3766 13.25 24 13.25C26.6234 13.25 28.75 15.3766 28.75 18C28.75 20.6234 26.6234 22.75 24 22.75C21.3766 22.75 19.25 20.6234 19.25 18Z"
             fill="#6E768A"

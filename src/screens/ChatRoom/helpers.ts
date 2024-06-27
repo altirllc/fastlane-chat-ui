@@ -57,27 +57,35 @@ export const getFormattedMessages = (
                 imageIds: [],
                 id: '',
                 extraData: {
-                    postCreator: null
+                    postCreator: null,
+                    targetCommunityId: null
                 }
             } as TCustomData
         };
         // @ts-ignore
-        if (item.dataType === 'custom' && item?.data?.type === ECustomData.post && item?.data?.id) {
+        const isPostPresent = item.dataType === 'custom' && item?.data?.type === ECustomData.post && item?.data?.id
+        if (isPostPresent) {
             //if datatype is custom and data is post from social feed
             //TODO: Handle post image data and UI also
+            commonObj.customData.type = ECustomData.post
             // @ts-ignore
-            PostRepository.getPost(item.data?.id, ({ data }) => {
+            PostRepository.getPost(item.data?.id, ({ data, error }) => {
                 if (data) {
                     //let imageUrls = []
-                    if (data.children?.length > 0) {
+                    if (data?.children?.length > 0) {
                         commonObj.customData.imageIds = [...data.children]
                     }
                     if (data?.creator && Object.keys(data.creator).length > 0) {
                         commonObj.customData.extraData.postCreator = data?.creator
                     }
-                    commonObj.customData.type = ECustomData.post
-                    commonObj.customData.id = data._id;
+                    if (data?.targetId) {
+                        commonObj.customData.extraData.targetCommunityId = data.targetId
+                    }
+                    // @ts-ignore
+                    commonObj.customData.id = item.data?.id;
                     commonObj.customData.text = data?.data?.text;
+                } else if (!data && error) {
+                    commonObj.customData.text = 'Post does not exist.'
                 }
             });
             // @ts-ignore
