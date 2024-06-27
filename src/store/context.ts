@@ -4,9 +4,11 @@ import { createContext } from 'react';
 export const AuthContext = createContext<{
   amityAccessToken: string;
   setIsTabBarVisible: (value: boolean) => void;
-  onChatPostClick: (postId: string, targetCommunityId: string) => void;
+  chatNavigation: any;
+  marketPlaceCommunityId: string;
 }>({
   amityAccessToken: '',
   setIsTabBarVisible: () => { },
-  onChatPostClick: (_) => { },
+  chatNavigation: null,
+  marketPlaceCommunityId: ''
 });

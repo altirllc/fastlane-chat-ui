@@ -43,13 +43,11 @@ import { createAmityChannel } from '../../../src/providers/channel-provider';
 import { UserInterface } from '../../../src/types/user.interface';
 
 export type TRecentChat = {
-  chatNavigation: any;
   avatarUrl: string;
   userIdForChatProp: string
 };
 
 export default function RecentChat({
-  chatNavigation,
   avatarUrl,
   userIdForChatProp,
 }: TRecentChat) {
@@ -71,6 +69,7 @@ export default function RecentChat({
   const [channelData, setChannelData] =
     useState<Amity.LiveCollection<Amity.Channel>>();
   const [showFabIcon, setShowFabIcon] = useState(false);
+  const { chatNavigation } = useContext(AuthContext)
 
   const { data: channels = [], onNextPage, hasNextPage } = channelData ?? {};
 

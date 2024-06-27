@@ -13,7 +13,9 @@ import { UserInterface } from "../../types/user.interface";
 import { Avatar } from "../../components/Avatar/Avatar";
 import { AuthContext } from "../../../src/store/context";
 import { PrivateChatIcon } from "../../svg/PrivateChatIcon";
-import { useNavigation } from "@react-navigation/native";
+import { CommonActions, useNavigation } from "@react-navigation/native";
+// @ts-ignore
+import { screens } from '../../../../../../src/constants/screens'
 
 export type TRenderLoadingImages = {
     displayImages: IDisplayImage[];
@@ -214,7 +216,26 @@ export const SocialPostComponent = (
     const styles = useStyles();
     const { apiRegion } = useAuth();
     const navigation = useNavigation<any>();
-    const { onChatPostClick } = useContext(AuthContext)
+    const { chatNavigation, marketPlaceCommunityId } = useContext(AuthContext)
+
+    const onPostClick = () => {
+        navigation.goBack();
+        if (!targetCommunityId) return;
+        if (targetCommunityId === marketPlaceCommunityId) {
+            chatNavigation.dispatch(
+                CommonActions.reset({
+                    routes: [
+                        {
+                            name: screens.MarketPlace,
+                            params: { postId },
+                        },
+                    ],
+                }),
+            );
+        } else {
+            chatNavigation.navigate(screens.Home, { postId });
+        }
+    }
 
     return (
         <>
@@ -225,10 +246,7 @@ export const SocialPostComponent = (
                 ]}
                 disabled={!postCreator}
                 activeOpacity={0.7}
-                onPress={() => {
-                    navigation.goBack();
-                    onChatPostClick(postId, targetCommunityId);
-                }}
+                onPress={onPostClick}
             >
                 {
                     postCreator ? (
